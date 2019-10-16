@@ -1,2 +1,2 @@
 # csenergy-python
-Library for Conscentrated Solar Energy Systems
+Library for Concentrated Solar Energy Systems
