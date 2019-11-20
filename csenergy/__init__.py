@@ -36,15 +36,15 @@ class SCA:
         self._HCEperSCA = 24
         
         
-class LOOP:
+class Loop:
     def __init__(self, SCAperLOOP = 4):
         self._SCAperLOOP = 4
         
-class PLANT:
+class Plant:
     def __init__(self, LOOPperPLANT=120):
         self._LOOPperPLANT = 120
         
-class SITE:
+class Site:
     def __init__(self, lat=39, long=-3):
         self._lat = 39
         self._long = 3
