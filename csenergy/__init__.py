@@ -31,25 +31,25 @@ h1 = HCE()
 
 print(h1.__PRBarbero1grade__())
     
-class SCA:
+class SCA(object):
     def __init__(self, HCEperSCA=24):
         self._HCEperSCA = 24
         
         
-class Loop:
+class Loop(object):
     def __init__(self, SCAperLOOP = 4):
         self._SCAperLOOP = 4
         
-class Plant:
+class Plant(object):
     def __init__(self, LOOPperPLANT=120):
         self._LOOPperPLANT = 120
         
-class Site:
+class Site(object):
     def __init__(self, lat=39, long=-3):
         self._lat = 39
         self._long = 3
         
-class HTF:
+class HTF(object):
     def __init__(self, *argv):
         self._name = "Therminol VP-1"
         
