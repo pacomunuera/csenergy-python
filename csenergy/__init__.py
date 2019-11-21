@@ -17,6 +17,10 @@ class HCE:
         self.long = 1
         self.diameter = 1
         self.massflow = 1
+        self.eext = 1
+        self.hext = 1
+        self.urec = 1
+        self.sigma = 1
         self.tin = 1
         self.tout = 1
         
@@ -36,15 +40,15 @@ class SCA(object):
         self._HCEperSCA = 24
         
         
-class Loop(object):
+class loop(object):
     def __init__(self, SCAperLOOP = 4):
         self._SCAperLOOP = 4
         
-class Plant(object):
+class plant(object):
     def __init__(self, LOOPperPLANT=120):
         self._LOOPperPLANT = 120
         
-class Site(object):
+class site(object):
     def __init__(self, lat=39, long=-3):
         self._lat = 39
         self._long = 3
@@ -52,6 +56,21 @@ class Site(object):
 class HTF(object):
     def __init__(self, *argv):
         self._name = "Therminol VP-1"
+
+class weather(object):
+    def __init__(self, file):
+        self.file = 1
         
+''' Definimos la clase simulacion para representar las diferentes
+    pruebas que lancemos, variando el archivo TMY, la configuracion del
+    site, la planta, el modo de operacion o el modelo empleado. '''
+
+class simulation(object):
+    def __init__(self, weather, site, plant, operation, model):
+        self.t_init = 1
+        self.t_end = 1
         
+
+    
+#         
 
