@@ -10,6 +10,7 @@
 #from pvlib import ivtools
 #from pvlib import tracking
 #from pvlib import spa
+import pandas as pd
 
 class HCE:
     
@@ -40,15 +41,15 @@ class SCA(object):
         self._HCEperSCA = 24
         
         
-class loop(object):
+class Loop(object):
     def __init__(self, SCAperLOOP = 4):
         self._SCAperLOOP = 4
         
-class plant(object):
+class Plant(object):
     def __init__(self, LOOPperPLANT=120):
         self._LOOPperPLANT = 120
         
-class site(object):
+class Site(object):
     def __init__(self, lat=39, long=-3):
         self._lat = 39
         self._long = 3
@@ -57,20 +58,20 @@ class HTF(object):
     def __init__(self, *argv):
         self._name = "Therminol VP-1"
 
-class weather(object):
+class Weather(object):
     def __init__(self, file):
         self.file = 1
+        self.data = pd.read_csv("filename.csv")
         
 ''' Definimos la clase simulacion para representar las diferentes
     pruebas que lancemos, variando el archivo TMY, la configuracion del
     site, la planta, el modo de operacion o el modelo empleado. '''
 
-class simulation(object):
+class Simulation(object):
     def __init__(self, weather, site, plant, operation, model):
         self.t_init = 1
         self.t_end = 1
         
-
     
 #         
 
