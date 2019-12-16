@@ -12,15 +12,23 @@
 #from pvlib import spa
 import pandas as pd
 
+#TODO: 1 Preparación dataframe inicial. A partir de CSV como punto de inicio.
+#TODO: 2 Preparación de datos del HCE
+
+' Campos del dataframe inicial: '
+'    | timestamp | Tamb | Wind | Winddir | DNI | Vector Solar | MassFlow | Tin | Tout |'
+
 class HCE:
     
     def __init__(self):
         self.long = 1
-        self.diameter = 1
+        self.Dro = 1
+        self.Dri = 1
         self.massflow = 1
         self.eext = 1
         self.hext = 1
-        self.urec = 1
+        self.hint = 1
+        self.Urec = 1
         self.sigma = 1
         self.tin = 1
         self.tout = 1
@@ -28,17 +36,38 @@ class HCE:
         self.SCAposition = 1
         
         
-    def __PRBarbero4grade__(self):
+    def __PRBarbero4grade__():
         return 0
     
-    def __PRBarbero1grade__(self):
+    def __PRBarbero1grade__():
         return 0
     
-    def __PRBarbero0grade__(self):
+    def __PRBarbero0grade__():
         return 0
    
-    def calcTempOut(self):
+    def calcTempOut():
+        '''
+        HTF output temperature [ºC] Ec. 3.24 Barbero
+
+        Returns
+        -------
+        float [ºC]
+            DESCRIPTION.
+
+        '''
         return 0
+    
+    def qabs():
+        '''
+        Ec. 3.20 Barbero
+
+        Returns
+        -------
+        float [W]
+            DESCRIPTION.
+            Thermal power absorbed by the HCE
+        '''
+        return 0       
     
     
 h1 = HCE()
