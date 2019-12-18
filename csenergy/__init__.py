@@ -18,9 +18,17 @@ import pandas as pd
 ' Campos del dataframe inicial: '
 '    | timestamp | Tamb | Wind | Winddir | DNI | Vector Solar | MassFlow | Tin | Tout |'
 
+#Dic for HTC characteristics 
+HCE_type = {"Model ": 'RTC70', "Longitude ": 4, "Din ":0.06, "Dout ":0.12, "e_ext ": 1,
+     "h_ext ": 1, "U_rec ": 1, "Sigma ": 1}
+
+HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
+
+HCE_operation = {"Tin ": 293, "Clean ": 1}
+
 class HCE:
     
-    def __init__(self):
+    def __init__(self, HCE_type, HCE_status, HCE_operation):
         self.long = 1
         self.Dro = 1
         self.Dri = 1
@@ -73,25 +81,32 @@ class HCE:
 h1 = HCE()
 
 print(h1.__PRBarbero1grade__())
-    
+
+SCA_configuration ={"HCE Number ": 12, "Position in Loop": 1,
+                    "Temperature probes number": 1,
+                    "Temp. probes position": 'Middle', "Defocus Order": 1}
+
+   
 class SCA(object):
     
-    self.HCEperSCA = 24
-    self.HCEArray = ()
-    self.Loop = 1
-    self.positionInLoop = 1
-    self.operationStatus = 0
-    self.SCAtemperature = 0
+    HCEperSCA = 24
+    HCEArray = ()
+    Loop = 1
+    positionInLoop = 1
+    operationStatus = 0
+    SCAtemperature = 0
     
-    def __init__(self, pIL, HCEperSCA=24):
-        self.positionInLoop = pIL
+    def __init__(self, SCA_configuration):
+        for i in range (1, self.HCEperSCA):
+            self.HCElist.append(HCE(HCE_type, HCE_status, HCE_operation))       
+        
     
     def setOperationStatus():
         
-        if self.SCAtemperature > self.SCATempMax():
-            self.operationStatus = 'defocused'
+        if SCAtemperature > SCATempMax():
+            operationStatus = 'defocused'
         else:
-            self.operationStatus = 'tracking'
+            soperationStatus = 'tracking'
             
             
 class Loop(object):
@@ -137,9 +152,14 @@ class Loop(object):
 
         '''
         pass
+
+class SolarField(object):
+    def __init__(self, LoopsPerSolarField):
+        pass
     
+   
 class Plant(object):
-    def __init__(self, LOOPperPLANT=120):
+    def __init__(self, ):
         self._LOOPperPLANT = 120
         
 class Site(object):
