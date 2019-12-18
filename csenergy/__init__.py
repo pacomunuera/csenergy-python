@@ -28,7 +28,7 @@ HCE_operation = {"Tin ": 293, "Clean ": 1}
 
 class HCE:
     
-    def __init__(self, HCE_type, HCE_status, HCE_operation):
+    def __init__(self, HCE_type: list, HCE_status: list, HCE_operation: list) -> None:
         self.long = 1
         self.Dro = 1
         self.Dri = 1
@@ -44,16 +44,16 @@ class HCE:
         self.SCAposition = 1
         
         
-    def __PRBarbero4grade__():
+    def __PRBarbero4grade__() -> float:
         return 0
     
-    def __PRBarbero1grade__():
+    def __PRBarbero1grade__() -> float:
         return 0
     
-    def __PRBarbero0grade__():
+    def __PRBarbero0grade__() -> float:
         return 0
    
-    def calcTempOut():
+    def calcTempOut() -> float:
         '''
         HTF output temperature [ºC] Ec. 3.24 Barbero
 
@@ -65,7 +65,7 @@ class HCE:
         '''
         return 0
     
-    def qabs():
+    def qabs() -> float:
         '''
         Ec. 3.20 Barbero
 
