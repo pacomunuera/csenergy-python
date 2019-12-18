@@ -177,6 +177,19 @@ class Simulation(object):
         self.t_init = 1
         self.t_end = 1
         
+    def result():
+        pass
+        return df
+        
     
-#         
+weather_file = Weather()
+fluid = HTF()
+site = Site()
+plant = Plant()
+
+simulation = Simulation(self, weather_file, plant, operation, model)
+simultation_output = simulation.result()
+
+
+        
 
