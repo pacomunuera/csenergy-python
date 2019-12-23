@@ -11,11 +11,19 @@
 #from pvlib import tracking
 #from pvlib import spa
 import pandas as pd
-
+from tkinter import * 
 
 
 PI = 3.141592653589793
 
+_DC_MODEL_PARAMS = {
+    'RubenBarbero': set(['sigma', 'e_ext', 'h_ext', 'U_rec']),
+    'NaumFraidenraich': set(['U_rec', 'U_exts', 'Cp', 'w']),
+    'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
+    'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
+    'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
+    'Price': set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
+    }
 
 #TODO: 1 Preparación dataframe inicial. A partir de CSV como punto de inicio.
 #TODO: 2 Preparación de datos del HCE
@@ -31,12 +39,9 @@ HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
 
 HCE_operation = {"Tin ": 293, "Clean ": 1}
 
-class HCE:
+class HCE:   
     
-    
-    long = 1        
-    
-    def __init__(self, HCE_type: list, HCE_status: list, HCE_operation: list) -> None:
+    def __init__(self, sca, hce_order) -> None:
         self.long = 1
         self.Dro = 1
         self.Dri = 1
@@ -48,10 +53,11 @@ class HCE:
         self.sigma = 1
         self.tin = 1
         self.tout = 1
-        self.SCA = 1
-        self.SCAposition = 1
+        self.sca = sca
+        self.hce_order = hce_order       
         
-        
+    
+    
     def __PRBarbero4grade__() -> float:
         return 0
     
@@ -87,44 +93,61 @@ class HCE:
  
 
 
-SCA_configuration ={"HCE Number ": 12, "Position in Loop": 1,
-                    "Temperature probes number": 1,
-                    "Temp. probes position": 'Middle', "Defocus Order": 1}
+
 
    
 class SCA(object):
+    
+    SCA_configuration ={"HCE Number ": 12, "Position in Loop": 1,
+                    "Temperature probes number": 1,
+                    "Temp. probes position": 'Middle', "Defocus Order": 1}
+    
     #Uso de __slots__ permite ahorrar memoria RAM
-    __slots__= ['SCA_configuration']
-
-
-    
-    def __init__(self, SCA_configuration):
-        self.SCA_type = {    
-                'HCEperSCA': 24,
-                'Loop': 1,
-                'positionInLoop': 1,
-                'operationStatus': 0,
-                'SCAtemperature': 0
-                }
-        self.SCA_tin = SCA.firstHCEinSCA(self).HCE.tin
+#    __slots__= ['SCA_configuration']  
+    def __init__(self, loop, sca_order):
         
-        
-        for i in range (1, self.HCEperSCA):
-            self.HCElist.append(HCE(HCE_type, HCE_status, HCE_operation))       
-        
-    def __gettitem__(self, item):
-        return self.SCA_type[item]
-    
-    def setOperationStatus():
-        
-        if SCAtemperature > SCATempMax():
-            operationStatus = 'defocused'
+#        self.SCA_type = {    
+#                'HCEperSCA': 24,
+#                'Loop': 1,
+#                'positionInLoop': 1,
+#                'operationStatus': 0,
+#                'SCAtemperature': 0
+#                }
+#        self.SCA_tin = SCA.firstHCEinSCA(self).HCE.tin
+        self.loop = loop
+        self.sca_order = sca_order
+        self.hces = []
+              
+    def get_tin(self, sca):
+         
+        if not sca:
+            sca = self
+        if sca.sca_order > 0:
+            return SCA.get_tout(sca.loop.scas[sca.sca_order-1])
         else:
-            soperationStatus = 'tracking'
+            return Loop.get_tin(sca.loop)
+     
+    def get_tout(self, sca):
+        if not sca:
+            sca = self
+            
+        return HCE.get_tout(sca.hces[-1])
+    
+#    def __gettitem__(self, item):
+#        return self.SCA_type[item]
+#    
+#    def setOperationStatus():
+#        
+#        if SCAtemperature > SCATempMax():
+#            operationStatus = 'defocused'
+#        else:
+#            soperationStatus = 'tracking'
             
             
-class PTLoop(object):
-    def __init__(self, SCAperLOOP = 4):
+class Loop(object):
+    def __init__(self, solarfield, loop_order):
+        self.solarfield_loop = solarfield
+        self.scas = []
         self._SCAperLOOP = 4
         
     def tempOut(self, weatherstatus, plantstatus):
@@ -174,7 +197,11 @@ class PTSolarField(object):
     
     '''
     
-    def __init__(self, LoopsPerSolarField):
+    
+    def __init__(self, plant):
+        
+        self.solarfield_plant = plant
+        self.loops = []
         self.configuration = {'N_loops_per_solar_field': 30,
                               'N_SCA_per_loop': 4,
                               'N_HCE_per_SCA': 24
@@ -208,20 +235,13 @@ class PTPlant(object):
     '''
     Parabolic Trough Concentrated Solar Power Plant
     
-    ''''
+    '''
     
-    def __init__(self ):
+    def __init__(self, site):
+
+        self.site = site
+        self.solarfields = []
         pass
-    
-    def set_configuration():
-        PTPlant_solarfields = ()        
-                              
-        
-        
-    def get_configuration():
-        for _ in self.PTPlant_solarfields:
-            configuration.add(_.configuration)
-        return configuration
     
     
     
@@ -279,8 +299,8 @@ class Simulation(object):
     
     '''
     
-    def __init__(self, weather, site, plant, operation, model,df):
-        self.t_init = 1
+    def __init__(self, weather, site, plant, mask, model,df):
+        self.t_initial = 1
         self.t_end = 1
         
     def run():
@@ -328,7 +348,63 @@ El usuario selecciona:
         - Rendimiento (promedio de sus SCA), tin, tout, massflow
 """        
 
+#print("Definir el  número de subcampos", end='\n')
+#input_solarfields = int(input())
+#print("Definir el número de lazos en cada subcampo", end='\n')
+#input_loops = int(input())
+#print("Definir el número de SCA en cada lazo", end='\n')
+#input_sca = int(input())
+#print("Definir el número de HCE en cada SCA", end='\n')
+#input_HCE = int(input())
+
+
+wd = Tk()
+wd.title("Data input")
+#wd.resizable( True, False)
+#wd.iconbitmap("appicon.ico")
+wd.geometry()
+#wd.config(bg="blue")
+fm = Frame()
+
+fm.pack(side="right", anchor="s", fill="both", expand="true")
+fm.config(bg="grey")
+fm.config(width="650", height="350")
+#tb = Entry(miframe).place(50,200)
+#tb.pack()
+#lb = Label(fm, text="Datos Meteorológicos", fg="grey", font=("Comic Sans MS", 12)).place(x=100, y=200)
+lb = Label(fm, text="Datos").place(x=100, y=200)
+tb = Entry(fm)
+tb.place(x=100,y=100)
+
+wd.mainloop()
     
+#wd.destroy
+
+
+
+site = Site(39, -3)
+plant = PTPlant(site)
+
+input_solarfields = 4
+input_loops = 30
+input_sca = 4
+input_hce = 12
+input_plant_model = 'unscattered'
+input_simulation_type = 'comparative' # Compared to real data
+input_tout_setpoint = 391 #ºC
+input_total_mass_flow = 240 # kg/s 
+
+
+for sf in range(input_solarfields):
+    plant.solarfields.append(PTSolarField(plant))
+    for l in range(input_loops):
+        plant.solarfields[sf].loops.append(Loop(plant.solarfields[sf], l))
+        for s in range(input_sca):
+            plant.solarfields[sf].loops[l].scas.append(SCA(plant.solarfields[sf].loops[l], s))
+            for h in range(input_hce):
+                 plant.solarfields[sf].loops[l].scas[s].hces.append(HCE(plant.solarfields[sf].loops[l].scas[s],h))
+
+   
 #weather_file = Weather()
 #fluid = HTF()
 #site = Site()
@@ -342,6 +418,25 @@ El usuario selecciona:
 #simulation = Simulation(self, weather_file, plant, operation, model)
 #simultation_output = simulation.result()
 
-
+#if model in _DC_MODEL_PARAMS.keys():
+#                # validate module parameters
+#                missing_params = _DC_MODEL_PARAMS[model] - \
+#                                 set(self.system.module_parameters.keys())
+#                if missing_params:  # some parameters are not in module.keys()
+#                    raise ValueError(model + ' selected for the DC model but '
+#                                     'one or more required parameters are '
+#                                     'missing : ' + str(missing_params))
+#                if model == 'sapm':
+#                    self._dc_model = self.sapm
+#                elif model == 'desoto':
+#                    self._dc_model = self.desoto
+#                elif model == 'cec':
+#                    self._dc_model = self.cec
+#                elif model == 'pvsyst':
+#                    self._dc_model = self.pvsyst
+#                elif model == 'pvwatts':
+#                    self._dc_model = self.pvwatts_dc
+#            else:
+#                raise ValueError(model + ' is not a valid DC power model')
         
 
