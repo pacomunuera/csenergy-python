@@ -26,7 +26,7 @@ pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=
 PI = 3.141592653589793
 
 _DC_MODEL_PARAMS = {
-    'RubenBarbero': set(['sigma', 'e_ext', 'h_ext', 'U_rec']),
+    'Barbero': set(['sigma', 'e_ext', 'h_ext', 'U_rec']),
     'NaumFraidenraich': set(['U_rec', 'U_exts', 'Cp', 'w']),
     'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
     'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
@@ -138,22 +138,52 @@ massFlow = total_mass_flow / n_loops
 site = cs.Site(39, -3)
 plant = cs.Plant(site)
 weather = cs.Weather()
+simulation = cs.Simulation()
+
+parameters = {'eext': 1,
+              'hext': 1,
+              'hint': 1,
+              'urec': 1,
+              'sigma' : 1,
+              'cg' : 1,
+              'pr_shw': 1,
+              'pr_geo': 1,
+              'pr_opt': 1
+              }
+
+hce_type = 'Barbero'
 
 
 for sf in range(n_solarfields):
-    plant.solarfields.append(cs.SolarField(plant))
+    plant.solarfields.append(cs.SolarField(plant, sf))
     for l in range(n_loops):
         plant.solarfields[sf].loops.append(
-                cs.Loop(plant.solarfields[sf], l, massFlow))
+                cs.Loop(plant.solarfields[sf], l))
         for s in range(n_sca):
             plant.solarfields[sf].loops[l].scas.append(
                     cs.SCA(plant.solarfields[sf].loops[l], s))
             for h in range(n_hce):
-                 plant.solarfields[sf].loops[l].scas[s].hces.append(
-                         cs.HCE(plant.solarfields[sf].loops[l].scas[s],h))
+                if hce_type == 'Barbero':
+                    plant.solarfields[sf].loops[l].scas[s].hces.append(
+                         cs.HCE_Barbero(parameters, plant.solarfields[sf].loops[l].scas[s],h))
+                elif hce_type == 'NaumFraidenraich':
+                    pass
+
+mask = cs.ScatterMask(plant, simulation)
+
+                
+for sf in plant.solarfields:
+    for l in sf.loops:
+        for s in l.scas:
+            for h in s.hces:
+                h.applyMaskToHCE(mask)
+                
 
 
-simulation = cs.Simulation(site, plant, mask, df, simulation_type)
+
+               
+
+#simulation = cs.Simulation(site, plant, mask, df, simulation_type)
               
 #se aplicaca la máscara si procede
 

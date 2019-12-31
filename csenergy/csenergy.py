@@ -8,86 +8,27 @@ Created on Mon Dec 30 08:26:43 2019
 import numpy as np
 import scipy as scy
 
-
-def f0() -> float:
-    return qabs/(urec*(tfe-text))
-
-def f1() -> float:
-    return ((4*sigma*eext*text**3)+hext)/urec 
-
-def f2() -> float:
-    return 6*text**2*(sigma*eext/urec)*(qabs/urec)
-
-def f3() -> float:
-    return 4*text*(sigma*eext/urec)*(qabs/urec)**2
-
-def f4() -> float: 
-    return (sigma*eext/urec)*(qabs/urec)
-
-def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
-
-    return  (1-pr0-
-             f1*(pr0+1/f0)+
-             f2*(pr0+1/f0)**2+
-             f3*(pr0+1/f0)**3+
-             f4*(pr0+1/f0)**4
-             )
-
-def e3_36prime(pr0,f0,f1,f2,f3,f4):
-    
-    return (-1-f1+
-            2*f2*(pr0+1/f0)+
-            3*f3*(pr0+1/f0)**2+
-            4*f4*(pr0+1/f0)**3
-            )
-
-def pr0() -> float:
-    
-    return scy.optimize.newton(e3_36, pr0, fprime=e3_36prime, args=(f0,f1,f2,f3,f4))
-
-def g(z, f0, f1, f2, f3, f4) -> float:
-    
-    return -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
-
-def g1(z, f0, f1, f2, f3, f4) -> float:
-    
-    return f1+2*f2*z+3*f3*z**2+4*f4*z**3
-        
-def g2(z, f0, f1, f2, f3, f4) -> float:
-    
-    return 2*f2+6*f3*z+12*f4*z**2
-
-def g3(z, f0, f1, f2, f3, f4) -> float:
-    
-    return 6*f3+24*f4*z
-
-def pr(pr0, g1, g2, g3, NTU, x) -> float:
-    
-    return ((pr0*g1/(1-g1))*(1/(NTU*x))*(np.exp((1-g1)*NTU*x/g1)-1) -
-            (g2/(6*g1))*(pr0*NTU*x)**2 -
-            (g3/(24*g1)*(pr0*NTU*x)**3)
-            )
-    
-            
-
-
 class HCE(object): 
-  
+
     def __init__(self, sca, hce_order):
-        self.long = 1
-        self.dro = 1
-        self.dri = 1
-        self.massflow = sca.loop.massFlow
-        self.eext = 1
-        self.hext = 1
-        self.hint = 1
-        self.urec = 1
-        self.sigma = 1
-        self.pr = 1
+        self.massflow = sca.loop.massFlow     
         self.tin = 1
         self.tout = self.tin
+        self.tfe = self.tout
+        self._pr = 1
         self.sca = sca
         self.hce_order = hce_order
+        
+    def get_index(self):
+        return (self.sca.loop.solarfield.solarfield_order, 
+                self.sca.loop.loop_order,
+                self.sca.sca_order,
+                self.hce_order)
+        
+    def applyMaskToHCE(self, mask):
+        self.tin *= 2
+        self.tout *= 2
+        self.tfe *= 2
         
     def qabs(pr_opt, cg, dni, pr_shw, pr_geo) -> float:
         return pr_opt*cg*dni*pr_shw*pr_geo
@@ -99,8 +40,7 @@ class HCE(object):
         return 1/((1/hint) + (dro*np.log(dro/dri))/(2*krec)) #Ec. 3.22
         
     def qu_from_pr(pr, qabs) -> float: 
-        return pr*qabs #Ec. 3.26
-    
+        return pr*qabs #Ec. 3.26  
     
     def __PRBarbero4grade__() -> float:
         return 0
@@ -109,8 +49,26 @@ class HCE(object):
         return 0
     
     def __PRBarbero0grade__() -> float:
-        return 0
-   
+        return 0   
+ 
+
+class HCE_Barbero(HCE): 
+  
+    def __init__(self, parameters, sca, hce_order):
+        
+        self.eext = parameters['eext']
+        self.hext = parameters['hext']
+        self.hint = parameters['hext']
+        self.urec = parameters['urec']
+        self.sigma = parameters['sigma']
+        self.cg = parameters['cg']
+        self.pr_shw = parameters['pr_shw']
+        self.pr_geo = parameters['pr_geo']
+        self.pr_opt = parameters['pr_opt']
+        
+        HCE.__init__(self, sca, hce_order)
+        
+
     def calcTempOut(tfe, dro, x, qabs, pr, massflow, cp) -> float:
         '''
         HTF output temperature [ºC] Ec. 3.24 Barbero
@@ -133,8 +91,47 @@ class HCE(object):
             DESCRIPTION.
             Thermal power absorbed by the HCE
         '''
-        return 0       
- 
+        return 0
+
+    def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
+    
+        return  (1-pr0-
+                 f1*(pr0+1/f0)+
+                 f2*(pr0+1/f0)**2+
+                 f3*(pr0+1/f0)**3+
+                 f4*(pr0+1/f0)**4
+                 )
+    
+    def e3_36prime(pr0,f0,f1,f2,f3,f4):
+        
+        return (-1-f1+
+                2*f2*(pr0+1/f0)+
+                3*f3*(pr0+1/f0)**2+
+                4*f4*(pr0+1/f0)**3
+                )
+    
+    def calc_pr(self, qabs):
+        
+        
+        f0 = qabs/(self.urec*(self.tfe-self.text))   
+        f1 = ((4*self.sigma*self.eext*self.text**3)+self.hext)/self.urec 
+        f2 = 6*self.text**2*(self.sigma*self.eext/self.urec)*(self.qabs/self.urec)
+        f3= 4*self.text*(self.sigma*self.eext/self.urec)*(self.qabs/self.urec)**2            
+        f4 = (self.sigma*self.eext/self.urec)*(self.qabs/self.urec)
+        
+        pr0 = scy.optimize.newton(e3_36, pr0, fprime = e3_36prime, args=(f0,f1,f2,f3,f4))
+        
+        g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
+        g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
+        g2 = 2*f2+6*f3*z+12*f4*z**2
+        g3 = 6*f3+24*f4*z
+        
+        self._pr = ((pr0*g1/(1-g1))*(1/(NTU*x))*(np.exp((1-g1)*NTU*x/g1)-1) -
+                (g2/(6*g1))*(pr0*NTU*x)**2 -
+                (g3/(24*g1)*(pr0*NTU*x)**3)
+                )
+        
+    
 
 
 
@@ -189,11 +186,11 @@ class SCA(object):
             
             
 class Loop(object):
-    def __init__(self, solarfield, loop_order, massFlow):
-        self.solarfield_loop = solarfield
+    def __init__(self, solarfield, loop_order):
+        self.solarfield = solarfield
         self.scas = []
-        self._SCAperLOOP = 4
-        self.massFlow = massFlow
+        self.loop_order = loop_order
+        #self.massFlow = massFlow
         
     def tempOut(self, weatherstatus, plantstatus):
         '''
@@ -245,9 +242,10 @@ class SolarField(object):
     '''
     
     
-    def __init__(self, plant):
+    def __init__(self, plant, solarfield_order):
         
         self.solarfield_plant = plant
+        self.solarfield_order = solarfield_order
         self.loops = []
         self.configuration = {'N_loops_per_solar_field': 30,
                               'N_SCA_per_loop': 4,
@@ -331,8 +329,8 @@ class ScatterMask(object):
     
     _PARAMETERS = {'sigma': 1, 'clean_mirror': 1}
     
-    def __init__(self, plant):
-        parameterMatrix = plant.configuration()
+    def __init__(self, plant, simulation):
+        
         pass
     
     def define_scattered_parameters_model():
@@ -362,12 +360,8 @@ class Simulation(object):
     
     '''
     
-    def __init__(self, site, plant, mask, df, simulation_type):
-        self.site = site
-        self.plant = plant
-        self.mask = mask
-        self.data = df
-        self.type = simulation_type
+    def __init__(self):
+        pass
         
         
     def calcRequiredMassFlow():
