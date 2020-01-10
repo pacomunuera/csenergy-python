@@ -26,8 +26,8 @@ pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=
 PI = 3.141592653589793
 
 _DC_MODEL_PARAMS = {
-    'Barbero': set(['sigma', 'e_ext', 'h_ext', 'U_rec']),
-    'NaumFraidenraich': set(['U_rec', 'U_exts', 'Cp', 'w']),
+    'Barbero': set(['sigma', 'eext', 'hext', 'urec']),
+    'NaumFraidenraich': set(['urec', 'uexts', 'cp', 'w']),
     'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
     'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
     'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
@@ -179,7 +179,12 @@ for sf in plant.solarfields:
                 h.applyMaskToHCE(mask)
                 
 
-
+for sf in plant.solarfields:
+    for l in sf.loops:
+        for s in l.scas:
+            for h in s.hces:
+                h.get_tin(self)
+                h.
 
                
 

@@ -2,11 +2,21 @@
 """
 Created on Mon Dec 30 08:26:43 2019
 
-@author: fmunuera
+@author: pacomunuera
 """
 
 import numpy as np
 import scipy as scy
+import math as mt
+
+import CoolProp as CP
+
+class HTF(object):
+    
+    def __init__(self, name):
+        
+
+    
 
 class HCE(object): 
 
@@ -28,16 +38,18 @@ class HCE(object):
     def applyMaskToHCE(self, mask):
         self.tin *= 2
         self.tout *= 2
-        self.tfe *= 2
-        
-    def qabs(pr_opt, cg, dni, pr_shw, pr_geo) -> float:
-        return pr_opt*cg*dni*pr_shw*pr_geo
+        self.tfe *= 2 
+
     
-    def qu(urec, tro, tf) -> float:
-        return urec*(tro-tf) #Ec. 3.21
+    def set_tin(self):
+        if self.hce_order > 0:
+            self.tin = self.sca.hces[self.hce_order-1].tout
+        elif self.sca.sca_order > 0:
+            self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1]
+        else:
+            self.tin = self.sca.loop.tin        
     
-    def urec(hint, dro, dri, krec) -> float:
-        return 1/((1/hint) + (dro*np.log(dro/dri))/(2*krec)) #Ec. 3.22
+
         
     def qu_from_pr(pr, qabs) -> float: 
         return pr*qabs #Ec. 3.26  
@@ -79,9 +91,9 @@ class HCE_Barbero(HCE):
             DESCRIPTION.
 
         '''
-        return tfe + PI*dro*x*qabs*pr/(massflow*cp)   
-    
-    def q_abs() -> float:
+        return tfe + mt.PI*dro*x*qabs*pr/(massflow*cp)   
+
+    def set_qabs(self, pr_opt, dni, pr_shw, pr_geo):
         '''
         Ec. 3.20 Barbero
 
@@ -91,8 +103,14 @@ class HCE_Barbero(HCE):
             DESCRIPTION.
             Thermal power absorbed by the HCE
         '''
-        return 0
-
+        self.qabs = pr_opt*self.cg*dni*pr_shw*pr_geo        
+           
+    def set_qu(self, urec, tro, tf) -> float:
+        self.qu = urec*(tro-tf) #Ec. 3.21
+    
+    def urec(hint, dro, dri, krec) -> float:
+        return 1/((1/hint) + (dro*np.log(dro/dri))/(2*krec)) #Ec. 3.22
+    
     def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
     
         return  (1-pr0-
@@ -131,12 +149,7 @@ class HCE_Barbero(HCE):
                 (g3/(24*g1)*(pr0*NTU*x)**3)
                 )
         
-    
-
-
-
-
-   
+      
 class SCA(object):
     
     SCA_configuration ={"HCE Number ": 12, "Position in Loop": 1,
@@ -305,7 +318,59 @@ class Plant(object):
         for sf in self.solarfields:
             req_massflow += sf.calcRequiredMassFlow()
         self.reqMassFlow = req_massflow
+        
+    def initializePlant(self, hE):
+        '''
+        Set initial values for some parameters
+        
+        Returns
+        -------
+        Nothing
+        
+        '''
+        for s in self.solarfields:
+            for l in s.loops:
+                l.tin = s.coolPipeLosses*hE.hotfluid_tout
+                
+                
+class HeatExchanger(object):
     
+    def __init__(self, pr_heatexchanger, 
+                 coolfluid_tin, 
+                 hotfluid_tin, 
+                 hotfluid,
+                 coolfluid):
+        
+        self.pr_heatexchanger = pr_heatexchanger
+        
+    def set_fluid_tout(self):
+        
+        self.hotfluid_tout = self.hotfluid_tin -  
+        
+        
+class Fluid(object):
+    
+    def __init__(self, name):
+        
+        self.name = name
+        
+        if self.name == 'Therminol VP1':            
+            htf_data = pd.read_csv(monsanto.csv, sep=';', decimal=',', index_col=0)
+        elif self.name == "Dowtherm":
+            htf_data = pd.read_csv(dowtherm.csv, sep=',', decimal=',', index_col=0)
+            
+            
+    def get_density(self):
+        
+        return self.density
+    
+    def get_cp(self):
+        
+        return self.cp        
+        
+    def set_fluid_cp(self, pressure, temperature):
+        
+        self.cp = 1000 # más adelante cp debe obtenerse con CoolProp, por ejemplo
         
 class Site(object):
     def __init__(self, lat=39, long=-3):
