@@ -8,24 +8,18 @@ Created on Mon Dec 30 08:26:43 2019
 import numpy as np
 import scipy as scy
 import math as mt
-
 import CoolProp as CP
+
 
 class HTF(object):
     
     def __init__(self, name):
+
         
-
-    
-
 class HCE(object): 
 
     def __init__(self, sca, hce_order):
-        self.massflow = sca.loop.massFlow     
-        self.tin = 1
-        self.tout = self.tin
-        self.tfe = self.tout
-        self._pr = 1
+        
         self.sca = sca
         self.hce_order = hce_order
         
@@ -48,8 +42,8 @@ class HCE(object):
             self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1]
         else:
             self.tin = self.sca.loop.tin        
-    
 
+            
         
     def qu_from_pr(pr, qabs) -> float: 
         return pr*qabs #Ec. 3.26  
@@ -62,7 +56,7 @@ class HCE(object):
     
     def __PRBarbero0grade__() -> float:
         return 0   
- 
+
 
 class HCE_Barbero(HCE): 
   
@@ -128,7 +122,7 @@ class HCE_Barbero(HCE):
                 4*f4*(pr0+1/f0)**3
                 )
     
-    def calc_pr(self, qabs):
+    def set_pr(self, qabs):
         
         
         f0 = qabs/(self.urec*(self.tfe-self.text))   
@@ -218,7 +212,7 @@ class Loop(object):
         '''
         pass
     
-    def massFlow():
+    def set_massFlow():
         '''
         Calculation of the current mass flow of HTF in the loop
         by dividing the total mass flow by the number of loops
@@ -231,7 +225,13 @@ class Loop(object):
 
         '''
 
-        pass
+        self.massflow = (self.solarfield.massflow / 
+                         self.solarfield.loops.len()
+                        )
+    
+    def set_tin(self):
+        
+         self.tin = self.solarfield.tin
     
     def calcRequiredMassFlow(self):
         '''
@@ -279,13 +279,29 @@ class SolarField(object):
         
         '''
         
+        
     def get_tout(self):
         '''
         Calculates HTF output temperature throughout the solar field as a 
         weighted average based on the enthalpy of the mass flow in each 
-        loop belonging the solar field
+        loop of the solar field
+        '''
+        H = 0.0
         
-        '''       
+        for l in self.loops:
+            H += l.get_cp * (l.get_tout-l.get_tin)*l.massflow
+        
+        self.tout = self.tin + H/(self.plant.hotfluid.get_cp()*self.get_massflow())
+    
+    def set_tin(self):
+        
+        self.tin = (self.plant.heatexchanger.hotfluid_tout *
+                    self.coolPipeLosses
+                    )
+        
+        
+        
+        
     def calcRequiredMassFlow(self):
         req_massflow = 0
         for l in self.loops:
@@ -328,6 +344,13 @@ class Plant(object):
         Nothing
         
         '''
+        
+        for sf in self.solarfields:
+            for l in sf.loops:        
+                l.set_massflow()
+                l.set_tin()
+        
+        
         for s in self.solarfields:
             for l in s.loops:
                 l.tin = s.coolPipeLosses*hE.hotfluid_tout

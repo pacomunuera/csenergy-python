@@ -88,37 +88,7 @@ El usuario selecciona:
         - Rendimiento (promedio de sus SCA), tin, tout, massflow
 """        
 
-#print("Definir el  número de subcampos", end='\n')
-#input_solarfields = int(input())
-#print("Definir el número de lazos en cada subcampo", end='\n')
-#input_loops = int(input())
-#print("Definir el número de SCA en cada lazo", end='\n')
-#input_sca = int(input())
-#print("Definir el número de HCE en cada SCA", end='\n')
-#input_HCE = int(input())
 
-
-# wd = Tk()
-# wd.title("Data input")
-#wd.resizable( True, False)
-#wd.iconbitmap("appicon.ico")
-# wd.geometry()
-#wd.config(bg="blue")
-# fm = Frame()
-
-# fm.pack(side="right", anchor="s", fill="both", expand="true")
-# fm.config(bg="grey")
-# fm.config(width="650", height="350")
-#tb = Entry(miframe).place(50,200)
-#tb.pack()
-#lb = Label(fm, text="Datos Meteorológicos", fg="grey", font=("Comic Sans MS", 12)).place(x=100, y=200)
-# lb = Label(fm, text="Datos").place(x=100, y=200)
-# tb = Entry(fm)
-# tb.place(x=100,y=100)
-
-# wd.mainloop()
-    
-#wd.destroy
 
 
 
@@ -180,11 +150,12 @@ for sf in plant.solarfields:
                 
 
 for sf in plant.solarfields:
-    for l in sf.loops:
-        for s in l.scas:
-            for h in s.hces:
-                h.get_tin(self)
-                h.
+    for l in sf.loops:        
+        l.set_massflow()
+        l.set_tin()
+
+                
+                
 
                
 
