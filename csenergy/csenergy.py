@@ -14,10 +14,10 @@ import CoolProp as CP
 class HTF(object):
     
     def __init__(self, name):
+        pass
 
-        
-class HCE(object): 
-
+class HCE(object):
+    
     def __init__(self, sca, hce_order):
         
         self.sca = sca
@@ -33,7 +33,6 @@ class HCE(object):
         self.tin *= 2
         self.tout *= 2
         self.tfe *= 2 
-
     
     def set_tin(self):
         if self.hce_order > 0:
@@ -42,8 +41,7 @@ class HCE(object):
             self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1]
         else:
             self.tin = self.sca.loop.tin        
-
-            
+     
         
     def qu_from_pr(pr, qabs) -> float: 
         return pr*qabs #Ec. 3.26  
@@ -368,7 +366,7 @@ class HeatExchanger(object):
         
     def set_fluid_tout(self):
         
-        self.hotfluid_tout = self.hotfluid_tin -  
+        pass  
         
         
 class Fluid(object):

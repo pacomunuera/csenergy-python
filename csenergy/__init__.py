@@ -14,7 +14,9 @@
 import csenergy as cs
 import pandas as pd
 from tkinter import * 
- 
+import interface
+
+
 
 
 '''
@@ -139,20 +141,30 @@ for sf in range(n_solarfields):
                 elif hce_type == 'NaumFraidenraich':
                     pass
 
-mask = cs.ScatterMask(plant, simulation)
 
-                
-for sf in plant.solarfields:
-    for l in sf.loops:
-        for s in l.scas:
-            for h in s.hces:
-                h.applyMaskToHCE(mask)
-                
+# Crea aplicación
+root = Tk()
 
-for sf in plant.solarfields:
-    for l in sf.loops:        
-        l.set_massflow()
-        l.set_tin()
+# Creamos una ventana
+a = interface.main(root)
+
+#Lanza la aplicación en continuo
+root.mainloop() 
+
+
+#mask = cs.ScatterMask(plant, simulation)
+               
+#for sf in plant.solarfields:
+#    for l in sf.loops:
+#        for s in l.scas:
+#            for h in s.hces:
+#                h.applyMaskToHCE(mask)
+#                
+#
+#for sf in plant.solarfields:
+#    for l in sf.loops:        
+#        l.set_massflow()
+#        l.set_tin()
 
                 
                 
@@ -161,11 +173,7 @@ for sf in plant.solarfields:
 
 #simulation = cs.Simulation(site, plant, mask, df, simulation_type)
               
-#se aplicaca la máscara si procede
-
-
-                 
-                 
+#se aplicaca la máscara si procede            
    
 #weather_file = Weather()
 #fluid = HTF()
