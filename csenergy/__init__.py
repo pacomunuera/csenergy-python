@@ -24,17 +24,16 @@ import interface
 pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=False, right_index=False, by=None, left_by=None, right_by=None, suffixes=('_x', '_y'), tolerance=None, allow_exact_matches=True, direction='backward')[source]¶
 '''
 
+# PI = 3.141592653589793
 
-PI = 3.141592653589793
-
-_DC_MODEL_PARAMS = {
-    'Barbero': set(['sigma', 'eext', 'hext', 'urec']),
-    'NaumFraidenraich': set(['urec', 'uexts', 'cp', 'w']),
-    'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
-    'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
-    'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
-    'Price': set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
-    }
+# _DC_MODEL_PARAMS = {
+#     'Barbero': set(['sigma', 'eext', 'hext', 'urec']),
+#     'NaumFraidenraich': set(['urec', 'uexts', 'cp', 'w']),
+#     'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
+#     'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
+#     'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
+#     'Price': set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
+#     }
 
 #TODO: 1 Preparación dataframe inicial. A partir de CSV como punto de inicio.
 #TODO: 2 Preparación de datos del HCE
@@ -43,12 +42,12 @@ _DC_MODEL_PARAMS = {
 '    | timestamp | Tamb | Wind | Winddir | DNI | Vector Solar | MassFlow | Tin | Tout |'
 
 #Dic for HTC characteristics 
-HCE_type = {"Model ": 'RTC70', "Longitude ": 4, "Din ":0.06, "Dout ":0.12, "e_ext ": 1,
-     "h_ext ": 1, "U_rec ": 1, "Sigma ": 1}
+# HCE_type = {"Model ": 'RTC70', "Longitude ": 4, "Din ":0.06, "Dout ":0.12, "e_ext ": 1,
+#      "h_ext ": 1, "U_rec ": 1, "Sigma ": 1}
 
-HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
+# HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
 
-HCE_operation = {"Tin ": 293, "Clean ": 1}
+# HCE_operation = {"Tin ": 293, "Clean ": 1}
 
 
     
@@ -126,30 +125,33 @@ parameters = {'eext': 1,
 hce_type = 'Barbero'
 
 
-for sf in range(n_solarfields):
-    plant.solarfields.append(cs.SolarField(plant, sf))
-    for l in range(n_loops):
-        plant.solarfields[sf].loops.append(
-                cs.Loop(plant.solarfields[sf], l))
-        for s in range(n_sca):
-            plant.solarfields[sf].loops[l].scas.append(
-                    cs.SCA(plant.solarfields[sf].loops[l], s))
-            for h in range(n_hce):
-                if hce_type == 'Barbero':
-                    plant.solarfields[sf].loops[l].scas[s].hces.append(
-                         cs.HCE_Barbero(parameters, plant.solarfields[sf].loops[l].scas[s],h))
-                elif hce_type == 'NaumFraidenraich':
-                    pass
-
-
 # Crea aplicación
 root = Tk()
-
 # Creamos una ventana
-a = interface.main(root)
+a = interface.main(root, simulation)
 
 #Lanza la aplicación en continuo
 root.mainloop() 
+
+
+
+# for sf in range(n_solarfields):
+#     plant.solarfields.append(cs.SolarField(plant, sf))
+#     for l in range(n_loops):
+#         plant.solarfields[sf].loops.append(
+#                 cs.Loop(plant.solarfields[sf], l))
+#         for s in range(n_sca):
+#             plant.solarfields[sf].loops[l].scas.append(
+#                     cs.SCA(plant.solarfields[sf].loops[l], s))
+#             for h in range(n_hce):
+#                 if hce_type == 'Barbero':
+#                     plant.solarfields[sf].loops[l].scas[s].hces.append(
+#                          cs.HCE_Barbero(parameters, plant.solarfields[sf].loops[l].scas[s],h))
+#                 elif hce_type == 'NaumFraidenraich':
+#                     pass
+
+
+
 
 
 #mask = cs.ScatterMask(plant, simulation)

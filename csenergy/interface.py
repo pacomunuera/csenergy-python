@@ -13,9 +13,6 @@ import pvlib as pvlib
 
 
 
-
-
-
 #print("Definir el  número de subcampos", end='\n')
 #input_solarfields = int(input())
 #print("Definir el número de lazos en cada subcampo", end='\n')
@@ -27,10 +24,11 @@ import pvlib as pvlib
 
 # Window and form
 class main(Frame):
-    def __init__(self, master):
+    def __init__(self, master, simulation):
         Frame.__init__(self, master = None)
         self.master.title("CSENERGY")
         self.master.geometry("800x600")
+        self.master.simulation = simulation
         
         bt_site = Button(self.master, text="Site", width=20, 
                          command=self.site_dialog)
@@ -72,42 +70,40 @@ class main(Frame):
 #        Label(self.master, textvariable=self.modalwindowtext).pack()
  
     def site_dialog(self):
-        d = SiteDialog(root, "Site", "Select Site")
-        root.wait_window(d.top)
+        d = SiteDialog(self.master, "Site", "Select Site")
+        self.master.wait_window(d.top)
         #self.modalwindowtext.set(d.ejemplo)
         
     def fluid_dialog(self):
-        d = FluidDialog(root, "Fluid", "Select Fluid")
-        root.wait_window(d.top)
+        d = FluidDialog(self.master, "Fluid", "Select Fluid")
+        self.master.wait_window(d.top)
     
     def plant_dialog(self):
-        d = PlantDialog(root, "Plant", "Plant Settings")
-        root.wait_window(d.top)    
+        d = PlantDialog(self.master, "Plant", "Plant Settings")
+        self.master.wait_window(d.top)    
         
     def simulation_dialog(self):
-        d = SimulationDialog(root, "Simulation", "Simulation Settings")
-        root.wait_window(d.top)
+        d = SimulationDialog(self.master, "Simulation", "Simulation Settings")
+        self.master.wait_window(d.top)
         
     def weather_dialog(self):
-        d = WeatherDialog(root, "Weather", "Select file")
-        root.wait_window(d.top)
+        d = WeatherDialog(self.master, "Weather", "Select file")
+        #self.master.wait_window(d.top)
         
     def operation_dialog(self):
-        d = OperationalDialog(root, "Operation Mode", "Operation Settings")
-        root.wait_window(d.top)
+        d = OperationalDialog(self.master, "Operation Mode", "Operation Settings")
+        self.master.wait_window(d.top)
         
 class SiteDialog(object):
-    def __init__(self, parent, valor, title, labeltext = '' ):
-        self.modalwindowtext = valor
+    def __init__(self, parent, title, labeltext = '' ):
  
         self.top = Toplevel(parent)
         self.top.transient(parent)
         self.top.grab_set()
-#        if len(title) > 0: self.top.title(title)
-#        if len(labeltext) == 0: labeltext = 'Site'
-        Label(self.top, text=labeltext).pack()
+        self.top.title(title)
+        Label(self.top, text="Number of Solar fields").pack()
         self.top.bind("<Return>", self.ok)
-        self.e = Entry(self.top, text=valor.get())
+        self.e = Entry(self.top, text="Solar F")
         self.e.bind("<Return>", self.ok)
         self.e.bind("<Escape>", self.cancel)
         self.e.pack(padx=15)
@@ -152,17 +148,15 @@ class FluidDialog(object):
         self.top.destroy()
         
 class PlantDialog(object):
-    def __init__(self, parent, valor, title, labeltext = '' ):
-        self.modalwindowtext = valor
- 
+    def __init__(self, parent, title, labeltext = '' ):
+   
         self.top = Toplevel(parent)
         self.top.transient(parent)
         self.top.grab_set()
-#        if len(title) > 0: self.top.title(title)
-#        if len(labeltext) == 0: labeltext = 'Site'
-        Label(self.top, text=labeltext).pack()
+        self.top.title("Solar Fields")
+        Label(self.top, text="Solar Fields?").pack()
         self.top.bind("<Return>", self.ok)
-        self.e = Entry(self.top, text=valor.get())
+        self.e = Entry(self.top, text="Solar F")
         self.e.bind("<Return>", self.ok)
         self.e.bind("<Escape>", self.cancel)
         self.e.pack(padx=15)
@@ -171,8 +165,8 @@ class PlantDialog(object):
         b.pack(pady=5)
  
     def ok(self, event=None):
-        print("You have selected...", self.e.get())
-        self.modalwindowtext.set(self.e.get())
+        print("Plant configuration is...", self.e.get())
+        #self.modalwindowtext.set(self.e.get())
         self.top.destroy()
  
     def cancel(self, event=None):
@@ -235,21 +229,21 @@ class WeatherDialog(object):
         # robj = weatherdata.resample('10T').mean()
         # print(robj)
  
-        self.top = Toplevel(parent)
-        self.top.transient(parent)
-        self.top.grab_set()
-        Label(self.top, text=title).pack()
-        self.top.bind("<Return>", self.ok)
-        self.e = Entry(self.top, text=title)
-        self.e.bind("<Return>", self.ok)
-        self.e.bind("<Escape>", self.cancel)
-        self.e.pack(padx=15)
-        self.e.focus_set()
-        b = Button(self.top, text="OK", command=self.ok)
-        b.pack(pady=5)
+#        self.top = Toplevel(parent)
+#        self.top.transient(parent)
+#        self.top.grab_set()
+#        Label(self.top, text=title).pack()
+#        self.top.bind("<Return>", self.ok)
+#        self.e = Entry(self.top, text=title)
+#        self.e.bind("<Return>", self.ok)
+#        self.e.bind("<Escape>", self.cancel)
+#        self.e.pack(padx=15)
+#        self.e.focus_set()
+#        b = Button(self.top, text="OK", command=self.ok)
+#        b.pack(pady=5)
  
     def ok(self, event=None):
-        print("You have selected...", self.e.get())
+        print(_("You have selected..."), self.e.get())
         self.top.destroy()
  
     def cancel(self, event=None):
