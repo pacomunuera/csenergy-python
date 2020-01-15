@@ -9,7 +9,7 @@ import numpy as np
 import scipy as scy
 import math as mt
 import CoolProp as CP
-from py_expression_eval import Parser
+
 
 class HTF(object):
     
@@ -25,25 +25,23 @@ class Model(object):
     @classmethod
     def set_tin(cls, hce):
         if hce.hce_order > 0:
-            hce.tin = self.sca.hces[self.hce_order-1].tout
-        elif self.sca.sca_order > 0:
-            self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1]
+            hce.tin = hce.sca.hces[hce.hce_order-1].tout
+        elif hce.sca.sca_order > 0:
+            hce.tin = hce.sca.loop.scas[hce.sca.sca_order-1].hces[-1]
         else:
-            self.tin = self.sca.loop.tin
+            hce.tin = hce.sca.loop.tin
     
     @classmethod
     def applyMask(cls, mask, plant):
         
-        parser = Parser()
         #for sf in simulation.get('plant').get('solarfields')
         for sf in plant.solarfields:
             for l in sf.loops:
                 for s in l.scas:
                     for h in s.hces:
                         for k in mask.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order].keys():
-                            h.parameters[k] = parser.evaluate(
-                                    mask.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order][k],h.parameters[k],{'x':h.parameters[k]})
-                            print(h.parameter[k])
+                            h.parameters[k] = h.parameters[k] * float(mask.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order][k]) 
+                            print(mask.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order][k])
                             
 
             
@@ -53,7 +51,7 @@ class modelBarbero4(Model):
 
     def __ini__(self, hce, model_settings, mask = None):
         
-        super(model, modelBarbero4).__init__(model_settings)
+        super(Model, modelBarbero4).__init__(model_settings)
     
 
     
@@ -156,15 +154,7 @@ class HCE(object):
         return (self.sca.loop.solarfield.solarfield_order, 
                 self.sca.loop.loop_order,
                 self.sca.sca_order,
-                self.hce_order)
-        
-    def applyMaskToHCE(self, mask):
-        self.tin *= 2
-        self.tout *= 2
-        self.tfe *= 2 
-    
-        
-     
+                self.hce_order)     
         
     def qu_from_pr(pr, qabs) -> float: 
         return pr*qabs #Ec. 3.26  

@@ -27,8 +27,8 @@
                 "pr_geo": 1,
                 "pr_opt": 1},
 "scattered_params": {
-	"eext": "x*2",
-                "hext": "x**2",
-                "hint": "x*0.9",
-                "urec": "x*0.75"}
+	            "eext": 2.0,
+                "hext": 2.0,
+                "hint": 0.5,
+                "urec": 0.97}
 }
