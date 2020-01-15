@@ -9,19 +9,148 @@ import numpy as np
 import scipy as scy
 import math as mt
 import CoolProp as CP
-
+from py_expression_eval import Parser
 
 class HTF(object):
     
     def __init__(self, name):
         pass
+    
+    
+class Model(object):
+    
+    def __init__(self, hce, model_settings, mask = None):
+        self.name = model_settings.get('model_settings').get('name')
+    
+    @classmethod
+    def set_tin(cls, hce):
+        if hce.hce_order > 0:
+            hce.tin = self.sca.hces[self.hce_order-1].tout
+        elif self.sca.sca_order > 0:
+            self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1]
+        else:
+            self.tin = self.sca.loop.tin
+    
+    @classmethod
+    def applyMask(cls, mask, plant):
+        
+        parser = Parser()
+        #for sf in simulation.get('plant').get('solarfields')
+        for sf in plant.solarfields:
+            for l in sf.loops:
+                for s in l.scas:
+                    for h in s.hces:
+                        for k in mask.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order].keys():
+                            h.parameters[k] = parser.evaluate(
+                                    mask.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order][k],h.parameters[k],{'x':h.parameters[k]})
+                            print(h.parameter[k])
+                            
+
+            
+    
+        
+class modelBarbero4(Model):
+
+    def __ini__(self, hce, model_settings, mask = None):
+        
+        super(model, modelBarbero4).__init__(model_settings)
+    
+
+    
+    
+        if mask == None:
+            hce.eext = model_settings.get('eext')
+            hce.hext = model_settings.get('hext')
+            hce.hint = model_settings.get('hext')
+            hce.urec = model_settings.get('urec')
+            hce.sigma = model_settings.get('sigma')
+            hce.cg = model_settings.get('cg')
+            hce.pr_shw = model_settings.get('pr_shw')
+            hce.pr_geo = model_settings.get('pr_geo')
+            hce.pr_opt = model_settings.get('pr_opt')
+        
+        
+
+    def calcTempOut(tfe, dro, x, qabs, pr, massflow, cp) -> float:
+        '''
+        HTF output temperature [ºC] Ec. 3.24 Barbero
+
+        Returns
+        -------
+        float [ºC]
+            DESCRIPTION.
+
+        '''
+        return tfe + mt.PI*dro*x*qabs*pr/(massflow*cp)   
+
+    def set_qabs(self, pr_opt, dni, pr_shw, pr_geo):
+        '''
+        Ec. 3.20 Barbero
+
+        Returns
+        -------
+        float [W]
+            DESCRIPTION.
+            Thermal power absorbed by the HCE
+        '''
+        self.qabs = pr_opt*self.cg*dni*pr_shw*pr_geo        
+           
+    def set_qu(self, urec, tro, tf) -> float:
+        self.qu = urec*(tro-tf) #Ec. 3.21
+    
+    def urec(hint, dro, dri, krec) -> float:
+        return 1/((1/hint) + (dro*np.log(dro/dri))/(2*krec)) #Ec. 3.22
+    
+    def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
+    
+        return  (1-pr0-
+                 f1*(pr0+1/f0)+
+                 f2*(pr0+1/f0)**2+
+                 f3*(pr0+1/f0)**3+
+                 f4*(pr0+1/f0)**4
+                 )
+    
+    def e3_36prime(pr0,f0,f1,f2,f3,f4):
+        
+        return (-1-f1+
+                2*f2*(pr0+1/f0)+
+                3*f3*(pr0+1/f0)**2+
+                4*f4*(pr0+1/f0)**3
+                )
+    
+    def set_pr(self, qabs):
+        
+        
+        f0 = qabs/(self.urec*(self.tfe-self.text))   
+        f1 = ((4*self.sigma*self.eext*self.text**3)+self.hext)/self.urec 
+        f2 = 6*self.text**2*(self.sigma*self.eext/self.urec)*(self.qabs/self.urec)
+        f3= 4*self.text*(self.sigma*self.eext/self.urec)*(self.qabs/self.urec)**2            
+        f4 = (self.sigma*self.eext/self.urec)*(self.qabs/self.urec)
+        
+        pr0 = scy.optimize.newton(e3_36, pr0, fprime = e3_36prime, args=(f0,f1,f2,f3,f4))
+        
+        g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
+        g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
+        g2 = 2*f2+6*f3*z+12*f4*z**2
+        g3 = 6*f3+24*f4*z
+        
+        self._pr = ((pr0*g1/(1-g1))*(1/(NTU*x))*(np.exp((1-g1)*NTU*x/g1)-1) -
+                (g2/(6*g1))*(pr0*NTU*x)**2 -
+                (g3/(24*g1)*(pr0*NTU*x)**3)
+                )
+        
+        
+        
+        
+        
 
 class HCE(object):
     
-    def __init__(self, sca, hce_order):
+    def __init__(self, sca, hce_order, parameters):
         
         self.sca = sca
         self.hce_order = hce_order
+        self.parameters = parameters
         
     def get_index(self):
         return (self.sca.loop.solarfield.solarfield_order, 
@@ -34,13 +163,7 @@ class HCE(object):
         self.tout *= 2
         self.tfe *= 2 
     
-    def set_tin(self):
-        if self.hce_order > 0:
-            self.tin = self.sca.hces[self.hce_order-1].tout
-        elif self.sca.sca_order > 0:
-            self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1]
-        else:
-            self.tin = self.sca.loop.tin        
+        
      
         
     def qu_from_pr(pr, qabs) -> float: 
@@ -253,15 +376,11 @@ class SolarField(object):
     '''
     
     
-    def __init__(self, plant, solarfield_order):
+    def __init__(self, plant, solarfield_data):
         
-        self.solarfield_plant = plant
-        self.solarfield_order = solarfield_order
+        self.plant = plant
+        self.name = solarfield_data.get('name')
         self.loops = []
-        self.configuration = {'N_loops_per_solar_field': 30,
-                              'N_SCA_per_loop': 4,
-                              'N_HCE_per_SCA': 24
-                              }
         self.massflow =1
         self.tin= 1
         self.tout = self.tin
@@ -394,10 +513,10 @@ class Fluid(object):
         self.cp = 1000 # más adelante cp debe obtenerse con CoolProp, por ejemplo
         
 class Site(object):
-    def __init__(self, lat=39, long=-3):
+    def __init__(self, site):
         
-        self._lat = 39
-        self._long = 3
+        self._lat = site.get('latitude')
+        self._long = site.get('longitude')
         
 class HTF(object):
     
@@ -413,25 +532,21 @@ class Weather(object):
 
 class ScatterMask(object):
     
-    _PARAMETERS = {'sigma': 1, 'clean_mirror': 1}
     
-    def __init__(self, plant, simulation):
+    def __init__(self, simulation):
         
-        pass
-    
-    def define_scattered_parameters_model():
-        pass
-        return scatterd_parameters_model
-    
-    
-    def fill_mask(self, scattered_parameters_model):
+        self.matrix = dict()
+   
+        for sf in simulation.get('plant').get('solarfields'):
+            self.matrix[sf["name"]]=[]
+            for l in range(sf.get('loops')):
+                self.matrix[sf["name"]].append([])
+                for s in range(sf.get('scas')):
+                    self.matrix[sf["name"]][-1].append([])
+                    for h in range (sf.get('hces')):
+                        self.matrix[sf["name"]][-1][-1].append(simulation["scattered_params"])
+
         
-        pass
-    
-    
-    pass
-
-
 # format = '%Y-%m-%d %H:%M:%S'
 # df['Datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'], format=format)
 # df = df.set_index(pd.DatetimeIndex(df['Datetime']))

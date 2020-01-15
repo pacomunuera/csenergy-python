@@ -15,6 +15,16 @@ import csenergy as cs
 import pandas as pd
 from tkinter import * 
 import interface
+import json
+
+
+
+
+# Crear interface
+
+# La interfaz nos ayuda a crear el objeto simulation
+
+# 
 
 
 
@@ -88,28 +98,16 @@ El usuario selecciona:
         datos que debe almacenarse en cada LOOP
         - Rendimiento (promedio de sus SCA), tin, tout, massflow
 """        
-
-
-
-
-
-
-
-n_solarfields = 4
-n_loops = 30
-n_sca = 4
-n_hce = 12
 plant_model = 'unscattered'
 simulation_type = 'comparative' # Compared to real data
 tin = 291 
 tout_setpoint = 391 #ºC
 total_mass_flow = 240 # kg/s 
-massFlow = total_mass_flow / n_loops
+#massFlow = total_mass_flow / n_loops
 
-site = cs.Site(39, -3)
-plant = cs.Plant(site)
-weather = cs.Weather()
-simulation = cs.Simulation()
+
+#weather = cs.Weather()
+#simulation = cs.Simulation()
 
 parameters = {'eext': 1,
               'hext': 1,
@@ -124,14 +122,48 @@ parameters = {'eext': 1,
 
 hce_type = 'Barbero'
 
+with open ("./saved_configurations/simulation.json") as simulation_file:
+    simulation_settings = json.load(simulation_file)
+
+site = cs.Site(simulation_settings.get('site'))
+    
+plant = cs.Plant(site)
+
+mask = cs.ScatterMask(simulation_settings)
+
+for sf in simulation_settings.get('plant').get('solarfields'):
+    plant.solarfields.append(cs.SolarField(plant, sf))
+    for l in range(sf.get('loops')):        
+        plant.solarfields[-1].loops.append(
+                cs.Loop(plant.solarfields[-1], l))
+        for s in range(sf.get('scas')):
+            plant.solarfields[-1].loops[-1].scas.append(
+                    cs.SCA(plant.solarfields[-1].loops[-1], s))
+            for h in range (sf.get('hces')):
+                    plant.solarfields[-1].loops[-1].scas[-1].hces.append(
+                        cs.HCE(plant.solarfields[-1].loops[-1].scas[-1],
+                               h, 
+                               simulation_settings.get('model_settings')))
+                                      
+cs.Model.applyMask(mask, plant)
+   
+#for sf in plant.solarfields:
+#    print(type(sf),'\n')
+#    for l in sf.loops:
+#        print(type(l),'\n')
+#        for s in l.scas:
+#            print(type(s),'\n')
+#            for h in s.hces:
+#                print(h,"-->", h.parameters['eext'])
+
 
 # Crea aplicación
-root = Tk()
-# Creamos una ventana
-a = interface.main(root, simulation)
-
-#Lanza la aplicación en continuo
-root.mainloop() 
+#root = Tk()
+## Creamos una ventana
+#a = interface.main(root, simulation)
+#
+##Lanza la aplicación en continuo
+#root.mainloop() 
 
 
 

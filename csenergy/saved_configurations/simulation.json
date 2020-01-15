@@ -1,0 +1,34 @@
+{	
+"plant": {
+	"name": "My plant",
+	"solarfields": [
+		{"name": "c1", "loops": 30, "scas": 4, "hces": 12},
+		{"name": "c2", "loops": 30, "scas": 4, "hces": 12},
+		{"name": "c3", "loops": 30, "scas": 4, "hces": 12},
+		{"name": "c4", "loops": 30, "scas": 4, "hces": 12}]},
+"site": {
+	"name": "Alcázar de San Juan",
+	"latitude": 38,
+	"longitude": -3,
+	"elevation": 600},
+"weather": {
+	"filename": "A1A_07_2018.tm2"},
+"hce": {
+	"model": "Soleil"},
+"model_settings": {
+	"name": "Barbero 4th grade",
+	"eext": 1,
+                "hext": 1,
+                "hint": 1,
+                "urec": 1,
+                "sigma" : 1,
+                "cg" : 1,
+                "pr_shw": 1,
+                "pr_geo": 1,
+                "pr_opt": 1},
+"scattered_params": {
+	"eext": "x*2",
+                "hext": "x**2",
+                "hint": "x*0.9",
+                "urec": "x*0.75"}
+}
