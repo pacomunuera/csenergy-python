@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['C:\\Users\\paco\\.spyder-py3\\temp.py', 'interface.py', 'csenergy.py', '__init__.py', 'C:\\Users\\paco\\Anaconda3\\lib\\tkinter\\__init__.py']
+recent_files = ['interface.py', 'csenergy.py', '__init__.py', 'saved_configurations\\simulation.json']
 

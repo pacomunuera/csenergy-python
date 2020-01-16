@@ -25,19 +25,19 @@
 	"name": "water"},
 "model_settings": {
 	"name": "Barbero 4th grade",
-	"eext": 1.0,
-    "hext": 1.0,
+	"eext": 0.25,
+    "hext": 0.0,
     "hint": 1.0,
-    "urec": 1.0,
+    "urec": 1000.0,
     "krec": 1.0,
-    "sigma" : 1.0,
-    "cg" : 1.0,
+    "sigma" : 0.9,
+    "cg" : 69.0,
     "pr_shw": 1.0,
     "pr_geo": 1.0,
     "pr_opt": 1.0},
 "scattered_params": {
-	"eext": 2.0,
-    "hext": 2.0,
-    "hint": 0.5,
-    "urec": 0.97}
+	"eext": 1.0,
+    "hext": 1.0,
+    "hint": 1.0,
+    "urec": 1.0}
 }

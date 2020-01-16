@@ -84,10 +84,10 @@ with open ("./saved_configurations/simulation.json") as simulation_file:
 
 site = cs.Site(simulation_settings)
     
-#plant = cs.Plant(simulation_settings.get('plant'))
 plant = cs.Plant(simulation_settings)
 
 mask = cs.ScatterMask(simulation_settings)
+
 mask.applyMask(plant)
 
 plant.initializePlant()

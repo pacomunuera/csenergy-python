@@ -11,6 +11,8 @@ import math as mt
 import CoolProp as CP
 import time
 from math import pi
+import pandas as pd
+
       
         
 class Model(object):
@@ -36,7 +38,7 @@ class ModelBarbero4(Model):
 
     def __ini__(self, simulation):
         
-        super(Model, modelBarbero4).__init__(simulation)
+        super(Model, self).__init__(simulation)
         
     def simulateHCE(self, hce):
     
@@ -53,7 +55,7 @@ class ModelBarbero4(Model):
         krec = hce.parameters['krec']
         massFlow = hce.sca.loop.massFlow
         #cp = self.hot_fluid.get_cp(hce.tin)
-        cp = 100.0
+        cp = 2300.0
         tfe = hce.tin
         tf = tfe
         tro = tf
@@ -67,10 +69,7 @@ class ModelBarbero4(Model):
         
         #Ec. 3.22
         urec = 1/((1/hint) + (dro*np.log(dro/dri))/(2*krec))
-        print("urec ", urec,
-              "massFlow ", massFlow,
-              "cp", cp,
-              "x", x)
+
         #Ec. 3.21
         # qu = urec*(tro-tf) 
 
@@ -83,14 +82,17 @@ class ModelBarbero4(Model):
         f3= 4*text*(sigma*eext/urec)*(qabs/urec)**2            
         f4 = (sigma*eext/urec)*(qabs/urec)
         
-        pr0 = 1.0
+        pr0 = 0.95
         
         pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
-                                  pr0, 
-                                  fprime = ModelBarbero4.e3_36prime, 
-                                  args=(f0,f1,f2,f3,f4))
-        
-        z = 1 - 1/pr0
+                                  pr0,
+                                  None,
+                                  args=(f0,f1,f2,f3,f4),
+                                  tol=0.00001,
+                                  maxiter=100)
+        #fprime = ModelBarbero4.e3_36prime,
+        print("pr0=",pr0)
+        z = pr0 + 1/f0
         
         # g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
         g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
@@ -102,6 +104,8 @@ class ModelBarbero4(Model):
                 (g3/(24*g1)*(pr0*NTU*x)**3)
                 )
         
+        hce.pr = pr
+        
         hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
    
             
@@ -109,10 +113,10 @@ class ModelBarbero4(Model):
     def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
     
         return  (1-pr0-
-                 f1*(pr0+1/f0)+
-                 f2*(pr0+1/f0)**2+
-                 f3*(pr0+1/f0)**3+
-                 f4*(pr0+1/f0)**4
+                 f1*(pr0+(1/f0))+
+                 f2*((pr0+(1/f0))**2)+
+                 f3*((pr0+(1/f0))**3)+
+                 f4*((pr0+(1/f0))**4)
                  )
     
     def e3_36prime(pr0,f0,f1,f2,f3,f4):
@@ -123,6 +127,19 @@ class ModelBarbero4(Model):
                 4*f4*(pr0+1/f0)**3
                 )
 
+class ModelBarbero1(Model):
+
+    def __ini__(self, simulation):
+        
+        super(Model, self).__init__(simulation)
+        
+    def simulateHCE(self, hce):
+    
+        dni = 1000
+
+        hce.pr = pr
+        
+        hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
         
 class HCE(object):
     
@@ -134,6 +151,7 @@ class HCE(object):
                                **simulation_settings.get('model_settings'))
         self.tin = 0.0
         self.tout = 0.0
+        self.pr = 0
         
     def get_index(self):
         return (self.sca.loop.solarfield.solarfield_order, 
@@ -224,17 +242,6 @@ class SolarField(object):
         self.massFlow =1
         self.tin= 1
         self.tout = self.tin
-    
-    def get_configuration():
-        return self.configuration
-    
-    
-    def get_massflow(self):
-        '''
-        Calculates total massflow throughout the solar field as 
-        a sum of each massflow in a loop belonging the solar field
-        
-        '''
         
         
     def get_tout(self):
@@ -255,16 +262,12 @@ class SolarField(object):
         self.tin = (self.plant.heatexchanger.hotfluid_tout *
                     self.coolPipeLosses
                     )
-        
-        
-        
-        
+         
     def calcRequiredMassFlow(self):
         req_massflow = 0
         for l in self.loops:
             req_massflow += l.requiredMassFlow
-        self.requieredMassFlow = req_massflow/self.loops.len()
-        
+        self.requieredMassFlow = req_massflow/self.loops.len()       
         
         
 class Plant(object):
@@ -391,8 +394,7 @@ class Simulation(object):
     '''
     
     def __init__(self):
-        pass
-        
+        pass       
         
     def calcRequiredMassFlow():
         '''calcula el caudal promedio requerido en cada lazo para alzanzar
@@ -401,12 +403,8 @@ class Simulation(object):
         subcampo. De esta forma tenemos el caudal '''
         
         pass
-        
-    def calc():
-        pass
-        return df
     
-    
+           
 class HeatExchanger(object):
     
     def __init__(self, pr_heatexchanger, 
@@ -432,7 +430,7 @@ class Fluid(object):
     def __init__(self, name):
         
         self.name = name
-        
+
         if self.name == 'Therminol VP1':            
             htf_data = pd.read_csv(monsanto.csv, sep=';', decimal=',', index_col=0)
         elif self.name == "Dowtherm":
