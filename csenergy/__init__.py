@@ -17,24 +17,9 @@ from tkinter import *
 import interface
 import json
 
-
-
-
-# Crear interface
-
-# La interfaz nos ayuda a crear el objeto simulation
-
-# 
-
-
-
-
 '''
-
 pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=False, right_index=False, by=None, left_by=None, right_by=None, suffixes=('_x', '_y'), tolerance=None, allow_exact_matches=True, direction='backward')[source]¶
 '''
-
-# PI = 3.141592653589793
 
 # _DC_MODEL_PARAMS = {
 #     'Barbero': set(['sigma', 'eext', 'hext', 'urec']),
@@ -51,13 +36,8 @@ pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=
 ' Campos del dataframe inicial: '
 '    | timestamp | Tamb | Wind | Winddir | DNI | Vector Solar | MassFlow | Tin | Tout |'
 
-#Dic for HTC characteristics 
-# HCE_type = {"Model ": 'RTC70', "Longitude ": 4, "Din ":0.06, "Dout ":0.12, "e_ext ": 1,
-#      "h_ext ": 1, "U_rec ": 1, "Sigma ": 1}
-
 # HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
 
-# HCE_operation = {"Tin ": 293, "Clean ": 1}
 
 
     
@@ -97,66 +77,32 @@ El usuario selecciona:
         
         datos que debe almacenarse en cada LOOP
         - Rendimiento (promedio de sus SCA), tin, tout, massflow
-"""        
-plant_model = 'unscattered'
-simulation_type = 'comparative' # Compared to real data
-tin = 291 
-tout_setpoint = 391 #ºC
-total_mass_flow = 240 # kg/s 
-#massFlow = total_mass_flow / n_loops
-
-
-#weather = cs.Weather()
-#simulation = cs.Simulation()
-
-parameters = {'eext': 1,
-              'hext': 1,
-              'hint': 1,
-              'urec': 1,
-              'sigma' : 1,
-              'cg' : 1,
-              'pr_shw': 1,
-              'pr_geo': 1,
-              'pr_opt': 1
-              }
-
-hce_type = 'Barbero'
+"""      
 
 with open ("./saved_configurations/simulation.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
-site = cs.Site(simulation_settings.get('site'))
+site = cs.Site(simulation_settings)
     
-plant = cs.Plant(site)
+#plant = cs.Plant(simulation_settings.get('plant'))
+plant = cs.Plant(simulation_settings)
 
 mask = cs.ScatterMask(simulation_settings)
+mask.applyMask(plant)
 
-for sf in simulation_settings.get('plant').get('solarfields'):
-    plant.solarfields.append(cs.SolarField(plant, sf))
-    for l in range(sf.get('loops')):        
-        plant.solarfields[-1].loops.append(
-                cs.Loop(plant.solarfields[-1], l))
-        for s in range(sf.get('scas')):
-            plant.solarfields[-1].loops[-1].scas.append(
-                    cs.SCA(plant.solarfields[-1].loops[-1], s))
-            for h in range (sf.get('hces')):
-                    plant.solarfields[-1].loops[-1].scas[-1].hces.append(
-                        cs.HCE(plant.solarfields[-1].loops[-1].scas[-1],
-                               h, 
-                               simulation_settings.get('model_settings')))
-                                      
-cs.Model.applyMask(mask, plant)
+plant.initializePlant()
+
+model = cs.ModelBarbero4(simulation_settings)                                   
+
+for sf in plant.solarfields:
+    for l in sf.loops:
+        for s in l.scas:
+            for h in s.hces:
+                model.set_tin(h)
+                model.simulateHCE(h)
+                print(h.tout)
+               
    
-#for sf in plant.solarfields:
-#    print(type(sf),'\n')
-#    for l in sf.loops:
-#        print(type(l),'\n')
-#        for s in l.scas:
-#            print(type(s),'\n')
-#            for h in s.hces:
-#                print(h,"-->", h.parameters['eext'])
-
-
 # Crea aplicación
 #root = Tk()
 ## Creamos una ventana
@@ -164,8 +110,6 @@ cs.Model.applyMask(mask, plant)
 #
 ##Lanza la aplicación en continuo
 #root.mainloop() 
-
-
 
 # for sf in range(n_solarfields):
 #     plant.solarfields.append(cs.SolarField(plant, sf))
@@ -181,46 +125,6 @@ cs.Model.applyMask(mask, plant)
 #                          cs.HCE_Barbero(parameters, plant.solarfields[sf].loops[l].scas[s],h))
 #                 elif hce_type == 'NaumFraidenraich':
 #                     pass
-
-
-
-
-
-#mask = cs.ScatterMask(plant, simulation)
-               
-#for sf in plant.solarfields:
-#    for l in sf.loops:
-#        for s in l.scas:
-#            for h in s.hces:
-#                h.applyMaskToHCE(mask)
-#                
-#
-#for sf in plant.solarfields:
-#    for l in sf.loops:        
-#        l.set_massflow()
-#        l.set_tin()
-
-                
-                
-
-               
-
-#simulation = cs.Simulation(site, plant, mask, df, simulation_type)
-              
-#se aplicaca la máscara si procede            
-   
-#weather_file = Weather()
-#fluid = HTF()
-#site = Site()
-
-#sf = solarField()
-
-#mask = ScatterMask()
-
-#plant = Plant()
-#
-#simulation = Simulation(self, weather_file, plant, operation, model)
-#simultation_output = simulation.result()
 
 #if model in _DC_MODEL_PARAMS.keys():
 #                # validate module parameters
