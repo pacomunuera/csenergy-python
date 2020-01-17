@@ -58,37 +58,41 @@ class ModelBarbero4(Model):
         cp = 2300.0
         tfe = hce.tin
         tf = tfe
+        pr0=1
+        pr=1
 
         text = 22.0
-        tro = tf+100
-        #Ec. 3.70
-        #t3ro-ext = 4*tfe**3
-        
-        tro= scy.optimize.newton(ModelBarbero4.e3_100, 
-                                  tro,
-                                  None,
-                                  args=(tf,text,hext,eext,sigma),
-                                  tol=0.0000001,
-                                  maxiter=1000)
-        
-        trec = tro
-
-        #Ec. 4.22
-        krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
         
         #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
                 hce.parameters['cg'] * dni *
                 hce.parameters['pr_shw'] * 
-                hce.parameters['pr_geo'])
+                hce.parameters['pr_geo'])  
+
+        trec = tfe
+
+        #Ec. 4.22
+        krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
         
         #Ec. 3.22
         urec = 1/(
                 (1/hint) + 
                 (dro*np.log(dro/dri))/(2*krec)
                 )
-        #urec = 3000
-
+        
+        tro = tf+qabs*pr/urec
+        
+        #Ec. 3.70
+        #t3ro-ext = 4*tfe**3
+        
+        
+#        tro= scy.optimize.newton(ModelBarbero4.e3_100, 
+#                                  tro,
+#                                  None,
+#                                  args=(tf,text,hext,eext,sigma),
+#                                  tol=0.0000001,
+#                                  maxiter=1000)
+        
         #Ec. 3.21
         qu = urec*(tro-tf) 
 
@@ -191,6 +195,60 @@ class ModelHottelWhilier(Model):
         def __ini__(self, simulation):
         
             super(Model, self).__init__(simulation)
+        
+        def simulateHCE(self, hce):
+        
+
+            dro = hce.parameters['Dout']
+            dri = hce.parameters['Din']
+            x = hce.parameters['Long']
+            w = hce.parameters['x']
+            hint = hce.parameters['hint']
+            hext = hce.parameters['hint']
+            sigma = hce.parameters['sigma']
+            eext = hce.parameters['eext']
+            krec = hce.parameters['krec']
+            massFlow = hce.sca.loop.massFlow
+            #cp = self.hot_fluid.get_cp(hce.tin)
+            cp = 2300.0
+            tfe = hce.tin
+            tf = tfe
+    
+            text = 22.0
+            tro = tf+100
+            #Ec. 3.70
+            #t3ro-ext = 4*tfe**3
+            
+            
+            tro= scy.optimize.newton(ModelBarbero4.e3_100, 
+                                      tro,
+                                      None,
+                                      args=(tf,text,hext,eext,sigma),
+                                      tol=0.0000001,
+                                      maxiter=1000)
+            
+            trec = tro
+    
+            #Ec. 4.22
+            krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+                
+            #Ec. 2.27
+            uext = sigma*eext*(tro**2+text**2)*(tro+text)+hext
+                
+            #Ec. 3.22
+            urec = 1/(
+                    (1/hint) + 
+                    (dro*np.log(dro/dri))/(2*krec)
+                    )
+                
+            #Ec. 3.2
+            Fprime = urec/(uext+urec)
+            
+            
+            pr = ((1-uext*(tfe-text)/qabs)*
+                  (massFlow*cp/(w*x*uext*(1-np.e(Fprime*w*x*uext/(massFlow*cp))))))
+        
+        
         
 class ModelNaumFrainderaich(Model):
     

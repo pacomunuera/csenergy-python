@@ -17,7 +17,8 @@
 	"model ": "RTC70", 
 	"Long": 4.0, 
 	"Din": 0.066, 
-	"Dout": 0.070},
+	"Dout": 0.070,
+	"w": 5},
 "hot_fluid": {
 	"name": "Therminol VP-1",
 	"cp_factors": [1479.1, 3.2315, -0.003, 0.000005]},
@@ -27,7 +28,7 @@
 	"name": "Barbero 4th grade",
 	"eext": 0.25,
     "hext": 1.0,
-    "hint": 1.0,
+    "hint": 3000.0,
     "urec": 1000.0,
     "krec": 19.36,
     "sigma" : 0.9,
