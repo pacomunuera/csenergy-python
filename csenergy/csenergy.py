@@ -42,7 +42,7 @@ class ModelBarbero4(Model):
         
     def simulateHCE(self, hce):
     
-        dni = 1000
+        dni = 800
                 
         
         dro = hce.parameters['Dout']
@@ -58,8 +58,23 @@ class ModelBarbero4(Model):
         cp = 2300.0
         tfe = hce.tin
         tf = tfe
-        tro = tf
+
         text = 22.0
+        tro = tf+100
+        #Ec. 3.70
+        #t3ro-ext = 4*tfe**3
+        
+        tro= scy.optimize.newton(ModelBarbero4.e3_100, 
+                                  tro,
+                                  None,
+                                  args=(tf,text,hext,eext,sigma),
+                                  tol=0.0000001,
+                                  maxiter=1000)
+        
+        trec = tro
+
+        #Ec. 4.22
+        krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
         
         #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
@@ -68,30 +83,41 @@ class ModelBarbero4(Model):
                 hce.parameters['pr_geo'])
         
         #Ec. 3.22
-        urec = 1/((1/hint) + (dro*np.log(dro/dri))/(2*krec))
+        urec = 1/(
+                (1/hint) + 
+                (dro*np.log(dro/dri))/(2*krec)
+                )
+        #urec = 3000
 
         #Ec. 3.21
-        # qu = urec*(tro-tf) 
+        qu = urec*(tro-tf) 
 
         #Ec. 3.30
         NTU = urec * x * pi * dro / (massFlow * cp)
 
         f0 = qabs/(urec*(tfe-text))   
-        f1 = ((4*sigma*eext*text**3)+hext)/urec 
-        f2 = 6*text**2*(sigma*eext/urec)*(qabs/urec)
-        f3= 4*text*(sigma*eext/urec)*(qabs/urec)**2            
-        f4 = (sigma*eext/urec)*(qabs/urec)
+        f1 = ((4*sigma*eext*(text**3))+hext)/urec 
+        f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
+        f3= 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
+        f4 = (sigma*eext/urec)*((qabs/urec)**3)
         
-        pr0 = 0.95
+        pr0 = 1
+        
+#        pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
+#                                  pr0,
+#                                  ModelBarbero4.e3_36prime,
+#                                  args=(f0,f1,f2,f3,f4),
+#                                  tol=0.01,
+#                                  maxiter=1000)
         
         pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
-                                  pr0,
-                                  None,
-                                  args=(f0,f1,f2,f3,f4),
-                                  tol=0.00001,
-                                  maxiter=100)
+                          pr0,
+                          None,
+                          args=(f0,f1,f2,f3,f4),
+                          tol=0.01,
+                          maxiter=1000)
         #fprime = ModelBarbero4.e3_36prime,
-        print("pr0=",pr0)
+
         z = pr0 + 1/f0
         
         # g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
@@ -108,7 +134,14 @@ class ModelBarbero4(Model):
         
         hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
    
-            
+        print("hce", hce.get_index(),
+              "Tout=", hce.tout,
+              "tf=", tf, 
+              "qabs=", qabs,
+              "qu=",qu,
+              "urec=",urec,
+              "pr0=",pr0,
+              "pr=",pr)    
     
     def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
     
@@ -126,10 +159,21 @@ class ModelBarbero4(Model):
                 3*f3*(pr0+1/f0)**2+
                 4*f4*(pr0+1/f0)**3
                 )
+        
+    def e3_100(tro,tf,text,hext,eext,sigma):
+        
+        return 3*tro**4-4*tf*tro**3+(text**4+hext*(text-tf)/(sigma*eext))
+    
+    def e3_100prime(tro,tf,text,hext,eext,sigma):
+        
+        return 12*tro**3-12*tf*tro**2
+    
+    
+    
 
 class ModelBarbero1(Model):
 
-    def __ini__(self, simulation):
+    def __init__(self, simulation):
         
         super(Model, self).__init__(simulation)
         
@@ -139,7 +183,27 @@ class ModelBarbero1(Model):
 
         hce.pr = pr
         
-        hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
+        hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)                
+        
+        
+class ModelHottelWhilier(Model):
+    
+        def __ini__(self, simulation):
+        
+            super(Model, self).__init__(simulation)
+        
+class ModelNaumFrainderaich(Model):
+    
+        def __ini__(self, simulation):
+        
+            super(Model, self).__init__(simulation)
+
+class ModelASHRAE(Model):
+
+        def __ini__(self, simulation):
+        
+            super(Model, self).__init__(simulation)    
+    
         
 class HCE(object):
     
@@ -154,10 +218,10 @@ class HCE(object):
         self.pr = 0
         
     def get_index(self):
-        return (self.sca.loop.solarfield.solarfield_order, 
+        return ([self.sca.loop.solarfield.name, 
                 self.sca.loop.loop_order,
                 self.sca.sca_order,
-                self.hce_order)     
+                self.hce_order])     
         
       
 class SCA(object):

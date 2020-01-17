@@ -100,7 +100,6 @@ for sf in plant.solarfields:
             for h in s.hces:
                 model.set_tin(h)
                 model.simulateHCE(h)
-                print(h.tout)
                
    
 # Crea aplicación
