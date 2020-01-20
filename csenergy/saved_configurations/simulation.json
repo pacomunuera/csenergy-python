@@ -1,10 +1,10 @@
 {"simulation" : {
     "ID" : "00000",
-    "type" : "type0"},    	
+    "type" : "type0"},
 "plant": {
 	"name": "My plant",
 	"solarfields": [
-		{"name": "c0", "loops": 2, "scas": 4, "hces": 12}]},
+		{"name": "c0", "loops": 1, "scas": 4, "hces": 12}]},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,

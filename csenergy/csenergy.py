@@ -42,100 +42,120 @@ class ModelBarbero4(Model):
         
     def simulateHCE(self, hce):
     
-        dni = 800
+        dni = 800 #provisional
                 
         
         dro = hce.parameters['Dout']
         dri = hce.parameters['Din']
         x = hce.parameters['Long']
         hint = hce.parameters['hint']
-        hext = hce.parameters['hint']
+        hext = hce.parameters['hext']
         sigma = hce.parameters['sigma']
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
         massFlow = hce.sca.loop.massFlow
+        
         #cp = self.hot_fluid.get_cp(hce.tin)
         cp = 2300.0
+        Model.set_tin(hce)
+        print("hce.tin: ", hce.tin)
+        time.sleep(0.010)
+        hce.pr = hce.get_previous().pr
         tfe = hce.tin
-        tf = tfe
-        pr0=1
-        pr=1
-
+        tf =  tfe
+        pr0=1.
+        pr=1.
+        
         text = 22.0
+        qu = 0.
         
         #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
                 hce.parameters['cg'] * dni *
                 hce.parameters['pr_shw'] * 
-                hce.parameters['pr_geo'])  
-
-        trec = tfe
-
-        #Ec. 4.22
-        krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
-        
-        #Ec. 3.22
+                hce.parameters['pr_geo'])     
+        errTro = 1000
         urec = 1/(
-                (1/hint) + 
-                (dro*np.log(dro/dri))/(2*krec)
-                )
+            (1/hint) + 
+            (dro*np.log(dro/dri))/(2*krec)
+            ) 
         
         tro = tf+qabs*pr/urec
         
-        #Ec. 3.70
-        #t3ro-ext = 4*tfe**3
+        tro2 = tro
+        paso = 0
         
-        
-#        tro= scy.optimize.newton(ModelBarbero4.e3_100, 
-#                                  tro,
-#                                  None,
-#                                  args=(tf,text,hext,eext,sigma),
-#                                  tol=0.0000001,
-#                                  maxiter=1000)
-        
-        #Ec. 3.21
-        qu = urec*(tro-tf) 
+        while errTro > 0.1:
+            
+            paso += 1
+            trec = tro
+            #Ec. 4.22
+            krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+            #Ec. 3.22
+            urec = 1/(
+                (1/hint) + 
+                (dro*np.log(dro/dri))/(2*krec)
+                )            
 
-        #Ec. 3.30
-        NTU = urec * x * pi * dro / (massFlow * cp)
+            
+    #        tro= scy.optimize.newton(ModelBarbero4.e3_100, 
+    #                                  tro,
+    #                                  None,
+    #                                  args=(tf,text,hext,eext,sigma),
+    #                                  tol=0.0000001,
+    #                                  maxiter=1000)           
+            #Ec. 3.21
+            qu = urec*(tro-tf) 
+    
+            #Ec. 3.30
+            NTU = urec * x * pi * dro / (massFlow * cp)
+    
+            f0 = qabs/(urec*(tfe-text))   
+            f1 = ((4*sigma*eext*(text**3))+hext)/urec 
+            f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
+            f3= 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
+            f4 = (sigma*eext/urec)*((qabs/urec)**3)
+            
+            
+            
+    #        pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
+    #                                  pr0,
+    #                                  ModelBarbero4.e3_36prime,
+    #                                  args=(f0,f1,f2,f3,f4),
+    #                                  tol=0.01,
+    #                                  maxiter=1000)
+            
+            pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
+                              pr0,
+                              None,
+                              args=(f0,f1,f2,f3,f4),
+                              tol=0.1,
+                              maxiter=1000)
+            #fprime = ModelBarbero4.e3_36prime,
 
-        f0 = qabs/(urec*(tfe-text))   
-        f1 = ((4*sigma*eext*(text**3))+hext)/urec 
-        f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
-        f3= 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
-        f4 = (sigma*eext/urec)*((qabs/urec)**3)
-        
-        pr0 = 1
-        
-#        pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
-#                                  pr0,
-#                                  ModelBarbero4.e3_36prime,
-#                                  args=(f0,f1,f2,f3,f4),
-#                                  tol=0.01,
-#                                  maxiter=1000)
-        
-        pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
-                          pr0,
-                          None,
-                          args=(f0,f1,f2,f3,f4),
-                          tol=0.01,
-                          maxiter=1000)
-        #fprime = ModelBarbero4.e3_36prime,
+            print("PASO: ", paso, "pr0=", pr0)
+            time.sleep(0.01)
+    
+            z = pr0 + 1/f0
+            
+            # g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
+            g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
+            g2 = 2*f2+6*f3*z+12*f4*z**2
+            g3 = 6*f3+24*f4*z        
+            
+            pr = ((pr0*g1/(1-g1))*(1/(NTU*x))*(np.exp((1-g1)*NTU*x/g1)-1) -
+                    (g2/(6*g1))*(pr0*NTU*x)**2 -
+                    (g3/(24*g1)*(pr0*NTU*x)**3)
+                    )
 
-        z = pr0 + 1/f0
+            tro2 = tf+qabs*pr/urec
+            errTro = abs(tro-tro2)
+            print(" Tro= ", tro, " tro2= ", tro2,"ERROR: ", errTro)
+            tro = tro2
+            
         
-        # g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
-        g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
-        g2 = 2*f2+6*f3*z+12*f4*z**2
-        g3 = 6*f3+24*f4*z        
-        
-        pr = ((pr0*g1/(1-g1))*(1/(NTU*x))*(np.exp((1-g1)*NTU*x/g1)-1) -
-                (g2/(6*g1))*(pr0*NTU*x)**2 -
-                (g3/(24*g1)*(pr0*NTU*x)**3)
-                )
-        
+        print("SALE DE WHILE-> pr:", hce.pr, "tro: ", tro)
         hce.pr = pr
-        
         hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
    
         print("hce", hce.get_index(),
@@ -198,34 +218,39 @@ class ModelHottelWhilier(Model):
         
         def simulateHCE(self, hce):
         
-
+            dni = 800 #provisional
+            
             dro = hce.parameters['Dout']
             dri = hce.parameters['Din']
             x = hce.parameters['Long']
-            w = hce.parameters['x']
+            w = hce.parameters['w']
             hint = hce.parameters['hint']
-            hext = hce.parameters['hint']
+            hext = hce.parameters['hext']
             sigma = hce.parameters['sigma']
             eext = hce.parameters['eext']
             krec = hce.parameters['krec']
+            # En el modelo H-W uext es constante
+            # uext = hce.parameters['uext']
             massFlow = hce.sca.loop.massFlow
             #cp = self.hot_fluid.get_cp(hce.tin)
             cp = 2300.0
+
+            Model.set_tin(hce)
+            print("hce.tin: ", hce.tin)
+            time.sleep(0.010)
+            hce.pr = hce.get_previous().pr
             tfe = hce.tin
-            tf = tfe
+            tf =  tfe
     
             text = 22.0
-            tro = tf+100
+            tro = tf
             #Ec. 3.70
             #t3ro-ext = 4*tfe**3
             
-            
-            tro= scy.optimize.newton(ModelBarbero4.e3_100, 
-                                      tro,
-                                      None,
-                                      args=(tf,text,hext,eext,sigma),
-                                      tol=0.0000001,
-                                      maxiter=1000)
+            qabs = (hce.parameters['pr_opt']*
+                hce.parameters['cg'] * dni *
+                hce.parameters['pr_shw'] * 
+                hce.parameters['pr_geo'])
             
             trec = tro
     
@@ -233,7 +258,9 @@ class ModelHottelWhilier(Model):
             krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
                 
             #Ec. 2.27
-            uext = sigma*eext*(tro**2+text**2)*(tro+text)+hext
+
+            #uext = sigma*eext*(tro**2+text**2)*(tro+text)+hext
+            uext = 10
                 
             #Ec. 3.22
             urec = 1/(
@@ -244,10 +271,18 @@ class ModelHottelWhilier(Model):
             #Ec. 3.2
             Fprime = urec/(uext+urec)
             
-            
+                       
+
+            print("---------------", (1-uext*(tfe-text)/qabs))
+
             pr = ((1-uext*(tfe-text)/qabs)*
-                  (massFlow*cp/(w*x*uext*(1-np.e(Fprime*w*x*uext/(massFlow*cp))))))
-        
+                  massFlow*cp/(w*x*uext)*
+                  (1-np.exp(-Fprime*w*x*uext/(massFlow*cp))))
+            
+            print("qabs ", qabs, "uext ", uext, "urec ", urec, "tro ", tro, "pr ", pr) 
+            hce.pr = pr
+            hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
+            
         
         
 class ModelNaumFrainderaich(Model):
@@ -274,7 +309,12 @@ class HCE(object):
         self.tin = 0.0
         self.tout = 0.0
         self.pr = 0
+    
+
+    def get_previous(self):
         
+        return self.sca.hces[self.hce_order-1]
+    
     def get_index(self):
         return ([self.sca.loop.solarfield.name, 
                 self.sca.loop.loop_order,
@@ -409,7 +449,7 @@ class Plant(object):
         self.turbogenerator_performance = 0.9
         
         self.tin = 300
-        self.massFlow = 240
+        self.massFlow = 2
         
         for sf in simulation_settings.get('plant').get('solarfields'):
             self.solarfields.append(SolarField(self, sf))
@@ -570,9 +610,27 @@ class Fluid(object):
     def set_fluid_cp(self, pressure, temperature):
         
         self.cp = 1000 # más adelante cp debe obtenerse con CoolProp, por ejemplo
+        
+    def Reynolds(self):
+        
+        self.re = 0
+        
+    def ReynoldsDRI(self):
+        
+        self.redri = 0
+        
+    def Dittus_Boelter(self):
+        
+        self.nudb = 0.023*(redri**0.8)*(prf**0.4) 
+                           
+    def Gnielinski(self):
+        
+        self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /     
+                    (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
+                    )
 
 
-class HTF(object):
+class HTF(Fluid):
     
     def __init__(self, hot_fluid):
         

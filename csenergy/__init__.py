@@ -92,7 +92,7 @@ mask.applyMask(plant)
 
 plant.initializePlant()
 
-model = cs.ModelBarbero4(simulation_settings)                                   
+model = cs.ModelHottelWhilier(simulation_settings)                                   
 
 for sf in plant.solarfields:
     for l in sf.loops:
