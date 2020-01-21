@@ -16,8 +16,8 @@
 	"manufacturer": "Soleil",
 	"model ": "RTC70", 
 	"Long": 4.0, 
-	"Din": 0.066, 
-	"Dout": 0.070,
+	"Dri": 0.066, 
+	"Dro": 0.070,
 	"w": 5},
 "hot_fluid": {
 	"name": "Therminol VP-1",

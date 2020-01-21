@@ -6,11 +6,11 @@ Created on Mon Dec 30 08:26:43 2019
 """
 
 import numpy as np
-import scipy as scy
+import scipy as sc
+from scipy import constants
 import math as mt
 import CoolProp as CP
 import time
-from math import pi
 import pandas as pd
 
       
@@ -30,11 +30,195 @@ class Model(object):
             hce.tin = hce.sca.loop.scas[hce.sca.sca_order-1].hces[-1].tout
         else:
             hce.tin = hce.sca.loop.tin
-    
-
                                  
         
 class ModelBarbero4(Model):
+
+    def __ini__(self, simulation):
+        
+        super(Model, self).__init__(simulation)
+        
+    def simulateHCE(self, hce):
+    
+        dni = 800 #provisional
+        cp = 2300.0 #provisional
+        sigma = constants.sigma
+        dro = hce.parameters['Dro']
+        dri = hce.parameters['Dri']
+        x = hce.parameters['Long']
+        hint = hce.parameters['hint']
+        hext = hce.parameters['hext']
+        eext = hce.parameters['eext']
+        krec = hce.parameters['krec']
+        massFlow = hce.sca.loop.massFlow
+        
+        #cp = self.hot_fluid.get_cp(hce.tin)
+
+        Model.set_tin(hce)
+        print("hce.tin: ", hce.tin)
+        tfe = hce.tin
+        tf =  tfe
+        hce.tout = tfe
+        #Para el cálculo de la solución del rendimiento a la entrada puedes 
+        #plantear como primera aproximación la solución de primer grado y 
+        #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
+        
+        pr0 = 1. 
+        text = 22.0
+        qu = 0.
+        
+        #Ec. 3.20 Barbero
+        qabs = (hce.parameters['pr_opt']*
+                hce.parameters['cg'] * dni *
+                hce.parameters['pr_shw'] * 
+                hce.parameters['pr_geo'])     
+        
+        urec = 1/(
+            (1/hint) + 
+            (dro*np.log(dro/dri))/(2*krec)
+            ) 
+        
+        
+        # La forma de calcular sería suponer rendimiento térmico 1 y su
+        pr1 = 1.
+        # temperatura en pared sería Tro= Tf+q abs*rend/Urec. 
+
+        # Con el rendimiento obtenido calculas la temperatura en pared y recalculas rendimeinto, 
+        # así hasta convergencia.
+        tro1 = tf+qabs*pr1/urec
+        errtro = 1.
+        errpr = 1.
+        paso = 0
+        
+        while (errtro > 0.1 or errpr > 0.01) and paso < 10:
+            
+            paso += 1
+            
+            # 
+            #tro1 = tf+qabs*pr1/urec
+            trec = (tro1+tf)/2
+            #Ec. 4.22
+            krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+            #Ec. 3.22
+            urec = 1/(
+                (1/hint) + 
+                (dro*np.log(dro/dri))/(2*krec)
+                )                     
+            
+            NTU = urec * x * sc.pi * dro / (massFlow * cp)  #Ec. 3.30
+            
+#            print("NTU: ", NTU, 
+#                  "Tout=", hce.tout,
+#                  "tf=", tf, 
+#                  "qabs=", qabs,
+#                  "qu=",qu,
+#                  "urec=",urec,
+#                  "pr0=",pr0,
+#                  "pr=",pr1)
+            
+            f0 = qabs/(urec*(tfe-text))   
+            f1 = ((4*sigma*eext*(text**3))+hext)/urec 
+            f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
+            f3 = 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
+            f4 = (sigma*eext/urec)*((qabs/urec)**3)
+               
+            fx=  lambda pr0: (1-pr0-
+                            f1*(pr0+(1/f0))-
+                            f2*((pr0+(1/f0))**2)-
+                            f3*((pr0+(1/f0))**3)-
+                            f4*((pr0+(1/f0))**4)
+                           )
+            
+            dfx = lambda pr0: (-1-f1-
+                             2*f2*(pr0+(1/f0))-
+                             3*f3*(pr0+(1/f0))**2-
+                             4*f4*(pr0+(1/f0))**3
+                            )
+    
+            root = sc.optimize.newton(fx, 
+                  pr0,
+                  fprime = dfx,
+                  maxiter = 10000)
+            
+            print("PASO: ", paso, "root", root)
+            
+            pr0 = root   
+            z = pr0 + 1/f0
+            g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
+            g2 = 2*f2+6*f3*z+12*f4*z**2
+            g3 = 6*f3+24*f4*z        
+            
+            print("g1g2g3zNTU", (1-g1)*NTU*x/g1)
+            
+            pr2 = ((pr0*g1/(1-g1))*(1/(NTU*x))*(sc.exp((1-g1)*NTU*x/g1)-1) -
+                    (g2/(6*g1))*(pr0*NTU*x)**2 -
+                    (g3/(24*g1)*(pr0*NTU*x)**3)
+                    )
+            print("PASO: ", paso, "pr2", pr2)
+#            tro2 = ((qu/urec) + 
+#                    qabs*np.pi*dro*x*pr/(massFlow*cp)+
+#                    tfe)
+            
+            #tf += qabs*pr2/(massFlow*cp)
+            tro2 = tf+qabs*pr2/urec         
+            err_pr = abs(pr2-pr1)
+            err_tro = abs(tro2-tro1)
+            print("----------------------------------------------")  
+            print("ERROR: Tro ", err_tro, "ERROR: pr ", err_pr,
+                  "pr2 ", pr2, "pr1 ", pr1,
+                  "tf ",tf)
+
+            tro1 = tro2
+            pr1 = pr2
+            
+        
+        print("SALE DE WHILE-> pr:", pr1, "tro: ", tro1)
+        hce.pr = pr1
+        hce.tout = tfe+sc.pi*dro*x*qabs*pr1/(massFlow*cp)
+   
+        print("----------------------------------------------")    
+    
+    def e3_36(x, args) -> float:
+    
+        f0 = args[0]
+        f1 = args[1]
+        f2 = args[2]
+        f3 = args[3]
+        f4 = args[4]
+        
+        return  (1-x-
+                 f1*(x+(1/f0))+
+                 f2*((x+(1/f0))**2)+
+                 f3*((x+(1/f0))**3)+
+                 f4*((x+(1/f0))**4)
+                 )
+    
+    def e3_36prime(x, args):
+        
+        f0 = args[0]
+        f1 = args[1]
+        f2 = args[2]
+        f3 = args[3]
+        f4 = args[4]
+        
+        return (-1-f1+
+                2*f2*(x+1/f0)+
+                3*f3*(x+1/f0)**2+
+                4*f4*(x+1/f0)**3
+                )
+        
+    def e3_100(self, tro,tf,text,hext,eext,sigma):
+        
+        return 3*tro**4-4*tf*tro**3+(text**4+hext*(text-tf)/(sigma*eext))
+    
+    def e3_100prime(self, tro,tf,text,hext,eext,sigma):
+        
+        return 12*tro**3-12*tf*tro**2
+    
+    
+    
+
+class ModelBarbero1(Model):
 
     def __ini__(self, simulation):
         
@@ -55,160 +239,32 @@ class ModelBarbero4(Model):
         krec = hce.parameters['krec']
         massFlow = hce.sca.loop.massFlow
         
-        #cp = self.hot_fluid.get_cp(hce.tin)
+        text = 22.
+        tfe = hce.tin
         cp = 2300.0
         Model.set_tin(hce)
         print("hce.tin: ", hce.tin)
-        time.sleep(0.010)
-        hce.pr = hce.get_previous().pr
-        tfe = hce.tin
-        tf =  tfe
-        pr0=1.
-        pr=1.
         
-        text = 22.0
-        qu = 0.
-        
-        #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
-                hce.parameters['cg'] * dni *
-                hce.parameters['pr_shw'] * 
-                hce.parameters['pr_geo'])     
-        errTro = 1000
+        hce.parameters['cg'] * dni *
+        hce.parameters['pr_shw'] * 
+        hce.parameters['pr_geo']) 
+        
+        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        #Ec. 3.22
         urec = 1/(
             (1/hint) + 
             (dro*np.log(dro/dri))/(2*krec)
-            ) 
+            )  
+        aext=0.5*sc.pi*dro
         
-        tro = tf+qabs*pr/urec
-        
-        tro2 = tro
-        paso = 0
-        
-        while errTro > 0.1:
-            
-            paso += 1
-            trec = tro
-            #Ec. 4.22
-            krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
-            #Ec. 3.22
-            urec = 1/(
-                (1/hint) + 
-                (dro*np.log(dro/dri))/(2*krec)
-                )            
-
-            
-    #        tro= scy.optimize.newton(ModelBarbero4.e3_100, 
-    #                                  tro,
-    #                                  None,
-    #                                  args=(tf,text,hext,eext,sigma),
-    #                                  tol=0.0000001,
-    #                                  maxiter=1000)           
-            #Ec. 3.21
-            qu = urec*(tro-tf) 
-    
-            #Ec. 3.30
-            NTU = urec * x * pi * dro / (massFlow * cp)
-    
-            f0 = qabs/(urec*(tfe-text))   
-            f1 = ((4*sigma*eext*(text**3))+hext)/urec 
-            f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
-            f3= 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
-            f4 = (sigma*eext/urec)*((qabs/urec)**3)
-            
-            
-            
-    #        pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
-    #                                  pr0,
-    #                                  ModelBarbero4.e3_36prime,
-    #                                  args=(f0,f1,f2,f3,f4),
-    #                                  tol=0.01,
-    #                                  maxiter=1000)
-            
-            pr0 = scy.optimize.newton(ModelBarbero4.e3_36, 
-                              pr0,
-                              None,
-                              args=(f0,f1,f2,f3,f4),
-                              tol=0.1,
-                              maxiter=1000)
-            #fprime = ModelBarbero4.e3_36prime,
-
-            print("PASO: ", paso, "pr0=", pr0)
-            time.sleep(0.01)
-    
-            z = pr0 + 1/f0
-            
-            # g = -(1+1/f0)+(1+f1)*z+f2*z**2+f3*z**3+f4*z**4
-            g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
-            g2 = 2*f2+6*f3*z+12*f4*z**2
-            g3 = 6*f3+24*f4*z        
-            
-            pr = ((pr0*g1/(1-g1))*(1/(NTU*x))*(np.exp((1-g1)*NTU*x/g1)-1) -
-                    (g2/(6*g1))*(pr0*NTU*x)**2 -
-                    (g3/(24*g1)*(pr0*NTU*x)**3)
-                    )
-
-            tro2 = tf+qabs*pr/urec
-            errTro = abs(tro-tro2)
-            print(" Tro= ", tro, " tro2= ", tro2,"ERROR: ", errTro)
-            tro = tro2
-            
-        
-        print("SALE DE WHILE-> pr:", hce.pr, "tro: ", tro)
-        hce.pr = pr
-        hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
-   
-        print("hce", hce.get_index(),
-              "Tout=", hce.tout,
-              "tf=", tf, 
-              "qabs=", qabs,
-              "qu=",qu,
-              "urec=",urec,
-              "pr0=",pr0,
-              "pr=",pr)    
-    
-    def e3_36(pr0,f0,f1,f2,f3,f4) -> float:
-    
-        return  (1-pr0-
-                 f1*(pr0+(1/f0))+
-                 f2*((pr0+(1/f0))**2)+
-                 f3*((pr0+(1/f0))**3)+
-                 f4*((pr0+(1/f0))**4)
-                 )
-    
-    def e3_36prime(pr0,f0,f1,f2,f3,f4):
-        
-        return (-1-f1+
-                2*f2*(pr0+1/f0)+
-                3*f3*(pr0+1/f0)**2+
-                4*f4*(pr0+1/f0)**3
-                )
-        
-    def e3_100(tro,tf,text,hext,eext,sigma):
-        
-        return 3*tro**4-4*tf*tro**3+(text**4+hext*(text-tf)/(sigma*eext))
-    
-    def e3_100prime(tro,tf,text,hext,eext,sigma):
-        
-        return 12*tro**3-12*tf*tro**2
-    
-    
-    
-
-class ModelBarbero1(Model):
-
-    def __init__(self, simulation):
-        
-        super(Model, self).__init__(simulation)
-        
-    def simulateHCE(self, hce):
-    
-        dni = 1000
-
-        hce.pr = pr
-        
-        hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)                
-        
+        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
+        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massFlow*cp)
+        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
+        print("hce.pr: ", hce.pr)
+        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massFlow*cp)                
+        print("hce.tout: ", hce.tout)
         
 class ModelHottelWhilier(Model):
     
@@ -238,7 +294,6 @@ class ModelHottelWhilier(Model):
             Model.set_tin(hce)
             print("hce.tin: ", hce.tin)
             time.sleep(0.010)
-            hce.pr = hce.get_previous().pr
             tfe = hce.tin
             tf =  tfe
     
@@ -281,7 +336,7 @@ class ModelHottelWhilier(Model):
             
             print("qabs ", qabs, "uext ", uext, "urec ", urec, "tro ", tro, "pr ", pr) 
             hce.pr = pr
-            hce.tout = tfe+pi*dro*x*qabs*pr/(massFlow*cp)
+            hce.tout = tfe+sc.pi*dro*x*qabs*pr/(massFlow*cp)
             
         
         
