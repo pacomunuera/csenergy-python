@@ -45,13 +45,13 @@ class ModelBarbero4(Model):
         sigma = constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
-        x = hce.parameters['Long']
+        L = hce.parameters['Long']
         hint = hce.parameters['hint']
         hext = hce.parameters['hext']
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
         massFlow = hce.sca.loop.massFlow
-        
+        x= 1
         #cp = self.hot_fluid.get_cp(hce.tin)
 
         Model.set_tin(hce)
@@ -64,7 +64,7 @@ class ModelBarbero4(Model):
         #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
         
         pr0 = 1. 
-        text = 22.0
+        text = 273.15+22.0
         qu = 0.
         
         #Ec. 3.20 Barbero
@@ -105,7 +105,7 @@ class ModelBarbero4(Model):
                 (dro*np.log(dro/dri))/(2*krec)
                 )                     
             
-            NTU = urec * x * sc.pi * dro / (massFlow * cp)  #Ec. 3.30
+            NTU = urec * x * L * sc.pi * dro / (massFlow * cp)  #Ec. 3.30
             
 #            print("NTU: ", NTU, 
 #                  "Tout=", hce.tout,
@@ -116,8 +116,8 @@ class ModelBarbero4(Model):
 #                  "pr0=",pr0,
 #                  "pr=",pr1)
             
-            f0 = qabs/(urec*(tfe-text))   
-            f1 = ((4*sigma*eext*(text**3))+hext)/urec 
+            f0 = qabs/(urec*(tfe-text-273.15))   
+            f1 = ((4*sigma*eext*text**3)+hext)/urec 
             f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
             f3 = 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
             f4 = (sigma*eext/urec)*((qabs/urec)**3)
@@ -143,13 +143,13 @@ class ModelBarbero4(Model):
             print("PASO: ", paso, "root", root)
             
             pr0 = root   
-            z = pr0 + 1/f0
+            z = pr0 + (1/f0)
             g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
             g2 = 2*f2+6*f3*z+12*f4*z**2
             g3 = 6*f3+24*f4*z        
             
-            print("g1g2g3zNTU", (1-g1)*NTU*x/g1)
-            
+            print("z , qabs, urec, tfe-text, NTU, hext", z, qabs, urec, tfe-text, NTU, hext)
+            print("f0, f1, f2, f3, f4, g1", f0, f1, f2, f3, f4, g1)
             pr2 = ((pr0*g1/(1-g1))*(1/(NTU*x))*(sc.exp((1-g1)*NTU*x/g1)-1) -
                     (g2/(6*g1))*(pr0*NTU*x)**2 -
                     (g3/(24*g1)*(pr0*NTU*x)**3)
