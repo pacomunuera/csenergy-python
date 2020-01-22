@@ -84,19 +84,24 @@ with open ("./saved_configurations/simulation.json") as simulation_file:
 
 site = cs.Site(simulation_settings)
     
-plant = cs.Plant(simulation_settings)
+solarplant = cs.SolarPlant(simulation_settings)
 
 mask = cs.ScatterMask(simulation_settings)
 
-mask.applyMask(plant)
+hot_fluid = cs.HotFluid(simulation_settings)
+cold_fluid = cs.ColdFluid(simulation_settings)
+cycle = cs.ThermodynamicCycle(simulation_settings)
 
-plant.initializePlant()
+
+mask.applyMask(solarplant)
+
+solarplant.initializePlant()
 
 #model = cs.ModelHottelWhilier(simulation_settings)    
 
-model = cs.ModelBarbero4(simulation_settings)                                
+model = cs.ModelBarbero4grade(simulation_settings)                                
 
-for sf in plant.solarfields:
+for sf in solarplant.solarfields:
     for l in sf.loops:
         for s in l.scas:
             for h in s.hces:

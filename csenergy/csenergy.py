@@ -30,9 +30,12 @@ class Model(object):
             hce.tin = hce.sca.loop.scas[hce.sca.sca_order-1].hces[-1].tout
         else:
             hce.tin = hce.sca.loop.tin
-                                 
+    @classmethod 
+    def set_tout(cls, hce, qabs, pr, cp):
+        hce.tout = (hce.tin +sc.pi*hce.parameters['Dro']*hce.parameters['Long']*qabs*pr/
+                    (hce.sca.loop.massFlow*cp))
         
-class ModelBarbero4(Model):
+class ModelBarbero4grade(Model):
 
     def __ini__(self, simulation):
         
@@ -53,7 +56,6 @@ class ModelBarbero4(Model):
         massFlow = hce.sca.loop.massFlow
         x= 1
         #cp = self.hot_fluid.get_cp(hce.tin)
-
         Model.set_tin(hce)
         print("hce.tin: ", hce.tin)
         tfe = hce.tin
@@ -64,8 +66,7 @@ class ModelBarbero4(Model):
         #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
         
         pr0 = 1. 
-        text = 273.15+22.0
-        qu = 0.
+        text = 22.0
         
         #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
@@ -88,13 +89,11 @@ class ModelBarbero4(Model):
         tro1 = tf+qabs*pr1/urec
         errtro = 1.
         errpr = 1.
-        paso = 0
+        step = 0
         
-        while (errtro > 0.1 or errpr > 0.01) and paso < 10:
+        while (errtro > 0.0001 or errpr > 0.000001):
             
-            paso += 1
-            
-            # 
+            step += 1
             #tro1 = tf+qabs*pr1/urec
             trec = (tro1+tf)/2
             #Ec. 4.22
@@ -116,7 +115,7 @@ class ModelBarbero4(Model):
 #                  "pr0=",pr0,
 #                  "pr=",pr1)
             
-            f0 = qabs/(urec*(tfe-text-273.15))   
+            f0 = qabs/(urec*(tfe-text))   
             f1 = ((4*sigma*eext*text**3)+hext)/urec 
             f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
             f3 = 4*text*(sigma*eext/urec)*((qabs/urec)**2)            
@@ -140,11 +139,11 @@ class ModelBarbero4(Model):
                   fprime = dfx,
                   maxiter = 10000)
             
-            print("PASO: ", paso, "root", root)
+            print("PASO: ", step, "root", root)
             
             pr0 = root   
             z = pr0 + (1/f0)
-            g1 = f1+2*f2*z+3*f3*z**2+4*f4*z**3
+            g1 = 1+f1+2*f2*z+3*f3*z**2+4*f4*z**3
             g2 = 2*f2+6*f3*z+12*f4*z**2
             g3 = 6*f3+24*f4*z        
             
@@ -154,17 +153,17 @@ class ModelBarbero4(Model):
                     (g2/(6*g1))*(pr0*NTU*x)**2 -
                     (g3/(24*g1)*(pr0*NTU*x)**3)
                     )
-            print("PASO: ", paso, "pr2", pr2)
+            print("PASO: ", step, "pr2", pr2)
 #            tro2 = ((qu/urec) + 
 #                    qabs*np.pi*dro*x*pr/(massFlow*cp)+
 #                    tfe)
             
             #tf += qabs*pr2/(massFlow*cp)
             tro2 = tf+qabs*pr2/urec         
-            err_pr = abs(pr2-pr1)
-            err_tro = abs(tro2-tro1)
+            errpr = abs(pr2-pr1)
+            errtro = abs(tro2-tro1)
             print("----------------------------------------------")  
-            print("ERROR: Tro ", err_tro, "ERROR: pr ", err_pr,
+            print("ERROR: Tro ", errtro, "ERROR: pr ", errpr,
                   "pr2 ", pr2, "pr1 ", pr1,
                   "tf ",tf)
 
@@ -173,8 +172,9 @@ class ModelBarbero4(Model):
             
         
         print("SALE DE WHILE-> pr:", pr1, "tro: ", tro1)
-        hce.pr = pr1
-        hce.tout = tfe+sc.pi*dro*x*qabs*pr1/(massFlow*cp)
+        
+        Model.set_tout(hce, qabs, pr1, cp )
+        #hce.tout = tfe+sc.pi*dro*x*qabs*pr1/(massFlow*cp)
    
         print("----------------------------------------------")    
     
@@ -214,11 +214,106 @@ class ModelBarbero4(Model):
     def e3_100prime(self, tro,tf,text,hext,eext,sigma):
         
         return 12*tro**3-12*tf*tro**2
-    
-    
-    
+ 
 
-class ModelBarbero1(Model):
+class ModelBarbero1grade(Model):
+
+    def __ini__(self, simulation):
+        
+        super(Model, self).__init__(simulation)
+        
+    def simulateHCE(self, hce):
+    
+        dni = 800 #provisional
+                
+        
+        dro = hce.parameters['Dout']
+        dri = hce.parameters['Din']
+        x = hce.parameters['Long']
+        hint = hce.parameters['hint']
+        hext = hce.parameters['hext']
+        sigma = hce.parameters['sigma']
+        eext = hce.parameters['eext']
+        krec = hce.parameters['krec']
+        massFlow = hce.sca.loop.massFlow
+        
+        text = 22.
+        tfe = hce.tin
+        cp = 2300.0
+        Model.set_tin(hce)
+        print("hce.tin: ", hce.tin)
+        
+        qabs = (hce.parameters['pr_opt']*
+        hce.parameters['cg'] * dni *
+        hce.parameters['pr_shw'] * 
+        hce.parameters['pr_geo']) 
+        
+        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        #Ec. 3.22
+        urec = 1/(
+            (1/hint) + 
+            (dro*np.log(dro/dri))/(2*krec)
+            )  
+        aext=0.5*sc.pi*dro
+        
+        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
+        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massFlow*cp)
+        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
+        print("hce.pr: ", hce.pr)
+        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massFlow*cp)                
+        print("hce.tout: ", hce.tout)
+        
+class ModelBarbero0grade(Model):
+
+    def __ini__(self, simulation):
+        
+        super(Model, self).__init__(simulation)
+        
+    def simulateHCE(self, hce):
+    
+        dni = 800 #provisional
+                
+        
+        dro = hce.parameters['Dout']
+        dri = hce.parameters['Din']
+        x = hce.parameters['Long']
+        hint = hce.parameters['hint']
+        hext = hce.parameters['hext']
+        sigma = hce.parameters['sigma']
+        eext = hce.parameters['eext']
+        krec = hce.parameters['krec']
+        massFlow = hce.sca.loop.massFlow
+        
+        text = 22.
+        tfe = hce.tin
+        cp = 2300.0
+        Model.set_tin(hce)
+        print("hce.tin: ", hce.tin)
+        
+        qabs = (hce.parameters['pr_opt']*
+        hce.parameters['cg'] * dni *
+        hce.parameters['pr_shw'] * 
+        hce.parameters['pr_geo']) 
+        
+        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        #Ec. 3.22
+        urec = 1/(
+            (1/hint) + 
+            (dro*np.log(dro/dri))/(2*krec)
+            )  
+        aext=0.5*sc.pi*dro
+        
+        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
+        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massFlow*cp)
+        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
+        print("hce.pr: ", hce.pr)
+        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massFlow*cp)                
+        print("hce.tout: ", hce.tout)
+        
+        
+class ModelBarberoSimplified(Model):
 
     def __ini__(self, simulation):
         
@@ -350,8 +445,24 @@ class ModelASHRAE(Model):
 
         def __ini__(self, simulation):
         
-            super(Model, self).__init__(simulation)    
-    
+            super(Model, self).__init__(simulation)
+            
+        def simulateHCE(self, hce):
+            
+            dni = 800 #provisional
+            dro = hce.parameters['Dout']
+            dri = hce.parameters['Din']
+            x = hce.parameters['Long']
+            w = hce.parameters['w']
+            hint = hce.parameters['hint']
+            hext = hce.parameters['hext']
+            sigma = hce.parameters['sigma']
+            eext = hce.parameters['eext']
+            krec = hce.parameters['krec']
+            
+            
+            
+
         
 class HCE(object):
     
@@ -487,7 +598,7 @@ class SolarField(object):
         self.requieredMassFlow = req_massflow/self.loops.len()       
         
         
-class Plant(object):
+class SolarPlant(object):
     '''
     Parabolic Trough Concentrated Solar Power Plant
     
@@ -504,7 +615,7 @@ class Plant(object):
         self.turbogenerator_performance = 0.9
         
         self.tin = 300
-        self.massFlow = 2
+        self.massFlow = 4
         
         for sf in simulation_settings.get('plant').get('solarfields'):
             self.solarfields.append(SolarField(self, sf))
@@ -554,7 +665,7 @@ class Plant(object):
                     l.tin = sf.tin
                     
                 
-    def printPlant(self):
+    def print(self):
         
         for sf in self.solarfields:
             for l in sf.loops:
@@ -624,34 +735,39 @@ class Simulation(object):
            
 class HeatExchanger(object):
     
-    def __init__(self, pr_heatexchanger, 
-                 coolfluid_tin, 
-                 hotfluid_tin, 
-                 hotfluid,
-                 coolfluid):
+    def __init__(self, hotfluid, coldfluid, pr_heatexchanger, 
+                 hotfluidmassflow, coldfluidmassflow):
         
         self.pr_heatexchanger = pr_heatexchanger
-        
-        self.hot_fluid = Fluid("HTF")
-        self.cold_fluid = Fluid("water")
         
     def set_fluid_tout(self):
         pass  
     
     def hot_fluid_tout():
         return 
-
+    
+class ThermodynamicCycle (object):
+    
+    def __init__(self, simulation_settings):
+        
+        self.name = simulation_settings['cycle']['name']
+    
+    @classmethod
+    def get_NCA_pr(cls, tf, text):
+        
+        return (1-(text/tf)**(1/2))
+        
+    @classmethod
+    def get_Carnot_pr(cls, tf, text):
+        
+        return (1-(text/tf))    
+    
+    
         
 class Fluid(object):
     
     def __init__(self, name):
-        
-        self.name = name
-
-        if self.name == 'Therminol VP1':            
-            htf_data = pd.read_csv(monsanto.csv, sep=';', decimal=',', index_col=0)
-        elif self.name == "Dowtherm":
-            htf_data = pd.read_csv(dowtherm.csv, sep=',', decimal=',', index_col=0)
+        pass
             
             
     def get_density(self):
@@ -660,39 +776,9 @@ class Fluid(object):
     
     def get_cp(self):
         
-        return self.cp        
-        
-    def set_fluid_cp(self, pressure, temperature):
-        
-        self.cp = 1000 # más adelante cp debe obtenerse con CoolProp, por ejemplo
-        
-    def Reynolds(self):
-        
-        self.re = 0
-        
-    def ReynoldsDRI(self):
-        
-        self.redri = 0
-        
-    def Dittus_Boelter(self):
-        
-        self.nudb = 0.023*(redri**0.8)*(prf**0.4) 
-                           
-    def Gnielinski(self):
-        
-        self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /     
-                    (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
-                    )
-
-
-class HTF(Fluid):
+        return self.cp
     
-    def __init__(self, hot_fluid):
-        
-        self.name = hot_fluid.get('name')
-
-    @classmethod
-    def deltaH(cls, tin, tout, m, hot_fluid):
+    def get_deltaH(self):
         
         cp_0 = hot_fluid['cp_factors'][0]
         cp_1 = hot_fluid['cp_factors'][1]
@@ -703,6 +789,40 @@ class HTF(Fluid):
                   (1/5)*cp_1*(tout**2-tin**2)+
                   (1/3)*cp_2*(tout**3-tin**3)+
                   (1/4)*cp_3*(tout**4-tin**4))
+        
+    def get_Reynolds(self):
+        
+        self.re = 0
+        
+    def get_ReynoldsDRI(self):
+        
+        self.redri = 0
+        
+    def get_nusselt_Dittus_Boelter(self):
+        
+        self.nudb = 0.023*(redri**0.8)*(prf**0.4) 
+                           
+    def get_nusselt_Gnielinski(self):
+        
+        self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /     
+                    (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
+                    )
+
+
+class HotFluid(Fluid):
+    
+    def __init__(self, simulation_settings):
+        
+        self.name = simulation_settings['hot_fluid']['name']
+        self.parameters = simulation_settings['hot_fluid']['parameters']
+        
+        
+class ColdFluid(Fluid):
+    
+    def __init__(self, simulation_settings):
+        
+        self.name = simulation_settings['cold_fluid']['name']
+        self.parameters = simulation_settings['cold_fluid']['parameters']
         
 
 class Weather(object):   

@@ -21,9 +21,14 @@
 	"w": 5},
 "hot_fluid": {
 	"name": "Therminol VP-1",
-	"cp_factors": [1479.1, 3.2315, -0.003, 0.000005]},
+	"cp_factors": [1479.1, 3.2315, -0.003, 0.000005],
+	"parameters" : {}},
 "cold_fluid": {
-	"name": "water"},
+	"name": "water",
+	"parameters" : {}},
+"cycle" : {
+   "name": "Rankine",
+   "pr_calculation": "NBA"},
 "model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,
