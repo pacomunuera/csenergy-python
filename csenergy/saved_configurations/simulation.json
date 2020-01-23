@@ -4,21 +4,22 @@
 "plant": {
 	"name": "My plant",
 	"solarfields": [
-		{"name": "c0", "loops": 30, "scas": 4, "hces": 12, "massflow": 120},
-		{"name": "c1", "loops": 30, "scas": 4, "hces": 12, "massflow": 120},
-		{"name": "c2", "loops": 30, "scas": 4, "hces": 12, "massflow": 120},
-		{"name": "c3", "loops": 30, "scas": 4, "hces": 12, "massflow": 120}]},
+		{"name": "c0", "loops": 30, "scas": 1, "hces": 1, "massflow": 120},
+		{"name": "c1", "loops": 30, "scas": 1, "hces": 1, "massflow": 120},
+		{"name": "c2", "loops": 30, "scas": 1, "hces": 1, "massflow": 120},
+		{"name": "c3", "loops": 30, "scas": 1, "hces": 1, "massflow": 120}]},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
 	"longitude": -3.16,
 	"elevation": 645},
 "weather": {
-	"filename": "A1A_07_2018.tm2"},
+	"filename": "daggett_ca_34.865371_-116.783023_psmv3_60_tmy.csv",
+	"filepath": "./weather_files/"},
 "hce": {
 	"manufacturer": "Soleil",
 	"model ": "RTC70", 
-	"Long": 4.0, 
+	"Long": 192.0, 
 	"Dri": 0.066, 
 	"Dro": 0.070,
 	"w": 5},

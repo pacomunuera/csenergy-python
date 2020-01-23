@@ -79,7 +79,7 @@ site = cs.Site(simulation_settings)
     
 solarplant = cs.SolarPlant(simulation_settings)
 
-
+weather = cs.Weather(simulation_settings)
 
 mask = cs.ScatterMask(simulation_settings)
 
@@ -90,9 +90,7 @@ cycle = cs.ThermodynamicCycle(simulation_settings)
 
 mask.applyMask(solarplant)
 
-solarplant.initializePlant()
-
-#model = cs.ModelHottelWhilier(simulation_settings)    
+solarplant.initializePlant()   
 
 model = cs.ModelBarbero4grade(simulation_settings)                                
 
@@ -101,9 +99,33 @@ for sf in solarplant.solarfields:
         for s in l.scas:
             for h in s.hces:
                 model.set_tin(h)
-                model.simulateHCE(h)
-               
-   
+                model.simulateHCE(h, hot_fluid, weather)
+
+print(solarplant.solarfields[0].loops[-1].scas[-1].hces[-1].tout)
+
+solarplant.initializePlant()
+model2 = cs.ModelBarbero1grade(simulation_settings)   
+
+for sf in solarplant.solarfields:
+    for l in sf.loops:
+        for s in l.scas:
+            for h in s.hces:
+                model2.set_tin(h)
+                model2.simulateHCE(h, hot_fluid, weather)   
+
+print(solarplant.solarfields[0].loops[-1].scas[-1].hces[-1].tout)
+
+solarplant.initializePlant()                
+model3 = cs.ModelBarberoSimplified(simulation_settings)   
+
+for sf in solarplant.solarfields:
+    for l in sf.loops:
+        for s in l.scas:
+            for h in s.hces:
+                model3.set_tin(h)
+                model3.simulateHCE(h, hot_fluid, weather)  
+
+print(solarplant.solarfields[0].loops[-1].scas[-1].hces[-1].tout)
 # Crea aplicación
 #root = Tk()
 ## Creamos una ventana

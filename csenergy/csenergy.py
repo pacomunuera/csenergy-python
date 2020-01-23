@@ -12,7 +12,13 @@ import math as mt
 import CoolProp as CP
 import time
 import pandas as pd
-      
+import pvlib as pvlib 
+from pvlib import iotools
+from tkinter import * 
+from tkinter.filedialog import askopenfilename
+import pandas as pd
+from datetime import datetime
+     
         
 class Model(object):
     
@@ -41,11 +47,12 @@ class ModelBarbero4grade(Model):
         super(Model, self).__init__(simulation)
         
     @classmethod
-    def simulateHCE(cls, hce):
+    def simulateHCE(cls, hce, hot_fluid, weather):
     
-        dni = 800 #provisional
-        cp = 2300.0 #provisional
-        sigma = constants.sigma
+        dni = weather.get_dni()    
+        Model.set_tin(hce)
+        cp = hot_fluid.get_cp(hce.tin)  #provisional
+        sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
         L = hce.parameters['Long']
@@ -55,8 +62,7 @@ class ModelBarbero4grade(Model):
         krec = hce.parameters['krec']
         massflow = hce.sca.loop.massflow
         x= 1
-        #cp = self.hot_fluid.get_cp(hce.tin)
-        Model.set_tin(hce)
+
          # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
         tfe = hce.tin
         tf =  tfe
@@ -66,7 +72,7 @@ class ModelBarbero4grade(Model):
         #plantear como primera aproximación la solución de primer grado y 
         #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
         
-        pr0 = ModelBarbero1grade.simulateHCE(hce) 
+        pr0 = ModelBarbero1grade.simulateHCE(hce, hot_fluid, weather) 
         
                 # Ec. 3.50 Barbero
         qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
@@ -88,12 +94,8 @@ class ModelBarbero4grade(Model):
         
         pr0 = (1-qcrit/qabs)/(1+ucrit/urec)    
         
-        # La forma de calcular sería suponer rendimiento térmico 1 y su
         pr1 = pr0
-        # temperatura en pared sería Tro= Tf+q abs*rend/Urec. 
 
-        # Con el rendimiento obtenido calculas la temperatura en pared y recalculas rendimeinto, 
-        # así hasta convergencia.
         tro1 = tf+qabs*pr1/urec
         errtro = 1.
         errpr = 1.
@@ -156,44 +158,6 @@ class ModelBarbero4grade(Model):
             pr1 = pr2            
         
         Model.set_tout(hce, qabs, pr1, cp )
-
-    
-    def e3_36(x, args) -> float:
-    
-        f0 = args[0]
-        f1 = args[1]
-        f2 = args[2]
-        f3 = args[3]
-        f4 = args[4]
-        
-        return  (1-x-
-                 f1*(x+(1/f0))+
-                 f2*((x+(1/f0))**2)+
-                 f3*((x+(1/f0))**3)+
-                 f4*((x+(1/f0))**4)
-                 )
-    
-    def e3_36prime(x, args):
-        
-        f0 = args[0]
-        f1 = args[1]
-        f2 = args[2]
-        f3 = args[3]
-        f4 = args[4]
-        
-        return (-1-f1+
-                2*f2*(x+1/f0)+
-                3*f3*(x+1/f0)**2+
-                4*f4*(x+1/f0)**3
-                )
-        
-    def e3_100(self, tro,tf,text,hext,eext,sigma):
-        
-        return 3*tro**4-4*tf*tro**3+(text**4+hext*(text-tf)/(sigma*eext))
-    
-    def e3_100prime(self, tro,tf,text,hext,eext,sigma):
-        
-        return 12*tro**3-12*tf*tro**2
  
 
 class ModelBarbero1grade(Model):
@@ -203,11 +167,11 @@ class ModelBarbero1grade(Model):
         super(Model, self).__init__(simulation)
         
     @classmethod
-    def simulateHCE(cls, hce):
+    def simulateHCE(cls, hce, hot_fluid, weather):
     
-        dni = 800 #provisional
-        cp = 2300.0 #provisional
-        sigma = constants.sigma
+        dni = weather.get_dni() 
+        cp = hot_fluid.get_cp(hce.tin)
+        sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
         L = hce.parameters['Long']
@@ -223,11 +187,65 @@ class ModelBarbero1grade(Model):
         tfe = hce.tin
         tf =  tfe
         hce.tout = tfe
-        #Para el cálculo de la solución del rendimiento a la entrada puedes 
-        #plantear como primera aproximación la solución de primer grado y 
-        #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
+         
+        text = 22.0
         
-        pr0 = 1. 
+        #Ec. 3.20 Barbero
+        qabs = (hce.parameters['pr_opt']*
+                hce.parameters['cg'] * dni *
+                hce.parameters['pr_shw'] * 
+                hce.parameters['pr_geo'])
+        
+        # Ec. 3.50 Barbero
+        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        
+        #Ec. 3.51 Barbero
+        ucrit = 4*sigma*eext*tfe**3+hext
+        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        # Ec. 3.22
+        urec = 1/(
+            (1/hint) + 
+            (dro*np.log(dro/dri))/(2*krec)
+            )
+        
+        pr0 = (1-qcrit/qabs)/(1+ucrit/urec)
+        
+        fcrit = 1/(1+ucrit/urec)
+         
+        aext=0.5*sc.pi*dro
+        ntuperd = ucrit*aext/(massflow*cp)
+         
+        pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-sc.exp(-ntuperd*fcrit*x))
+#        
+        Model.set_tout(hce, qabs, pr, cp )
+        
+class ModelBarberoSimplified(Model):
+
+    def __ini__(self, simulation):
+        
+        super(Model, self).__init__(simulation)
+        
+    def simulateHCE(cls, hce, hot_fluid, weather):
+    
+        dni = weather.get_dni() 
+        cp = hot_fluid.get_cp(hce.tin)
+        sigma = sc.constants.sigma
+        dro = hce.parameters['Dro']
+        dri = hce.parameters['Dri']
+        L = hce.parameters['Long']
+        hint = hce.parameters['hint']
+        hext = hce.parameters['hext']
+        eext = hce.parameters['eext']
+        krec = hce.parameters['krec']
+        massflow = hce.sca.loop.massflow
+        x= 1
+        #cp = self.hot_fluid.get_cp(hce.tin)
+        Model.set_tin(hce)
+         # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
+        tfe = hce.tin
+        tf =  tfe
+        hce.tout = tfe
+         
         text = 22.0
         
         #Ec. 3.20 Barbero
@@ -248,116 +266,14 @@ class ModelBarbero1grade(Model):
             (dro*np.log(dro/dri))/(2*krec)
             )
         
+        pr0 = (1-qcrit/qabs)/(1+ucrit/urec)
         
-        hce.pr0 = (1-qcrit/qabs)/(1+ucrit/urec)
-        
-        
-#        aext=0.5*sc.pi*dro
+        fcrit = 1/(1+ucrit/urec)
+         
+        pr = fcrit*(1-qcrit/qabs)
 #        
-#        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
-#        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
-#        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massflow*cp)
-#        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
-#        print("hce.pr: ", hce.pr)
-#        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massflow*cp)                
-#        print("hce.tout: ", hce.tout)
-        
-class ModelBarbero0grade(Model):
+        Model.set_tout(hce, qabs, pr, cp )
 
-    def __ini__(self, simulation):
-        
-        super(Model, self).__init__(simulation)
-        
-    def simulateHCE(self, hce):
-    
-        dni = 800 #provisional
-                
-        
-        dro = hce.parameters['Dout']
-        dri = hce.parameters['Din']
-        x = hce.parameters['Long']
-        hint = hce.parameters['hint']
-        hext = hce.parameters['hext']
-        sigma = hce.parameters['sigma']
-        eext = hce.parameters['eext']
-        krec = hce.parameters['krec']
-        massflow = hce.sca.loop.massflow
-        
-        text = 22.
-        tfe = hce.tin
-        cp = 2300.0
-        Model.set_tin(hce)
-        print("hce.tin: ", hce.tin)
-        
-        qabs = (hce.parameters['pr_opt']*
-        hce.parameters['cg'] * dni *
-        hce.parameters['pr_shw'] * 
-        hce.parameters['pr_geo']) 
-        
-        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
-        #Ec. 3.22
-        urec = 1/(
-            (1/hint) + 
-            (dro*np.log(dro/dri))/(2*krec)
-            )  
-        aext=0.5*sc.pi*dro
-        
-        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
-        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
-        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massflow*cp)
-        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
-        print("hce.pr: ", hce.pr)
-        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massflow*cp)                
-        print("hce.tout: ", hce.tout)
-        
-        
-class ModelBarberoSimplified(Model):
-
-    def __ini__(self, simulation):
-        
-        super(Model, self).__init__(simulation)
-        
-    def simulateHCE(self, hce):
-    
-        dni = 800 #provisional
-                
-        
-        dro = hce.parameters['Dout']
-        dri = hce.parameters['Din']
-        x = hce.parameters['Long']
-        hint = hce.parameters['hint']
-        hext = hce.parameters['hext']
-        sigma = hce.parameters['sigma']
-        eext = hce.parameters['eext']
-        krec = hce.parameters['krec']
-        massflow = hce.sca.loop.massflow
-        
-        text = 22.
-        tfe = hce.tin
-        cp = 2300.0
-        Model.set_tin(hce)
-        print("hce.tin: ", hce.tin)
-        
-        qabs = (hce.parameters['pr_opt']*
-        hce.parameters['cg'] * dni *
-        hce.parameters['pr_shw'] * 
-        hce.parameters['pr_geo']) 
-        
-        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
-        #Ec. 3.22
-        urec = 1/(
-            (1/hint) + 
-            (dro*np.log(dro/dri))/(2*krec)
-            )  
-        aext=0.5*sc.pi*dro
-        
-        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
-        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
-        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massflow*cp)
-        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
-        print("hce.pr: ", hce.pr)
-        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massflow*cp)                
-        print("hce.tout: ", hce.tout)
         
 class ModelHottelWhilier(Model):
     
@@ -770,9 +686,9 @@ class Fluid(object):
         
         return self.density
     
-    def get_cp(self):
+    def get_cp(self, temperature):
         
-        return self.cp
+        return 2500
     
     def get_deltaH(self):
         
@@ -822,12 +738,46 @@ class ColdFluid(Fluid):
         
 
 class Weather(object):   
-    def __init__(self):
-        pass
+   
+    def __init__(self, simulation_settings):
+        self.filename = simulation_settings['weather']['filename']
+        self.filepath = simulation_settings['weather']['filepath']
         
-    def loadWheatherData(path):
-        pass
+    def openWeatherDataFile(self, path = None):
+        
+        if path is None:
+            self.file = askopenfilename(initialdir = ".weather_files/",
+                               title = "choose your file",
+                               filetypes = (("TMY files","*.tm2"),
+                                            ("TMY files","*.tm3"),
+                                            ("csv files","*.csv"),
+                                            ("all files","*.*")))
+        else:
+            
+            self.file = self.filepath + self.filename
+            
+        self.weatherdata = pvlib.iotools.tmy.read_tmy2(self.file)   
+        
+    def loadWeatherDataFile(self):
+        
+        self.weatherdata = pvlib.iotools.tmy.read_tmy2(self.filename)
+        print(type(self.weatherdata))
 
+
+        # #date_rng = pd.date_range(start='1/1/2014',end='31/12/2014',freq='H')
+        # weatherdata = pd.read_csv(file, sep=';', decimal=',', index_col=0)
+        # weatherdata.index = pd.to_datetime(weatherdata.index)
+        # weatherdata = weatherdata.apply(pd.to_numeric, errors='coerce')
+        # print(weatherdata)
+        # robj = weatherdata.resample('10T').mean()
+        # print(robj)
+        
+        
+        
+
+    def get_dni(self):
+        return 800
+    
 
         
 # format = '%Y-%m-%d %H:%M:%S'
