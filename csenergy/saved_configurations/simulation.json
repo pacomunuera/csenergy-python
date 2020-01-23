@@ -4,7 +4,10 @@
 "plant": {
 	"name": "My plant",
 	"solarfields": [
-		{"name": "c0", "loops": 1, "scas": 4, "hces": 12}]},
+		{"name": "c0", "loops": 30, "scas": 4, "hces": 12, "massflow": 120},
+		{"name": "c1", "loops": 30, "scas": 4, "hces": 12, "massflow": 120},
+		{"name": "c2", "loops": 30, "scas": 4, "hces": 12, "massflow": 120},
+		{"name": "c3", "loops": 30, "scas": 4, "hces": 12, "massflow": 120}]},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,

@@ -12,7 +12,6 @@ import math as mt
 import CoolProp as CP
 import time
 import pandas as pd
-
       
         
 class Model(object):
@@ -33,7 +32,7 @@ class Model(object):
     @classmethod 
     def set_tout(cls, hce, qabs, pr, cp):
         hce.tout = (hce.tin +sc.pi*hce.parameters['Dro']*hce.parameters['Long']*qabs*pr/
-                    (hce.sca.loop.massFlow*cp))
+                    (hce.sca.loop.massflow*cp))
         
 class ModelBarbero4grade(Model):
 
@@ -41,7 +40,8 @@ class ModelBarbero4grade(Model):
         
         super(Model, self).__init__(simulation)
         
-    def simulateHCE(self, hce):
+    @classmethod
+    def simulateHCE(cls, hce):
     
         dni = 800 #provisional
         cp = 2300.0 #provisional
@@ -53,35 +53,43 @@ class ModelBarbero4grade(Model):
         hext = hce.parameters['hext']
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
-        massFlow = hce.sca.loop.massFlow
+        massflow = hce.sca.loop.massflow
         x= 1
         #cp = self.hot_fluid.get_cp(hce.tin)
         Model.set_tin(hce)
-        print("hce.tin: ", hce.tin)
+         # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
         tfe = hce.tin
         tf =  tfe
         hce.tout = tfe
+        text = 22.0
         #Para el cálculo de la solución del rendimiento a la entrada puedes 
         #plantear como primera aproximación la solución de primer grado y 
         #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
         
-        pr0 = 1. 
-        text = 22.0
+        pr0 = ModelBarbero1grade.simulateHCE(hce) 
+        
+                # Ec. 3.50 Barbero
+        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        
+        #Ec. 3.51 Barbero
+        ucrit = 4*sigma*eext*tfe**3+hext
+        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        # Ec. 3.22
+        urec = 1/(
+            (1/hint) + 
+            (dro*np.log(dro/dri))/(2*krec)
+            )
         
         #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
                 hce.parameters['cg'] * dni *
                 hce.parameters['pr_shw'] * 
-                hce.parameters['pr_geo'])     
+                hce.parameters['pr_geo']) 
         
-        urec = 1/(
-            (1/hint) + 
-            (dro*np.log(dro/dri))/(2*krec)
-            ) 
-        
+        pr0 = (1-qcrit/qabs)/(1+ucrit/urec)    
         
         # La forma de calcular sería suponer rendimiento térmico 1 y su
-        pr1 = 1.
+        pr1 = pr0
         # temperatura en pared sería Tro= Tf+q abs*rend/Urec. 
 
         # Con el rendimiento obtenido calculas la temperatura en pared y recalculas rendimeinto, 
@@ -104,17 +112,8 @@ class ModelBarbero4grade(Model):
                 (dro*np.log(dro/dri))/(2*krec)
                 )                     
             
-            NTU = urec * x * L * sc.pi * dro / (massFlow * cp)  #Ec. 3.30
-            
-#            print("NTU: ", NTU, 
-#                  "Tout=", hce.tout,
-#                  "tf=", tf, 
-#                  "qabs=", qabs,
-#                  "qu=",qu,
-#                  "urec=",urec,
-#                  "pr0=",pr0,
-#                  "pr=",pr1)
-            
+            NTU = urec * x * L * sc.pi * dro / (massflow * cp)  #Ec. 3.30
+                      
             f0 = qabs/(urec*(tfe-text))   
             f1 = ((4*sigma*eext*text**3)+hext)/urec 
             f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
@@ -139,44 +138,25 @@ class ModelBarbero4grade(Model):
                   fprime = dfx,
                   maxiter = 10000)
             
-            print("PASO: ", step, "root", root)
-            
             pr0 = root   
             z = pr0 + (1/f0)
             g1 = 1+f1+2*f2*z+3*f3*z**2+4*f4*z**3
             g2 = 2*f2+6*f3*z+12*f4*z**2
             g3 = 6*f3+24*f4*z        
             
-            print("z , qabs, urec, tfe-text, NTU, hext", z, qabs, urec, tfe-text, NTU, hext)
-            print("f0, f1, f2, f3, f4, g1", f0, f1, f2, f3, f4, g1)
             pr2 = ((pr0*g1/(1-g1))*(1/(NTU*x))*(sc.exp((1-g1)*NTU*x/g1)-1) -
                     (g2/(6*g1))*(pr0*NTU*x)**2 -
                     (g3/(24*g1)*(pr0*NTU*x)**3)
                     )
-            print("PASO: ", step, "pr2", pr2)
-#            tro2 = ((qu/urec) + 
-#                    qabs*np.pi*dro*x*pr/(massFlow*cp)+
-#                    tfe)
-            
-            #tf += qabs*pr2/(massFlow*cp)
+
             tro2 = tf+qabs*pr2/urec         
             errpr = abs(pr2-pr1)
-            errtro = abs(tro2-tro1)
-            print("----------------------------------------------")  
-            print("ERROR: Tro ", errtro, "ERROR: pr ", errpr,
-                  "pr2 ", pr2, "pr1 ", pr1,
-                  "tf ",tf)
-
+            errtro = abs(tro2-tro1)  
             tro1 = tro2
-            pr1 = pr2
-            
-        
-        print("SALE DE WHILE-> pr:", pr1, "tro: ", tro1)
+            pr1 = pr2            
         
         Model.set_tout(hce, qabs, pr1, cp )
-        #hce.tout = tfe+sc.pi*dro*x*qabs*pr1/(massFlow*cp)
-   
-        print("----------------------------------------------")    
+
     
     def e3_36(x, args) -> float:
     
@@ -222,47 +202,65 @@ class ModelBarbero1grade(Model):
         
         super(Model, self).__init__(simulation)
         
-    def simulateHCE(self, hce):
+    @classmethod
+    def simulateHCE(cls, hce):
     
         dni = 800 #provisional
-                
-        
-        dro = hce.parameters['Dout']
-        dri = hce.parameters['Din']
-        x = hce.parameters['Long']
+        cp = 2300.0 #provisional
+        sigma = constants.sigma
+        dro = hce.parameters['Dro']
+        dri = hce.parameters['Dri']
+        L = hce.parameters['Long']
         hint = hce.parameters['hint']
         hext = hce.parameters['hext']
-        sigma = hce.parameters['sigma']
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
-        massFlow = hce.sca.loop.massFlow
-        
-        text = 22.
-        tfe = hce.tin
-        cp = 2300.0
+        massflow = hce.sca.loop.massflow
+        x= 1
+        #cp = self.hot_fluid.get_cp(hce.tin)
         Model.set_tin(hce)
-        print("hce.tin: ", hce.tin)
+         # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
+        tfe = hce.tin
+        tf =  tfe
+        hce.tout = tfe
+        #Para el cálculo de la solución del rendimiento a la entrada puedes 
+        #plantear como primera aproximación la solución de primer grado y 
+        #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
         
+        pr0 = 1. 
+        text = 22.0
+        
+        #Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt']*
-        hce.parameters['cg'] * dni *
-        hce.parameters['pr_shw'] * 
-        hce.parameters['pr_geo']) 
+                hce.parameters['cg'] * dni *
+                hce.parameters['pr_shw'] * 
+                hce.parameters['pr_geo'])    
         
+        # Ec. 3.50 Barbero
+        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        
+        #Ec. 3.51 Barbero
+        ucrit = 4*sigma*eext*tfe**3+hext
         #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
-        #Ec. 3.22
+        # Ec. 3.22
         urec = 1/(
             (1/hint) + 
             (dro*np.log(dro/dri))/(2*krec)
-            )  
-        aext=0.5*sc.pi*dro
+            )
         
-        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
-        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
-        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massFlow*cp)
-        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
-        print("hce.pr: ", hce.pr)
-        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massFlow*cp)                
-        print("hce.tout: ", hce.tout)
+        
+        hce.pr0 = (1-qcrit/qabs)/(1+ucrit/urec)
+        
+        
+#        aext=0.5*sc.pi*dro
+#        
+#        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+#        fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
+#        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massflow*cp)
+#        hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
+#        print("hce.pr: ", hce.pr)
+#        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massflow*cp)                
+#        print("hce.tout: ", hce.tout)
         
 class ModelBarbero0grade(Model):
 
@@ -283,7 +281,7 @@ class ModelBarbero0grade(Model):
         sigma = hce.parameters['sigma']
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
-        massFlow = hce.sca.loop.massFlow
+        massflow = hce.sca.loop.massflow
         
         text = 22.
         tfe = hce.tin
@@ -306,10 +304,10 @@ class ModelBarbero0grade(Model):
         
         qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
         fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
-        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massFlow*cp)
+        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massflow*cp)
         hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
         print("hce.pr: ", hce.pr)
-        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massFlow*cp)                
+        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massflow*cp)                
         print("hce.tout: ", hce.tout)
         
         
@@ -332,7 +330,7 @@ class ModelBarberoSimplified(Model):
         sigma = hce.parameters['sigma']
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
-        massFlow = hce.sca.loop.massFlow
+        massflow = hce.sca.loop.massflow
         
         text = 22.
         tfe = hce.tin
@@ -355,10 +353,10 @@ class ModelBarberoSimplified(Model):
         
         qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
         fcrit = 1/((4*sigma*eext*tfe**3/urec)+(hext/urec)+1)
-        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massFlow*cp)
+        ntuperd = (hext+4*sigma*eext*tfe**3)*aext/(massflow*cp)
         hce.pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-np.exp(-ntuperd*fcrit*x))
         print("hce.pr: ", hce.pr)
-        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massFlow*cp)                
+        hce.tout = tfe+sc.pi*dro*x*qabs*hce.pr/(massflow*cp)                
         print("hce.tout: ", hce.tout)
         
 class ModelHottelWhilier(Model):
@@ -382,7 +380,7 @@ class ModelHottelWhilier(Model):
             krec = hce.parameters['krec']
             # En el modelo H-W uext es constante
             # uext = hce.parameters['uext']
-            massFlow = hce.sca.loop.massFlow
+            massflow = hce.sca.loop.massflow
             #cp = self.hot_fluid.get_cp(hce.tin)
             cp = 2300.0
 
@@ -426,12 +424,12 @@ class ModelHottelWhilier(Model):
             print("---------------", (1-uext*(tfe-text)/qabs))
 
             pr = ((1-uext*(tfe-text)/qabs)*
-                  massFlow*cp/(w*x*uext)*
-                  (1-np.exp(-Fprime*w*x*uext/(massFlow*cp))))
+                  massflow*cp/(w*x*uext)*
+                  (1-np.exp(-Fprime*w*x*uext/(massflow*cp))))
             
             print("qabs ", qabs, "uext ", uext, "urec ", urec, "tro ", tro, "pr ", pr) 
             hce.pr = pr
-            hce.tout = tfe+sc.pi*dro*x*qabs*pr/(massFlow*cp)
+            hce.tout = tfe+sc.pi*dro*x*qabs*pr/(massflow*cp)
             
         
         
@@ -518,14 +516,15 @@ class SCA(object):
         return HCE.get_tout(sca.hces[-1])           
             
 class Loop(object):
+    
     def __init__(self, solarfield, loop_order):
         self.solarfield = solarfield
         self.scas = []
         self.loop_order = loop_order
-        self.massFlow = 0.0
         self.tin = 0.0
-        #self.massFlow = massFlow
-        
+        self.massflow = 0.0
+
+
     def tempOut(self, weatherstatus, plantstatus):
         '''
         Calculation of the output temperature Tout of the HTF
@@ -543,7 +542,7 @@ class Loop(object):
     def calcRequiredMassFlow(self):
         '''
         
-        Calculation of the massFlow necessary to obtain the output temperature
+        Calculation of the massflow necessary to obtain the output temperature
         required by the operator
 
         Returns
@@ -551,7 +550,7 @@ class Loop(object):
         required HTF mass flow, reqMassFlowLoop
 
         '''
-        self.requiredMassFlow = 1
+        self.required_massflow = 1
         
 
 
@@ -561,13 +560,12 @@ class SolarField(object):
     
     '''
     
-    
-    def __init__(self, plant, solarfield_data):
+    def __init__(self, plant, simulation_settings):
         
         self.plant = plant
-        self.name = solarfield_data.get('name')
+        self.name = simulation_settings['name']
         self.loops = []
-        self.massFlow =1
+        self.massflow =simulation_settings['massflow']
         self.tin= 1
         self.tout = self.tin
         
@@ -591,11 +589,11 @@ class SolarField(object):
                     self.coolPipeLosses
                     )
          
-    def calcRequiredMassFlow(self):
+    def calcRequired_massflow(self):
         req_massflow = 0
         for l in self.loops:
-            req_massflow += l.requiredMassFlow
-        self.requieredMassFlow = req_massflow/self.loops.len()       
+            req_massflow += l.required_massflow
+        self.requiered_massflow = req_massflow/self.loops.len()       
         
         
 class SolarPlant(object):
@@ -615,9 +613,8 @@ class SolarPlant(object):
         self.turbogenerator_performance = 0.9
         
         self.tin = 300
-        self.massFlow = 4
         
-        for sf in simulation_settings.get('plant').get('solarfields'):
+        for sf in simulation_settings['plant']['solarfields']:
             self.solarfields.append(SolarField(self, sf))
             for l in range(sf.get('loops')):        
                 self.solarfields[-1].loops.append(
@@ -636,11 +633,11 @@ class SolarPlant(object):
         for sf in self.solarfields:
             self.total_loops += len(sf.loops)
 
-    def calcRequiredMassFlow(self):
+    def calcRequired_massflow(self):
         req_massflow = 0
         for sf in self.solarfields:
-            req_massflow += sf.calcRequiredMassFlow()
-        self.reqMassFlow = req_massflow
+            req_massflow += sf.calc_required_massflow()
+        self.req_massflow = req_massflow
         
     def initializePlant(self, measures = None):
         '''
@@ -657,11 +654,10 @@ class SolarPlant(object):
                     l.set_inputs(measures)
         else:
             for sf in self.solarfields:
-                sf.massFlow = len(sf.loops)*self.massFlow/self.total_loops
                 #sf.tin = self.exchanger.hot_fluid_Tout()
                 sf.tin = self.tin
                 for l in sf.loops:
-                    l.massFlow = sf.massFlow/len(sf.loops)
+                    l.massflow = sf.massflow/len(sf.loops)
                     l.tin = sf.tin
                     
                 
@@ -724,7 +720,7 @@ class Simulation(object):
     def __init__(self):
         pass       
         
-    def calcRequiredMassFlow():
+    def calcRequired_massflow():
         '''calcula el caudal promedio requerido en cada lazo para alzanzar
         la temperatura deseada. Calcula el caudal en cada lazo (si son todos 
         iguales solo lo hace una vez) y después calcula el promedio en cada 

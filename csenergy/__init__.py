@@ -10,7 +10,6 @@
 #from pvlib import ivtools
 #from pvlib import tracking
 #from pvlib import spa
-
 import csenergy as cs
 import pandas as pd
 from tkinter import * 
@@ -20,7 +19,6 @@ import json
 '''
 pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=False, right_index=False, by=None, left_by=None, right_by=None, suffixes=('_x', '_y'), tolerance=None, allow_exact_matches=True, direction='backward')[source]¶
 '''
-
 # _DC_MODEL_PARAMS = {
 #     'Barbero': set(['sigma', 'eext', 'hext', 'urec']),
 #     'NaumFraidenraich': set(['urec', 'uexts', 'cp', 'w']),
@@ -29,18 +27,13 @@ pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=
 #     'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
 #     'Price': set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
 #     }
-
 #TODO: 1 Preparación dataframe inicial. A partir de CSV como punto de inicio.
 #TODO: 2 Preparación de datos del HCE
 
 ' Campos del dataframe inicial: '
 '    | timestamp | Tamb | Wind | Winddir | DNI | Vector Solar | MassFlow | Tin | Tout |'
 
-# HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
-
-
-
-    
+# HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False} 
 """
 El usuario selecciona:
     
@@ -85,6 +78,8 @@ with open ("./saved_configurations/simulation.json") as simulation_file:
 site = cs.Site(simulation_settings)
     
 solarplant = cs.SolarPlant(simulation_settings)
+
+
 
 mask = cs.ScatterMask(simulation_settings)
 
