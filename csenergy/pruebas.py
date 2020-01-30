@@ -8,8 +8,7 @@ Created on Sun Dec 29 12:27:20 2019
 import pandas as pd
 from datetime import datetime
 import numpy as np
-
-'''resample(self, rule, how=None, axis=0, fill_method=None, closed=None, 
+'''resample(self, rule, how=None, axis=0, fill_method=None, closed=None,
     label=None, convention='start', kind=None, loffset=None, limit=None,
     base=0, on=None, level=None)
 '''
@@ -23,3 +22,5 @@ print(datos)
 robj = datos.resample('10T').mean()
 print(robj)
 
+for i in range(3):
+    print(i)
