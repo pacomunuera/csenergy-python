@@ -25,12 +25,37 @@ import os.path
 
 #  import pint
 
+#  CP(T) = cp0 + cp1·T  where T is in Kelvin and CP is in KJ/kg·K
+# tmax and tmin in K
+_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 0.6983, 'cp1': 0.003, 'tmax': 673.15,
+                                 'tmin': 288.15},
+                 'SYLTHERM 800': {'cp0': 1.1079, 'cp1': 0.0017, 'tmax': 673.15,
+                                  'tmin': 233.15},
+                 'THERMINOL VP1': {'cp0': 1.4963, 'cp1': 0.0027521, 'tmax': 673.15,
+                                   'tmin': 288.15}}
+
+_IAM_PARAMS = {'LS3': {'a0': 1.0, 'a1': -0.000223073, 'a2': -0.00011,
+                       'a3': 0.00000318596, 'a4': -0.0000000485509,
+                       'thetamin': 0, 'thetamax': 80},
+               'LS2': {'a0': 0.999978, 'a1': 0.001022, 'a2': -0.000209,
+                       'a3': 0.0, 'a4': -0.0000000485509, 'thetamin': 0,
+                       'thetamax': 80}}
+
+
+
+#     'DOWTHERM A': set({})
+#     'NaumFraidenraich': set(['urec', 'uexts', 'cp', 'w']),
+#     'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
+#     'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
+#     'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
+#     'Price': set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
+#     }
+
+
 class Model(object):
 
-    def __init__(self, simulation):
-        self.model_settings = dict(simulation.get('model_settings'))
-        self.hot_fluid = Fluid(dict(simulation.get('hot_fluid')))
-        self.weather = dict(simulation.get('weather'))
+    def __init__(self, settings):
+        self.model_settings = settings
 
     @classmethod
     def set_tin(cls, hce):
@@ -53,6 +78,7 @@ class Model(object):
         solarplant.initializePlant()
 
         for row in weather.weatherdata[0].iterrows():
+            print(row[0])
             solarposition = pvlib.solarposition.get_solarposition(row[0],
                                                         site.latitude,
                                                         site.longitude,
@@ -61,27 +87,28 @@ class Model(object):
                                                         temperature=row[1]['DryBulb'])
 
             aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'], solarposition['azimuth']))
-            print('angle: ', aoi, 'IAM: ', pvlib.iam.physical(aoi))
+            print('..........................................')
             for sf in solarplant.solarfields:
                 for l in sf.loops:
                     for s in l.scas:
                         for h in s.hces:
                             self.set_tin(h)
+                            print(h.get_index())
                             self.simulateHCE(h, hot_fluid, float(row[1]['DNI']))
-                    # print(l.scas[-1].hces[-1].tout)
+
 
 class ModelBarbero4grade(Model):
 
-    def __ini__(self, simulation):
+    def __ini__(self, settings):
 
-        super(Model, self).__init__(simulation)
+        super(Model, self).__init__(settings)
 
     @classmethod
     def simulateHCE(cls, hce, hot_fluid, dni):
 
         dni = dni
         Model.set_tin(hce)
-        cp = hot_fluid.get_cp(hce.tin)  # provisional
+        cp = hot_fluid.get_cp(hce.tin + 273.15)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
@@ -93,7 +120,6 @@ class ModelBarbero4grade(Model):
         massflow = hce.sca.loop.massflow
         x= 1
 
-         # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
         tfe = hce.tin
         tf =  tfe
         hce.tout = tfe
@@ -132,11 +158,18 @@ class ModelBarbero4grade(Model):
         errpr = 1.
         step = 0
 
+
+
         if qabs > 0:
 
             while (errtro > 0.0001 or errpr > 0.000001):
 
                 step += 1
+                # print(step)
+                # print('dni', dni, 'tin', hce.tin, 'cp ', cp, 'sigma', sigma,
+                #       'dro ', dro, 'dri ', dri, 'L', L, 'hint', hint,
+                #       'hext', hext, 'eext ', eext, 'krec', krec, 
+                #       'massflow' , massflow)
                 # tro1 = tf+qabs*pr1/urec
                 trec = (tro1+tf)/2
                 # Ec. 4.22
@@ -192,6 +225,7 @@ class ModelBarbero4grade(Model):
             pr1 = 0
 
         Model.set_tout(hce, qabs, pr1, cp)
+        print(hce.tout)
 
 
 class ModelBarbero1grade(Model):
@@ -204,7 +238,7 @@ class ModelBarbero1grade(Model):
     def simulateHCE(cls, hce, hot_fluid, dni):
 
         dni = dni
-        cp = hot_fluid.get_cp(hce.tin)
+        cp = hot_fluid.get_cp(hce.tin + 273.15)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
@@ -217,7 +251,7 @@ class ModelBarbero1grade(Model):
         x = 1
         # cp = self.hot_fluid.get_cp(hce.tin)
         Model.set_tin(hce)
-        # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
+
         tfe = hce.tin
         tf = tfe
         hce.tout = tfe
@@ -264,7 +298,7 @@ class ModelBarberoSimplified(Model):
     def simulateHCE(cls, hce, hot_fluid, dni):
 
         dni = dni
-        cp = hot_fluid.get_cp(hce.tin)
+        cp = hot_fluid.get_cp(hce.tin + 273.15)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
@@ -277,7 +311,6 @@ class ModelBarberoSimplified(Model):
         x = 1
         # cp = self.hot_fluid.get_cp(hce.tin)
         Model.set_tin(hce)
-        # print("HCE", hce.get_index(), "hce.tin: ", hce.tin)
         tfe = hce.tin
         tf = tfe
         hce.tout = tfe
@@ -318,9 +351,8 @@ class ModelHottelWhilier(Model):
 
             super(Model, self).__init__(simulation)
 
-        def simulateHCE(self, hce):
+        def simulateHCE(cls, hce, hot_fluid, dni):
 
-            dni = 800 #provisional
 
             dro = hce.parameters['Dout']
             dri = hce.parameters['Din']
@@ -335,10 +367,9 @@ class ModelHottelWhilier(Model):
             # uext = hce.parameters['uext']
             massflow = hce.sca.loop.massflow
             #cp = self.hot_fluid.get_cp(hce.tin)
-            cp = 2300.0
+            cp = hot_fluid.get_cp(hce.tin + 273.15)
 
             Model.set_tin(hce)
-            print("hce.tin: ", hce.tin)
             time.sleep(0.010)
             tfe = hce.tin
             tf =  tfe
@@ -379,7 +410,7 @@ class ModelHottelWhilier(Model):
                   massflow*cp/(w*x*uext) *
                   (1-np.exp(-Fprime*w*x*uext/(massflow*cp))))
 
-            print("qabs ", qabs, "uext ", uext, "urec ", urec, "tro ", tro, "pr ", pr)
+
             hce.pr = pr
             hce.tout = tfe+sc.pi*dro*x*qabs*pr/(massflow*cp)
 
@@ -412,12 +443,13 @@ class ModelASHRAE(Model):
 
 class HCE(object):
 
-    def __init__(self, sca, hce_order, simulation_settings):
+    def __init__(self, sca, hce_order, settings, model_settings):
 
         self.sca = sca
         self.hce_order = hce_order
-        self.parameters = dict(simulation_settings.get('hce'),
-                               **simulation_settings.get('model_settings'))
+#        self.parameters = dict(settings.get('hce'),
+#                               **settings.get('model_settings'))
+        self.parameters = dict(settings, **model_settings)
         self.tin = 0.0
         self.tout = 0.0
         self.pr = 0
@@ -504,13 +536,14 @@ class SCA(object):
 
 # Uso de __slots__ permite ahorrar memoria RAM
 #    __slots__= ['SCA_configuration']
-    def __init__(self, loop, sca_order, simulation_settings):
+    def __init__(self, loop, sca_order, settings):
 
         self.loop = loop
         self.sca_order = sca_order
         self.hces = []
         self.angle = 0.0
-        self.parameters = dict(simulation_settings.get('sca'))
+        self.parameters = settings
+
 
     def get_tin(self, sca):
 
@@ -572,12 +605,12 @@ class SolarField(object):
 
     '''
 
-    def __init__(self, plant, simulation_settings):
+    def __init__(self, plant, settings):
 
         self.plant = plant
-        self.name = simulation_settings['name']
+        self.name = settings['name']
         self.loops = []
-        self.massflow =simulation_settings['massflow']
+        self.massflow =settings['massflow']
         self.tin= 1
         self.tout = self.tin
 
@@ -614,9 +647,9 @@ class SolarPlant(object):
 
     '''
 
-    def __init__(self, simulation_settings):
+    def __init__(self, plant_settings, sca_settings, hce_settings, hce_model_settings):
 
-        self.name = simulation_settings['plant']['name']
+        self.name = plant_settings['name']
         self.solarfields = []
         self.solarfield_to_exchanger_thermal_lost = 0.1
         self.exchanger_performance = 0.9
@@ -626,7 +659,7 @@ class SolarPlant(object):
 
         self.tin = 300
 
-        for sf in simulation_settings['plant']['solarfields']:
+        for sf in plant_settings['solarfields']:
             self.solarfields.append(SolarField(self, sf))
             for l in range(sf.get('loops')):
                 self.solarfields[-1].loops.append(
@@ -635,12 +668,13 @@ class SolarPlant(object):
                     self.solarfields[-1].loops[-1].scas.append(
                         SCA(self.solarfields[-1].loops[-1],
                             s,
-                            simulation_settings))
+                            sca_settings))
                     for h in range (sf.get('hces')):
                         self.solarfields[-1].loops[-1].scas[-1].hces.append(
                             HCE(self.solarfields[-1].loops[-1].scas[-1],
                             h,
-                            simulation_settings))
+                            hce_settings,
+                            hce_model_settings))
 
         self.total_loops = 0
 
@@ -691,9 +725,9 @@ class SolarPlant(object):
 
 class SolarSystem(object):
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
-        self.parameters = dict(simulation_settings.get('solarsystem'))
+        self.parameters = settings
 
 
     #  Duffie - Beckman calculation of the incidence angle
@@ -762,10 +796,10 @@ class PowerSystem(object):
     # Calculo de potencia de salida (positiva o negativa)
     #y potencia derivada a BOB en base al estado de la planta
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
-        self.name = simulation_settings['powersystem']['name']
-        self.powerrate = simulation_settings['powersystem']['powerrate']
+        self.name = settings['powersystem']['name']
+        self.powerrate = settings['powersystem']['powerrate']
 
     def get_poweroutput(self):
         pass
@@ -785,9 +819,9 @@ class BOPSystem(object):
     #campo solar, iintercambiador y ciclo (bombeos) y datos
     #meteorologicos y de operación (consumo de traceados, aire comprimido...)
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
-        self.name = simulation_settings['bopsystem']['name']
+        self.name = settings['bopsystem']['name']
 
     def get_powerinput_from_PowerPlant(self):
         pass
@@ -797,29 +831,29 @@ class BOPSystem(object):
 
 
 class Site(object):
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
-        self.name = simulation_settings['site']['name']
-        self.latitude = simulation_settings['site']['latitude']
-        self.longitude = simulation_settings['site']['longitude']
-        self.altitude = simulation_settings['site']['altitude']
+        self.name = settings['site']['name']
+        self.latitude = settings['site']['latitude']
+        self.longitude = settings['site']['longitude']
+        self.altitude = settings['site']['altitude']
 
 
 class HCEScatterMask(object):
 
 
-    def __init__(self, simulation):
+    def __init__(self, plant_settings, hce_mask_settings):
 
         self.matrix = dict()
 
-        for sf in simulation.get('plant').get('solarfields'):
+        for sf in plant_settings['solarfields']:
             self.matrix[sf["name"]]=[]
             for l in range(sf.get('loops')):
                 self.matrix[sf["name"]].append([])
                 for s in range(sf.get('scas')):
                     self.matrix[sf["name"]][-1].append([])
                     for h in range (sf.get('hces')):
-                        self.matrix[sf["name"]][-1][-1].append(simulation["hce_scattered_params"])
+                        self.matrix[sf["name"]][-1][-1].append(hce_mask_settings)
 
     def applyMask(self, plant):
 
@@ -834,16 +868,16 @@ class HCEScatterMask(object):
 class SCAScatterMask(object):
 
 
-    def __init__(self, simulation):
+    def __init__(self, plant_settings, sca_mask_settings):
 
         self.matrix = dict()
 
-        for sf in simulation.get('plant').get('solarfields'):
+        for sf in plant_settings['solarfields']:
             self.matrix[sf["name"]]=[]
             for l in range(sf.get('loops')):
                 self.matrix[sf["name"]].append([])
                 for s in range(sf.get('scas')):
-                    self.matrix[sf["name"]][-1].append(simulation["sca_scattered_params"])
+                    self.matrix[sf["name"]][-1].append(sca_mask_settings)
 
     def applyMask(self, plant):
 
@@ -889,7 +923,7 @@ class HeatExchanger(object):
 
 class HeatStorage(object):
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
         self.name = pr_heatexchanger
 
@@ -901,9 +935,9 @@ class HeatStorage(object):
 
 class ThermodynamicCycle (object):
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
-        self.name = simulation_settings['cycle']['name']
+        self.name = settings['name']
 
     @classmethod
     def get_NCA_pr(cls, tf, text):
@@ -920,16 +954,20 @@ class ThermodynamicCycle (object):
 class Fluid(object):
 
     def __init__(self, name):
-        pass
+
+        self.parameters = _FLUIDS_PARAMS[name]
 
 
     def get_density(self):
 
         return self.density
 
-    def get_cp(self, temperature):
+    def get_cp(self, t):
 
-        return 2500
+        cp0 = self.parameters['cp0']
+        cp1 = self.parameters['cp1']
+
+        return 1000*(cp0 + cp1 * t)
 
     def get_deltaH(self):
 
@@ -964,25 +1002,36 @@ class Fluid(object):
 
 class HotFluid(Fluid):
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
+        print( settings['name'])
+        self.name =  settings['name']
+        print('......................')
+        super().__init__(self.name)
 
-        self.name = simulation_settings['hot_fluid']['name']
-        self.parameters = simulation_settings['hot_fluid']['parameters']
+
+    def get_IAM(self, theta):
+
+        a0 = self.parameters['a0']
+        a1 = self.parameters['a1']
+        a2 = self.parameters['a2']
+        a3 = self.parameters['a3']
+        a4 = self.parameters['a4']
+
+        return a0+a1*theta+a2*theta**2+a3*theta**3+a4*theta**4
 
 
 class ColdFluid(Fluid):
 
-    def __init__(self, simulation_settings):
+    def __init__(self, settings):
 
-        self.name = simulation_settings['cold_fluid']['name']
-        self.parameters = simulation_settings['cold_fluid']['parameters']
+        self.name = settings['name']
 
 
 class Weather(object):
 
-    def __init__(self, simulation_settings):
-        self.filename = simulation_settings['weather']['filename']
-        self.filepath = simulation_settings['weather']['filepath']
+    def __init__(self, settings):
+        self.filename = settings['filename']
+        self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
 
     def openWeatherDataFile(self, path = None):

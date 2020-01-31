@@ -38,29 +38,36 @@ with open("./saved_configurations/simulation.json") as simulation_file:
 
 site = cs.Site(simulation_settings)
 
-solarplant = cs.SolarPlant(simulation_settings)
+solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
+                           simulation_settings['sca'],
+                           simulation_settings['hce'],
+                           simulation_settings['hce_model_settings'])
 
-weather = cs.Weather(simulation_settings)
 
+hotfluid = cs.HotFluid(simulation_settings['hot_fluid'])
+coldfluid = cs.ColdFluid(simulation_settings['cold_fluid'])
+
+weather = cs.Weather(simulation_settings['weather'])
 while  not hasattr(weather, 'weatherdata'):
     weather.openWeatherDataFile()
 
 site.name = weather.get_weather_data_site()['City']
 
-hcemask = cs.HCEScatterMask(simulation_settings)
-scamask = cs.SCAScatterMask(simulation_settings)
+hcemask = cs.HCEScatterMask(simulation_settings['solar_plant'],
+                            simulation_settings['hce_scattered_params'])
+scamask = cs.SCAScatterMask(simulation_settings['solar_plant'],
+                            simulation_settings['sca_scattered_params'])
 
-hot_fluid = cs.HotFluid(simulation_settings)
-cold_fluid = cs.ColdFluid(simulation_settings)
-cycle = cs.ThermodynamicCycle(simulation_settings)
+#hot_fluid = cs.HotFluid(simulation_settings)
+#cold_fluid = cs.ColdFluid(simulation_settings)
+cycle = cs.ThermodynamicCycle(simulation_settings['cycle'])
 
 hcemask.applyMask(solarplant)
 scamask.applyMask(solarplant)
 
+model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
 
-model = cs.ModelBarbero4grade(simulation_settings)
-
-model.simulateSolarPlant(solarplant, site, weather, hot_fluid)
+model.simulateSolarPlant(solarplant, site, weather, hotfluid)
 
 # Crea aplicación
 #root = Tk()
@@ -70,38 +77,5 @@ model.simulateSolarPlant(solarplant, site, weather, hot_fluid)
 ##Lanza la aplicación en continuo
 #root.mainloop()
 
-# for sf in range(n_solarfields):
-#     plant.solarfields.append(cs.SolarField(plant, sf))
-#     for l in range(n_loops):
-#         plant.solarfields[sf].loops.append(
-#                 cs.Loop(plant.solarfields[sf], l))
-#         for s in range(n_sca):
-#             plant.solarfields[sf].loops[l].scas.append(
-#                     cs.SCA(plant.solarfields[sf].loops[l], s))
-#             for h in range(n_hce):
-#                 if hce_type == 'Barbero':
-#                     plant.solarfields[sf].loops[l].scas[s].hces.append(
-#                          cs.HCE_Barbero(parameters, plant.solarfields[sf].loops[l].scas[s],h))
-#                 elif hce_type == 'NaumFraidenraich':
-#                     pass
 
-#if model in _DC_MODEL_PARAMS.keys():
-#                # validate module parameters
-#                missing_params = _DC_MODEL_PARAMS[model] - \
-#                                 set(self.system.module_parameters.keys())
-#                if missing_params:  # some parameters are not in module.keys()
-#                    raise ValueError(model + ' selected for the DC model but '
-#                                     'one or more required parameters are '
-#                                     'missing : ' + str(missing_params))
-#                if model == 'sapm':
-#                    self._dc_model = self.sapm
-#                elif model == 'desoto':
-#                    self._dc_model = self.desoto
-#                elif model == 'cec':
-#                    self._dc_model = self.cec
-#                elif model == 'pvsyst':
-#                    self._dc_model = self.pvsyst
-#                elif model == 'pvwatts':
-#                    self._dc_model = self.pvwatts_dc
-#            else:
-#                raise ValueError(model + ' is not a valid DC power model')
+

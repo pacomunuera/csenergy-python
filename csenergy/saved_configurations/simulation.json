@@ -1,19 +1,19 @@
 {"simulation" : {
     "ID" : "00000",
     "type" : "type0"},
-"plant": {
+"solar_plant": {
 	"name": "My plant",
 	"solarfields": [
-		{"name": "c0", "loops": 1, "scas": 1, "hces": 1, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "c0", "loops": 1, "scas": 1, "hces": 1, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "c0", "loops": 1, "scas": 1, "hces": 1, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "c0", "loops": 1, "scas": 1, "hces": 1, "massflow": 6.0, "row_spacing": 16.250}]},
+		{"name": "c0", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
+		{"name": "c1", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
+		{"name": "c2", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
+		{"name": "c3", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250}]},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
 	"longitude": -3.16,
 	"altitude": 645},
-"solarsystem": {
+"solar_system": {
 	"technology": "parabolic trough",
 	"tracking axis type": "single",
 	"tracking axis azimuth": 0},
@@ -23,7 +23,7 @@
 "hce": {
 	"manufacturer": "Soleil",
 	"model": "RTC70",
-	"Long": 192.0,
+	"Long": 4.012,
 	"Dri": 0.066,
 	"Dro": 0.070,
 	"w": 5},
@@ -34,16 +34,14 @@
     "a1": 1.0,
     "a2": 1.0},
 "hot_fluid": {
-	"name": "Therminol VP-1",
-	"cp_factors": [1479.1, 3.2315, -0.003, 0.000005],
-	"parameters" : {}},
+	"name": "DOWTHERM A"},
 "cold_fluid": {
 	"name": "water",
 	"parameters" : {}},
 "cycle" : {
    "name": "Rankine",
    "pr_calculation": "NBA"},
-"model_settings": {
+"hce_model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,
     "hext": 0.0,
