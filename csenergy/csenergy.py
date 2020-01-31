@@ -492,12 +492,9 @@ class HCE(object):
                                          solarposition['zenith'],
                                          solarposition['azimuth']))
 
-        self.pr_total = (self.pr *
-                         self.get_pr_shadows() *
-                         self.get_pr_opt_peak() *
-                         self.get_pr_opt_geo() *
-                         aoi *
-                         self.get_IAM)
+        return (self.pr * self.get_pr_shadows() *
+                self.get_pr_opt_peak() * self.get_pr_opt_geo() *
+                aoi * self.get_IAM)
 
 
 
@@ -808,7 +805,7 @@ class Site(object):
         self.altitude = simulation_settings['site']['altitude']
 
 
-class ScatterMask(object):
+class HCEScatterMask(object):
 
 
     def __init__(self, simulation):
@@ -822,7 +819,7 @@ class ScatterMask(object):
                 for s in range(sf.get('scas')):
                     self.matrix[sf["name"]][-1].append([])
                     for h in range (sf.get('hces')):
-                        self.matrix[sf["name"]][-1][-1].append(simulation["scattered_params"])
+                        self.matrix[sf["name"]][-1][-1].append(simulation["hce_scattered_params"])
 
     def applyMask(self, plant):
 
@@ -832,6 +829,29 @@ class ScatterMask(object):
                     for h in s.hces:
                         for k in self.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order].keys():
                             h.parameters[k] *= float(self.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order][k])
+
+
+class SCAScatterMask(object):
+
+
+    def __init__(self, simulation):
+
+        self.matrix = dict()
+
+        for sf in simulation.get('plant').get('solarfields'):
+            self.matrix[sf["name"]]=[]
+            for l in range(sf.get('loops')):
+                self.matrix[sf["name"]].append([])
+                for s in range(sf.get('scas')):
+                    self.matrix[sf["name"]][-1].append(simulation["sca_scattered_params"])
+
+    def applyMask(self, plant):
+
+        for sf in plant.solarfields:
+            for l in sf.loops:
+                for s in l.scas:
+                    for k in self.matrix[sf.name][l.loop_order][s.sca_order].keys():
+                        s.parameters[k] *= float(self.matrix[sf.name][l.loop_order][s.sca_order][k])
 
 
 class Simulation(object):
