@@ -18,21 +18,25 @@
 	"tracking axis type": "single",
 	"tracking axis azimuth": 0},
 "weather": {
-	"filename": "A1A_07_2018.tm2",
+	"filename": "prueba.tm2",
 	"filepath": "./weather_files/"},
 "hce": {
-	"manufacturer": "Soleil",
-	"model": "RTC70",
+	"name": "Luz LS-3",
 	"Long": 4.012,
 	"Dri": 0.066,
 	"Dro": 0.070,
 	"w": 5},
-"sca": {"aperture": 5.0,
+"sca": {
+	"name": "Luz LS-3",
+	"F0": 1.0,
+	"F1": 0.0506,
+	"F2": -0.1763,
+	"thetamin": 10,
+    "thetamax": 80,
+	"aperture": 5.0,
     "min_angle": 0.0,
     "max_angle": 180.0,
-	"reflectivity": 1.0,
-    "a1": 1.0,
-    "a2": 1.0},
+	"reflectivity": 1.0},
 "hot_fluid": {
 	"name": "DOWTHERM A"},
 "cold_fluid": {
@@ -50,10 +54,10 @@
     "krec": 19.36,
     "cg" : 69.0},
 "hce_scattered_params": {
-	"eext": 1.0,
-    "hext": 1.0,
-    "hint": 1.0,
-    "urec": 1.0},
+	"eext": {"mu":1.0, "sigma": 0.02},
+    "hext": {"mu":1.0, "sigma": 0.02},
+    "hint": {"mu":1.0, "sigma": 0.02},
+    "urec": {"mu":1.0, "sigma": 0.02}},
 "sca_scattered_params": {
 	"reflectivity": 1.0}
 }

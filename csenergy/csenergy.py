@@ -9,7 +9,7 @@ import numpy as np
 import scipy as sc
 from scipy import constants
 import math as mt
-import CoolProp as CP
+from CoolProp.CoolProp import PropsSI
 import time
 import pandas as pd
 import pvlib as pvlib
@@ -19,38 +19,39 @@ from pvlib import irradiance
 from pvlib import iam
 from tkinter import *
 from tkinter.filedialog import askopenfilename
-import pandas as pd
 from datetime import datetime
 import os.path
 
 #  import pint
 
-#  CP(T) = cp0 + cp1·T  where T is in Kelvin and CP is in KJ/kg·K
-# tmax and tmin in K
-_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 0.6983, 'cp1': 0.003, 'tmax': 673.15,
+
+_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 707.580, 'cpx': 2.916, 'cpy': 0, 'tmax': 673.15,
                                  'tmin': 288.15},
-                 'SYLTHERM 800': {'cp0': 1.1079, 'cp1': 0.0017, 'tmax': 673.15,
+                 'SYLTHERM 800': {'cp0': 1108.492, 'cpx': 1.706, 'cpy': -8.153E-17, 'tmax': 673.15,
                                   'tmin': 233.15},
-                 'THERMINOL VP1': {'cp0': 1.4963, 'cp1': 0.0027521, 'tmax': 673.15,
+                 'THERMINOL VP1': {'cp0': 745.0052, 'cpx': 2.756, 'cpy': -3.252E-16, 'tmax': 673.15,
                                    'tmin': 288.15}}
 
-_IAM_PARAMS = {'LS3': {'a0': 1.0, 'a1': -0.000223073, 'a2': -0.00011,
-                       'a3': 0.00000318596, 'a4': -0.0000000485509,
-                       'thetamin': 0, 'thetamax': 80},
-               'LS2': {'a0': 0.999978, 'a1': 0.001022, 'a2': -0.000209,
-                       'a3': 0.0, 'a4': -0.0000000485509, 'thetamin': 0,
-                       'thetamax': 80}}
-
-
-
-#     'DOWTHERM A': set({})
-#     'NaumFraidenraich': set(['urec', 'uexts', 'cp', 'w']),
-#     'Patnode': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b2']),
-#     'ASHRAE': set(['a', 'b', 'c', 'd', 'e', 'f']),
-#     'Montes': set(['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']),
-#     'Price': set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6'])
-#     }
-
+_IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+                                    'thetamin': 0, 'thetamax': 80},
+               'Luz LS-2': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+                            'thetamin': 0, 'thetamax': 80},
+               'Luz LS-3': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+                            'thetamin': 0, 'thetamax': 80},
+               'Solargenix SGX-1': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+                                    'thetamin': 0, 'thetamax': 80},
+               'AlbiasaTrough AT150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+                                       'thetamin': 0, 'thetamax': 80},
+               'Siemens SunField 6': {'F0': 1.0, 'F1': -0.0753, 'F2': -0.03698,
+                                      'thetamin': 0, 'thetamax': 80},
+               'SkyFuel SkyTrough': {'F0': 1.0, 'F1': 0.0327, 'F2': -0.1351,
+                                     'thetamin': 0, 'thetamax': 80},
+               'FLABEG Ultimate Trough RP6 (oil)':
+                   {'F0': 1.0, 'F1': -0.005, 'F2': -0.102, 'thetamin': 0,
+                    'thetamax': 80},
+               'FLABEG Ultimate Trough RP6 (molten salt)':
+                   {'F0': 1.0, 'F1': -0.008, 'F2': -0.117, 'thetamin': 0,
+                    'thetamax': 80}}
 
 class Model(object):
 
@@ -68,33 +69,34 @@ class Model(object):
 
     @classmethod
     def set_tout(cls, hce, qabs, pr, cp):
+
         hce.tout = (hce.tin +
                     sc.pi*hce.parameters['Dro'] *
                     hce.parameters['Long'] * qabs * pr /
                     (hce.sca.loop.massflow * cp))
 
-    def simulateSolarPlant(self, solarplant, site, weather, hot_fluid):
-
-        solarplant.initializePlant()
-
-        for row in weather.weatherdata[0].iterrows():
-            print(row[0])
-            solarposition = pvlib.solarposition.get_solarposition(row[0],
-                                                        site.latitude,
-                                                        site.longitude,
-                                                        site.altitude,
-                                                        pressure = row[1]['Pressure'],
-                                                        temperature=row[1]['DryBulb'])
-
-            aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'], solarposition['azimuth']))
-            print('..........................................')
-            for sf in solarplant.solarfields:
-                for l in sf.loops:
-                    for s in l.scas:
-                        for h in s.hces:
-                            self.set_tin(h)
-                            print(h.get_index())
-                            self.simulateHCE(h, hot_fluid, float(row[1]['DNI']))
+#    def simulateSolarPlant(self, solarplant, site, weather, hot_fluid):
+#
+#        solarplant.initializePlant()
+#        for row in weather.weatherdata[0].iterrows():
+#            print(row[0])
+#            solarposition = pvlib.solarposition.get_solarposition(row[0],
+#                                                        site.latitude,
+#                                                        site.longitude,
+#                                                        site.altitude,
+#                                                        pressure = row[1]['Pressure'],
+#                                                        temperature=row[1]['DryBulb'])
+#
+#            aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'], solarposition['azimuth']))
+#            print('..........................................')
+#            for sf in solarplant.solarfields:
+#                for l in sf.loops:
+#                    for s in l.scas:
+#                        for h in s.hces:
+#                            # self.set_tin(h)
+#                            # print(h.get_index())
+#                            self.simulateHCE(h, hot_fluid, float(row[1]['DNI']))
+#                            print('PRtotal:', h.get_pr_total(row[0],  row[1], site))
 
 
 class ModelBarbero4grade(Model):
@@ -103,12 +105,13 @@ class ModelBarbero4grade(Model):
 
         super(Model, self).__init__(settings)
 
+
     @classmethod
     def simulateHCE(cls, hce, hot_fluid, dni):
 
         dni = dni
         Model.set_tin(hce)
-        cp = hot_fluid.get_cp(hce.tin + 273.15)
+        cp = hot_fluid.get_cp(hce.tin + 273.15, 1500000)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
@@ -158,8 +161,6 @@ class ModelBarbero4grade(Model):
         errpr = 1.
         step = 0
 
-
-
         if qabs > 0:
 
             while (errtro > 0.0001 or errpr > 0.000001):
@@ -168,7 +169,7 @@ class ModelBarbero4grade(Model):
                 # print(step)
                 # print('dni', dni, 'tin', hce.tin, 'cp ', cp, 'sigma', sigma,
                 #       'dro ', dro, 'dri ', dri, 'L', L, 'hint', hint,
-                #       'hext', hext, 'eext ', eext, 'krec', krec, 
+                #       'hext', hext, 'eext ', eext, 'krec', krec,
                 #       'massflow' , massflow)
                 # tro1 = tf+qabs*pr1/urec
                 trec = (tro1+tf)/2
@@ -225,7 +226,7 @@ class ModelBarbero4grade(Model):
             pr1 = 0
 
         Model.set_tout(hce, qabs, pr1, cp)
-        print(hce.tout)
+        hce.pr = pr1
 
 
 class ModelBarbero1grade(Model):
@@ -287,6 +288,7 @@ class ModelBarbero1grade(Model):
             pr = 0.0
 #
         Model.set_tout(hce, qabs, pr, cp )
+
 
 class ModelBarberoSimplified(Model):
 
@@ -415,11 +417,11 @@ class ModelHottelWhilier(Model):
             hce.tout = tfe+sc.pi*dro*x*qabs*pr/(massflow*cp)
 
 
-
 class ModelNaumFrainderaich(Model):
 
         def __ini__(self, simulation):
             super(Model, self).__init__(simulation)
+
 
 class ModelASHRAE(Model):
 
@@ -465,71 +467,59 @@ class HCE(object):
                 self.sca.sca_order,
                 self.hce_order])
 
-    @classmethod
+
     def get_pr_opt_peak(self):
 
         alpha = self.get_absorptivity()
         tau = self.get_transmissivity()
         rho = self.get_reflectivity()
-        gamma = self.parameters['solar_fraction']
+        gamma = self.get_solar_fraction()
 
         return alpha * tau * rho * gamma
 
-    @classmethod
+
     def get_pr_opt(self):
         return 1.0
 
-    @classmethod
+
     def get_pr_geo(self):
         return 1.0
 
-    @classmethod
+
     def get_absorptivity(self):
         return 1.0
 
-    @classmethod
+
     def get_transmissivity(self):
         return 1.0
 
-    @classmethod
+
     def get_reflectivity(self):
         return 1.0
 
-    @classmethod
+
     def get_solar_fraction(self):
         return 1.0
 
     def get_pr_shadows(self):
         return 1.0
 
-    def get_IAM(self):
+    def get_IAM(self, theta):
 
-        theta = 1.0
-        return 1 + ((self.parameters['a1'] * theta +
-                     self.parameters['a2'] * theta**2) /
-                    np.cos(theta))
+        theta = np.radians(theta)
+        F0 = self.sca.parameters['F0']
+        F1 = self.sca.parameters['F1']
+        F2 = self.sca.parameters['F2']
+        return F0+(F1*theta+F2*theta**2)/np.cos(theta)
 
 
-    def get_pr_total(self, dateindex, data, site):
+    def get_pr_total(self, dateindex, site, data):
 
-        solarposition = pvlib.solarposition.get_solarposition(dateindex,
-                                                        site.latitude,
-                                                        site.longitude,
-                                                        site.altitude,
-                                                        pressure = data['Pressure'],
-                                                        temperature=data['DryBulb'])
-
-        aoi = float(pvlib.irradiance.aoi(0,
-                                         0,
-                                         solarposition['zenith'],
-                                         solarposition['azimuth']))
+        aoi = self.sca.get_aoi(dateindex, data, site)
 
         return (self.pr * self.get_pr_shadows() *
-                self.get_pr_opt_peak() * self.get_pr_opt_geo() *
-                aoi * self.get_IAM)
-
-
-
+                self.get_pr_opt_peak() * self.get_pr_geo() *
+                np.cos(np.radians(aoi)) * self.get_IAM(aoi))
 
 
 class SCA(object):
@@ -541,8 +531,10 @@ class SCA(object):
         self.loop = loop
         self.sca_order = sca_order
         self.hces = []
-        self.angle = 0.0
-        self.parameters = settings
+        self.tracking_angle = 0.0
+        self.parameters = dict(settings)
+        self.surface_tilt = 0.0
+        self.surface_azimuth = 180.0
 
 
     def get_tin(self, sca):
@@ -558,6 +550,23 @@ class SCA(object):
         if not sca:
             sca = self
         return HCE.get_tout(sca.hces[-1])
+
+    def get_aoi(self, dateindex, site, data):
+
+        solarposition = pvlib.solarposition.get_solarposition(dateindex,
+                                                        site.latitude,
+                                                        site.longitude,
+                                                        site.altitude,
+                                                        pressure = data['Pressure'],
+                                                        temperature=data['DryBulb'])
+
+        aoi = float(pvlib.irradiance.aoi(self.surface_tilt,
+                                               self.surface_azimuth,
+                                               solarposition.zenith[0],
+                                               solarposition.azimuth[0]))
+
+        return aoi
+
 
 
 class Loop(object):
@@ -584,7 +593,7 @@ class Loop(object):
         pass
 
 
-    def calcRequiredMassFlow(self):
+    def estimateMassFlow(cls, hce, hot_fluid, dni):
         '''
 
         Calculation of the massflow necessary to obtain the output temperature
@@ -596,7 +605,6 @@ class Loop(object):
 
         '''
         self.required_massflow = 1
-
 
 
 class SolarField(object):
@@ -776,16 +784,6 @@ class SolarSystem(object):
                                  ((np.cos(omega))**2 - 1)))
 
 
-
-
-
-
-
-
-
-
-
-
 class PowerSystem(object):
     '''
     Power Plant as a set composed by a SolarPlant, a HeatExchanger, a PowerCycle
@@ -896,8 +894,8 @@ class Simulation(object):
 
     '''
 
-    def __init__(self):
-        pass
+    def __init__(self, name):
+        self.name = name
 
     def calcRequired_massflow():
         '''calcula el caudal promedio requerido en cada lazo para alzanzar
@@ -906,6 +904,29 @@ class Simulation(object):
         subcampo. De esta forma tenemos el caudal '''
 
         pass
+
+    def simulateSolarPlant(self, model, solarplant, site, weather, hot_fluid):
+
+        solarplant.initializePlant()
+        for row in weather.weatherdata[0].iterrows():
+            print(row[0])
+            solarposition = pvlib.solarposition.get_solarposition(row[0],
+                                                        site.latitude,
+                                                        site.longitude,
+                                                        site.altitude,
+                                                        pressure = row[1]['Pressure'],
+                                                        temperature=row[1]['DryBulb'])
+
+            aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0], solarposition['azimuth'][0]))
+            print('.............',aoi, '.................')
+            for sf in solarplant.solarfields:
+                for l in sf.loops:
+                    for s in l.scas:
+                        for h in s.hces:
+                            # self.set_tin(h)
+                            # print(h.get_index())
+                            model.simulateHCE(h, hot_fluid, float(row[1]['DNI']))
+                print('PRtotal:', h.get_pr_total(row[0],  row[1], site))
 
 
 class HeatExchanger(object):
@@ -921,6 +942,7 @@ class HeatExchanger(object):
     def hot_fluid_tout():
         return
 
+
 class HeatStorage(object):
 
     def __init__(self, settings):
@@ -932,6 +954,7 @@ class HeatStorage(object):
 
     def hot_fluid_tout():
         return
+
 
 class ThermodynamicCycle (object):
 
@@ -950,7 +973,6 @@ class ThermodynamicCycle (object):
         return (1-(text/tf))
 
 
-
 class Fluid(object):
 
     def __init__(self, name):
@@ -962,12 +984,13 @@ class Fluid(object):
 
         return self.density
 
-    def get_cp(self, t):
+    def get_cp(self, t, p):
 
         cp0 = self.parameters['cp0']
-        cp1 = self.parameters['cp1']
+        cpx = self.parameters['cpx']
+        cpy = self.parameters['cpy']
 
-        return 1000*(cp0 + cp1 * t)
+        return (cp0 + cpx * t + cpy*p)
 
     def get_deltaH(self):
 
@@ -989,11 +1012,11 @@ class Fluid(object):
 
         self.redri = 0
 
-    def get_nusselt_Dittus_Boelter(self):
+    def get_Nusselt_Dittus_Boelter(self):
 
         self.nudb = 0.023*(redri**0.8)*(prf**0.4)
 
-    def get_nusselt_Gnielinski(self):
+    def get_Nusselt_Gnielinski(self):
 
         self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /
                     (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
@@ -1009,17 +1032,6 @@ class HotFluid(Fluid):
         super().__init__(self.name)
 
 
-    def get_IAM(self, theta):
-
-        a0 = self.parameters['a0']
-        a1 = self.parameters['a1']
-        a2 = self.parameters['a2']
-        a3 = self.parameters['a3']
-        a4 = self.parameters['a4']
-
-        return a0+a1*theta+a2*theta**2+a3*theta**3+a4*theta**4
-
-
 class ColdFluid(Fluid):
 
     def __init__(self, settings):
@@ -1033,6 +1045,7 @@ class Weather(object):
         self.filename = settings['filename']
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
+        self.openWeatherDataFile(self.file)
 
     def openWeatherDataFile(self, path = None):
 
@@ -1068,7 +1081,23 @@ class Weather(object):
                     else:
                         print("unknow extension ", strext)
                         return
+            else:
+                strfilename, strext = os.path.splitext(path)
 
+                if  strext == ".csv":
+                    print("csv...")
+                    self.weatherdata = pvlib.iotools.tmy.read_tmy3(path)
+                    self.file = path
+                elif (strext == ".tm2" or strext == ".tmy"):
+                    print("tmy...")
+                    self.weatherdata = pvlib.iotools.tmy.read_tmy2(path)
+                    self.file = path
+                elif strext == ".xls":
+                    print("xls...")
+                    pass
+                else:
+                    print("unknow extension ", strext)
+                    return
         except Exception:
             raise
             txMessageBox.showerror('Error loading Weather Data File',
