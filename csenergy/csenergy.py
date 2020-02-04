@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Dec 30 08:26:43 2019
-
 @author: pacomunuera
 """
 
@@ -24,13 +23,21 @@ import os.path
 
 #  import pint
 
-
-_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 707.580, 'cpx': 2.916, 'cpy': 0, 'tmax': 673.15,
-                                 'tmin': 288.15},
-                 'SYLTHERM 800': {'cp0': 1108.492, 'cpx': 1.706, 'cpy': -8.153E-17, 'tmax': 673.15,
-                                  'tmin': 233.15},
-                 'THERMINOL VP1': {'cp0': 745.0052, 'cpx': 2.756, 'cpy': -3.252E-16, 'tmax': 673.15,
-                                   'tmin': 288.15}}
+_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 707.580, 'cpx': 2.916, 'cpy': 0,
+                                 'v0': 5.135e+00, 'v1': -8.395e-02,
+                                 'v2': 5.971e-04, 'v3': -2.409e-06,
+                                 'v4': 6.029e-09, 'v5': -9.579e-12,
+                                  'tmax': 400, 'tmin': 15},
+                 'SYLTHERM 800': {'cp0': 1108.492, 'cpx': 1.706, 'cpy': -8.153E-17,
+                                  'v0': 1.5223e-2 , 'v1': -2.63195e-4,
+                                  'v2': 2.09535e-6, 'v3': -8.615274e-9,
+                                  'v4': 1.75478e-11, 'v5': -1.396471e-14,
+                                  'tmax': 400, 'tmin': -40},
+                 'THERMINOL VP1': {'cp0': 745.0052, 'cpx': 2.756, 'cpy': -3.252e-16,
+                                   'v0': 6.1345e-3 , 'v1': -1.1974e-4,
+                                   'v2': 1.0466e-6, 'v3': -4.5758e-9,
+                                   'v4': 9.6995e-12, 'v5': -7.9178e-15,
+                                   'tmax': 400, 'tmin': 15}}
 
 _IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
                                     'thetamin': 0, 'thetamax': 80},
@@ -75,28 +82,57 @@ class Model(object):
                     hce.parameters['Long'] * qabs * pr /
                     (hce.sca.loop.massflow * cp))
 
-#    def simulateSolarPlant(self, solarplant, site, weather, hot_fluid):
-#
-#        solarplant.initializePlant()
-#        for row in weather.weatherdata[0].iterrows():
-#            print(row[0])
-#            solarposition = pvlib.solarposition.get_solarposition(row[0],
-#                                                        site.latitude,
-#                                                        site.longitude,
-#                                                        site.altitude,
-#                                                        pressure = row[1]['Pressure'],
-#                                                        temperature=row[1]['DryBulb'])
-#
-#            aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'], solarposition['azimuth']))
-#            print('..........................................')
-#            for sf in solarplant.solarfields:
-#                for l in sf.loops:
-#                    for s in l.scas:
-#                        for h in s.hces:
-#                            # self.set_tin(h)
-#                            # print(h.get_index())
-#                            self.simulateHCE(h, hot_fluid, float(row[1]['DNI']))
-#                            print('PRtotal:', h.get_pr_total(row[0],  row[1], site))
+    @classmethod
+    def get_hext_eext(cls, hce, reext, tro, wind):
+
+        eext = 0.
+        hext = 0.
+
+        if (hce.parameters['coating'] == 'CERMET' and
+            hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
+                hext = 0.
+            else:
+                eext = 2.44E-4*tro+0.0832
+                hext = 0.
+        elif (hce.parameters['coating'] == 'CERMET' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
+                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
+                hext = 2.34 * reext**0.0646
+            else:
+                eext = 1.97E-4 * tro + 0.0859
+                hext = 3.65
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = (2.53E-4 * reext**0.0614 * tro +
+                        1 / (9.92 + 1.5E-5 * reext))
+                hext = 0.
+            else:
+                eext = 4.66E-4 * tro + 0.0903
+                hext = 0.
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
+                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
+                hext = 2.77 * reext**0.043
+            else:
+                eext = 3.58E-4 * tro + 0.115
+                hext = 3.6
+
+        return hext, eext
+
+    @classmethod
+    def get_hint(cls, hce):
+
+        hint = nbiot * krec / e
+
+        pass
+
 
 
 class ModelBarbero4grade(Model):
@@ -107,32 +143,53 @@ class ModelBarbero4grade(Model):
 
 
     @classmethod
-    def simulateHCE(cls, hce, hot_fluid, dni):
+    def simulateHCE(cls, hce, hot_fluid, dni, wind):
 
-        dni = dni
         Model.set_tin(hce)
-        cp = hot_fluid.get_cp(hce.tin + 273.15, 1500000)
+        cp = hot_fluid.get_cp(hce.tin, 1500000)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
         L = hce.parameters['Long']
+
+
+        #hint = kf * nuint / dri
+
+        #hint = Model.get_hint(hce)
+
         hint = hce.parameters['hint']
-        hext = hce.parameters['hext']
-        eext = hce.parameters['eext']
+#        hext = hce.parameters['hext']
+#        eext = hce.parameters['eext']
         krec = hce.parameters['krec']
         massflow = hce.sca.loop.massflow
-        x= 1
+        cg = hce.sca.parameters['aperture']/(np.pi*hce.parameters['Dro'])
+        x = 1
 
         tfe = hce.tin
-        tf =  tfe
+        tf = tfe
         hce.tout = tfe
+        tro = tf
         text = 22.0
-        #Para el cálculo de la solución del rendimiento a la entrada puedes
-        #plantear como primera aproximación la solución de primer grado y
-        #aplicar le método de Newton-Raphson para obtener la solución, por ejemplo.
 
-        # Ec. 3.50 Barbero
-        qcrit = sigma*eext*(tfe**4-text**4)+hext*(tfe-text)
+        #  mu viscosidad dinámica (Pa·s)
+        mu = hot_fluid.get_dynamic_viscosity(tf)
+
+        # mal, reext es para el exteior
+        reext = 4 * massflow / (np.pi * dri * mu)
+
+        # Ec. 4.14
+        nudb = 0.023 * redri**0.8 * prf**0.4
+
+
+
+        #  Para el cálculo de la solución del rendimiento a la entrada puedes
+        #  plantear como primera aproximación la solución de primer grado y
+        #  aplicar le método de Newton-Raphson para obtener
+
+        hext, eext = Model.get_hext_eext(hce, reext, tro, wind)
+
+        #  Ec. 3.50 Barbero
+        qcrit = sigma * eext * (tfe**4 - text**4) + hext * (tfe - text)
 
         #Ec. 3.51 Barbero
         ucrit = 4*sigma*eext*tfe**3+hext
@@ -145,7 +202,7 @@ class ModelBarbero4grade(Model):
 
         #Ec. 3.20 Barbero
         qabs = (hce.get_pr_opt() *
-                hce.parameters['cg'] * dni *
+                cg * dni *
                 hce.get_pr_shadows() *
                 hce.get_pr_geo())
 
@@ -166,12 +223,7 @@ class ModelBarbero4grade(Model):
             while (errtro > 0.0001 or errpr > 0.000001):
 
                 step += 1
-                # print(step)
-                # print('dni', dni, 'tin', hce.tin, 'cp ', cp, 'sigma', sigma,
-                #       'dro ', dro, 'dri ', dri, 'L', L, 'hint', hint,
-                #       'hext', hext, 'eext ', eext, 'krec', krec,
-                #       'massflow' , massflow)
-                # tro1 = tf+qabs*pr1/urec
+                hext, eext = Model.get_hext_eext(hce, reext, tro1, wind)
                 trec = (tro1+tf)/2
                 # Ec. 4.22
                 krec = (0.0153)*(trec) + 14.77  # trec ya está en ºC
@@ -239,7 +291,7 @@ class ModelBarbero1grade(Model):
     def simulateHCE(cls, hce, hot_fluid, dni):
 
         dni = dni
-        cp = hot_fluid.get_cp(hce.tin + 273.15)
+        cp = hot_fluid.get_cp(hce.tin)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
@@ -300,7 +352,7 @@ class ModelBarberoSimplified(Model):
     def simulateHCE(cls, hce, hot_fluid, dni):
 
         dni = dni
-        cp = hot_fluid.get_cp(hce.tin + 273.15)
+        cp = hot_fluid.get_cp(hce.tin)
         sigma = sc.constants.sigma
         dro = hce.parameters['Dro']
         dri = hce.parameters['Dri']
@@ -310,6 +362,7 @@ class ModelBarberoSimplified(Model):
         eext = hce.parameters['eext']
         krec = hce.parameters['krec']
         massflow = hce.sca.loop.massflow
+        cg = hce.sca.parameters['aperture']/(np.pi*hce.parameters['Dro'])
         x = 1
         # cp = self.hot_fluid.get_cp(hce.tin)
         Model.set_tin(hce)
@@ -321,7 +374,7 @@ class ModelBarberoSimplified(Model):
 
         # Ec. 3.20 Barbero
         qabs = (hce.parameters['pr_opt'] *
-                hce.parameters['cg'] * dni *
+                cg * dni *
                 hce.parameters['pr_shw'] *
                 hce.parameters['pr_geo'])
 
@@ -359,7 +412,6 @@ class ModelHottelWhilier(Model):
             dro = hce.parameters['Dout']
             dri = hce.parameters['Din']
             x = hce.parameters['Long']
-            w = hce.parameters['w']
             hint = hce.parameters['hint']
             hext = hce.parameters['hext']
             sigma = hce.parameters['sigma']
@@ -369,7 +421,7 @@ class ModelHottelWhilier(Model):
             # uext = hce.parameters['uext']
             massflow = hce.sca.loop.massflow
             #cp = self.hot_fluid.get_cp(hce.tin)
-            cp = hot_fluid.get_cp(hce.tin + 273.15)
+            cp = hot_fluid.get_cp(hce.tin)
 
             Model.set_tin(hce)
             time.sleep(0.010)
@@ -405,9 +457,6 @@ class ModelHottelWhilier(Model):
             # Ec. 3.2
             Fprime = urec/(uext+urec)
 
-
-            print("---------------", (1-uext*(tfe-text)/qabs))
-
             pr = ((1-uext*(tfe-text)/qabs) *
                   massflow*cp/(w*x*uext) *
                   (1-np.exp(-Fprime*w*x*uext/(massflow*cp))))
@@ -435,7 +484,6 @@ class ModelASHRAE(Model):
             dro = hce.parameters['Dout']
             dri = hce.parameters['Din']
             x = hce.parameters['Long']
-            w = hce.parameters['w']
             hint = hce.parameters['hint']
             hext = hce.parameters['hext']
             sigma = hce.parameters['sigma']
@@ -566,7 +614,6 @@ class SCA(object):
                                                solarposition.azimuth[0]))
 
         return aoi
-
 
 
 class Loop(object):
@@ -902,14 +949,12 @@ class Simulation(object):
         la temperatura deseada. Calcula el caudal en cada lazo (si son todos
         iguales solo lo hace una vez) y después calcula el promedio en cada
         subcampo. De esta forma tenemos el caudal '''
-
         pass
 
     def simulateSolarPlant(self, model, solarplant, site, weather, hot_fluid):
 
         solarplant.initializePlant()
         for row in weather.weatherdata[0].iterrows():
-            print(row[0])
             solarposition = pvlib.solarposition.get_solarposition(row[0],
                                                         site.latitude,
                                                         site.longitude,
@@ -918,14 +963,12 @@ class Simulation(object):
                                                         temperature=row[1]['DryBulb'])
 
             aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0], solarposition['azimuth'][0]))
-            print('.............',aoi, '.................')
             for sf in solarplant.solarfields:
                 for l in sf.loops:
                     for s in l.scas:
                         for h in s.hces:
-                            # self.set_tin(h)
-                            # print(h.get_index())
-                            model.simulateHCE(h, hot_fluid, float(row[1]['DNI']))
+                            model.simulateHCE(h, hot_fluid, row[1]['DNI'],
+                                              row[1]['Wspd'])
                 print('PRtotal:', h.get_pr_total(row[0],  row[1], site))
 
 
@@ -984,6 +1027,17 @@ class Fluid(object):
 
         return self.density
 
+    def get_dynamic_viscosity(self, t):
+
+        v0 = self.parameters['v0']
+        v1 = self.parameters['v1']
+        v2 = self.parameters['v2']
+        v3 = self.parameters['v3']
+        v4 = self.parameters['v4']
+        v5 = self.parameters['v5']
+
+        return (v0 + v1 * t + v2 * t**2 + v3 * t**3 + v4 * t**4 + v5 * t**5)
+
     def get_cp(self, t, p):
 
         cp0 = self.parameters['cp0']
@@ -991,6 +1045,15 @@ class Fluid(object):
         cpy = self.parameters['cpy']
 
         return (cp0 + cpx * t + cpy*p)
+
+    def get_kf(self, t, p):
+        ''' Fluid conductivity at temperature t and pressure p '''
+
+        kf0 = self.parameters['kf0']
+        kfx = self.parameters['kfx']
+        kfy = self.parameters['kfy']
+
+        return (kf0 + kfx * t + kfy*p)
 
     def get_deltaH(self):
 
@@ -1026,9 +1089,8 @@ class Fluid(object):
 class HotFluid(Fluid):
 
     def __init__(self, settings):
-        print( settings['name'])
+
         self.name =  settings['name']
-        print('......................')
         super().__init__(self.name)
 
 
@@ -1144,8 +1206,6 @@ class Weather(object):
 #    TMYData.GHISource                   See [1]_, Table 1-4
 #    TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
 #    TMYData.DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-
-
 
 
 #        date_rng = pd.date_range(start='1/1/2014',end='31/12/2014',freq='H')

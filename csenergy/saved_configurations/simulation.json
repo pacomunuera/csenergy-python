@@ -18,14 +18,15 @@
 	"tracking axis type": "single",
 	"tracking axis azimuth": 0},
 "weather": {
-	"filename": "prueba.tm2",
+	"filename": "prueba2.tm2",
 	"filepath": "./weather_files/"},
 "hce": {
 	"name": "Luz LS-3",
 	"Long": 4.012,
 	"Dri": 0.066,
 	"Dro": 0.070,
-	"w": 5},
+	"coating" : "CERMET",
+	"annulus" : "VACUUM"},
 "sca": {
 	"name": "Luz LS-3",
 	"F0": 1.0,
@@ -38,7 +39,7 @@
     "max_angle": 180.0,
 	"reflectivity": 1.0},
 "hot_fluid": {
-	"name": "DOWTHERM A"},
+	"name": "THERMINOL VP1"},
 "cold_fluid": {
 	"name": "water",
 	"parameters" : {}},
@@ -51,8 +52,7 @@
     "hext": 0.0,
     "hint": 3000.0,
     "urec": 1000.0,
-    "krec": 19.36,
-    "cg" : 69.0},
+    "krec": 19.36},
 "hce_scattered_params": {
 	"eext": {"mu":1.0, "sigma": 0.02},
     "hext": {"mu":1.0, "sigma": 0.02},

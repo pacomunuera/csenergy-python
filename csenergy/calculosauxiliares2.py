@@ -23,11 +23,10 @@ from mpl_toolkits.mplot3d import Axes3D   # Permite agregar eje tridimensionales
 import random
 
 rowT =[]
-
+pressure = 20000000
 for temp in range(288,670,10):
-    for pressure in range (1100000, 2000000, 100000):
-        rowT.append([PropsSI('V','T',temp,'P', pressure,'INCOMP::TVP1'),
-                    temp, pressure])
+    rowT.append([PropsSI('V','T',temp,'P', pressure,'INCOMP::S800'),
+                 temp, pressure])
 
 dt = pd.DataFrame(rowT,columns=['y', 'temp','pressure'])
 print(dt)
@@ -36,14 +35,12 @@ fig = pyplot.figure(figsize=(10, 10))       # Ajustes del gráfico
 ax = Axes3D(fig)
 
 x1 = dt['temp']  # Datos eje X
-x2 = dt['pressure']  # Datos eje Y
 y = dt['y']  # Datos eje Z (Var. Respuesta)
 
-ax.scatter(x1, x2, y, marker='.', c='r')
+ax.scatter(x1, y, marker='.', c='r')
 ax.set_xlabel('Temperature')        # Etiqueta del eje X
-ax.set_ylabel('Pressure')       # Etiqueta del eje Y
-ax.set_zlabel('Cp(T,P');
+ax.set_ylabel('V(T)');
 
-mod = smf.ols('y ~ x1 + x2', data=dt).fit()  # Ajusta el modelo usando el registro natural de uno de los regresores
+mod = smf.ols('y ~ x1 + x1^2 + x1^3 + x1^4', data=dt).fit()  # Ajusta el modelo usando el registro natural de uno de los regresores
 print(mod.summary())
 
