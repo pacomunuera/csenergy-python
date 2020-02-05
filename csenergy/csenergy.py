@@ -23,20 +23,26 @@ import os.path
 
 #  import pint
 
-_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 707.580, 'cpx': 2.916, 'cpy': 0,
+_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 1522.77738, 'cp1': 2.59864, 'cp2': 0.00046,
                                  'v0': 5.135e+00, 'v1': -8.395e-02,
                                  'v2': 5.971e-04, 'v3': -2.409e-06,
                                  'v4': 6.029e-09, 'v5': -9.579e-12,
-                                  'tmax': 400, 'tmin': 15},
-                 'SYLTHERM 800': {'cp0': 1108.492, 'cpx': 1.706, 'cpy': -8.153E-17,
+                                 'd0': 1071.13711 , 'd1': -0.66794, 'd2': -0.00072,
+                                 'k0': 1.856e-1 , 'k1': -1.600e-4 , 'k2': 5.913e-12,
+                                 'tmax': 400, 'tmin': 15},
+                 'SYLTHERM 800': {'cp0': 1574.36919, 'cp1': 1.71019, 'cp2': -0.00001,
                                   'v0': 1.5223e-2 , 'v1': -2.63195e-4,
                                   'v2': 2.09535e-6, 'v3': -8.615274e-9,
                                   'v4': 1.75478e-11, 'v5': -1.396471e-14,
+                                  'd0': 947.65387 , 'd1': -0.74514, 'd2': -0.00061,
+                                  'k0': 1.387691e-1 , 'k1':- 1.88054e-4 , 'k2':-1.14165e-10,
                                   'tmax': 400, 'tmin': -40},
-                 'THERMINOL VP1': {'cp0': 745.0052, 'cpx': 2.756, 'cpy': -3.252e-16,
+                 'THERMINOL VP1': {'cp0': 1499.03529, 'cp1': 2.71399, 'cp2': -0.00009,
                                    'v0': 6.1345e-3 , 'v1': -1.1974e-4,
                                    'v2': 1.0466e-6, 'v3': -4.5758e-9,
                                    'v4': 9.6995e-12, 'v5': -7.9178e-15,
+                                   'd0': 1074.61508 , 'd1': -0.67848, 'd2': -0.00063,
+                                   'k0': 1.381091e-1 , 'k1':-8.7078e-5 , 'k2':-1.7298e-7,
                                    'tmax': 400, 'tmin': 15}}
 
 _IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
@@ -78,60 +84,11 @@ class Model(object):
     def set_tout(cls, hce, qabs, pr, cp):
 
         hce.tout = (hce.tin +
-                    sc.pi*hce.parameters['Dro'] *
-                    hce.parameters['Long'] * qabs * pr /
+                    sc.pi*hce.parameters['dro'] *
+                    hce.parameters['long'] * qabs * pr /
                     (hce.sca.loop.massflow * cp))
 
-    @classmethod
-    def get_hext_eext(cls, hce, reext, tro, wind):
 
-        eext = 0.
-        hext = 0.
-
-        if (hce.parameters['coating'] == 'CERMET' and
-            hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
-                hext = 0.
-            else:
-                eext = 2.44E-4*tro+0.0832
-                hext = 0.
-        elif (hce.parameters['coating'] == 'CERMET' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
-                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
-                hext = 2.34 * reext**0.0646
-            else:
-                eext = 1.97E-4 * tro + 0.0859
-                hext = 3.65
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = (2.53E-4 * reext**0.0614 * tro +
-                        1 / (9.92 + 1.5E-5 * reext))
-                hext = 0.
-            else:
-                eext = 4.66E-4 * tro + 0.0903
-                hext = 0.
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
-                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
-                hext = 2.77 * reext**0.043
-            else:
-                eext = 3.58E-4 * tro + 0.115
-                hext = 3.6
-
-        return hext, eext
-
-    @classmethod
-    def get_hint(cls, hce):
-
-        hint = nbiot * krec / e
-
-        pass
 
 
 
@@ -143,56 +100,74 @@ class ModelBarbero4grade(Model):
 
 
     @classmethod
-    def simulateHCE(cls, hce, hot_fluid, dni, wind):
+    def simulateHCE(cls, hce, hot_fluid, dni, wind, text):
 
         Model.set_tin(hce)
-        cp = hot_fluid.get_cp(hce.tin, 1500000)
+        cp = hot_fluid.get_cp(hce.tin)
         sigma = sc.constants.sigma
-        dro = hce.parameters['Dro']
-        dri = hce.parameters['Dri']
-        L = hce.parameters['Long']
-
-
-        #hint = kf * nuint / dri
-
-        #hint = Model.get_hint(hce)
-
-        hint = hce.parameters['hint']
-#        hext = hce.parameters['hext']
-#        eext = hce.parameters['eext']
+        dro = hce.parameters['dro']
+        dri = hce.parameters['dri']
+        dgo = hce.parameters['dgo']
+        dgi = hce.parameters['dgi']
+        L = hce.parameters['long']
+        A = hce.sca.parameters['aperture']
         krec = hce.parameters['krec']
         massflow = hce.sca.loop.massflow
-        cg = hce.sca.parameters['aperture']/(np.pi*hce.parameters['Dro'])
+        cg = A /(np.pi*dro)
         x = 1
-
         tfe = hce.tin
         tf = tfe
-        hce.tout = tfe
+        hce.tout = tf
         tro = tf
-        text = 22.0
+        tri = tf
+
+        #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
+        nu_air = 8.67886e-11 * text**2 + 8.81055e-8 * text + 1.33019e-5
+
+        #  Reynols number for wind at
+        reext = dgo * wind / nu_air
+        hext, eext = cls.get_hext_eext(hce, reext, tro, wind)
+
+        #hint = kf * nuint / dri
+        #hint = Model.get_hint(hce)
+        #hint = hce.parameters['hint']
 
         #  mu viscosidad dinámica (Pa·s)
-        mu = hot_fluid.get_dynamic_viscosity(tf)
+
 
         # mal, reext es para el exteior
-        reext = 4 * massflow / (np.pi * dri * mu)
+        #reext = 4 * massflow / (np.pi * dri * mu)
+        #air = CP.HAProps('W', 'T', 300, 'P', 101.325, 'R', 0.5)
+
 
         # Ec. 4.14
+        mu = hot_fluid.get_dynamic_viscosity(tf)
+        rho = hot_fluid.get_density(tf)
+        kf = hot_fluid.get_thermal_conductivity(tf)
+        #  alpha : difusividad térmica
+        alpha = kf / (rho * cp)
+        prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
+        redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
         nudb = 0.023 * redri**0.8 * prf**0.4
+        cf = (1.58 * np.log(redri) - 3.28)**-2
 
+        #  Prandtl number at temperature tri
+        kfpri = hot_fluid.get_thermal_conductivity(tri)
+        rhori =  hot_fluid.get_density(tri)
+        cpri = hot_fluid.get_cp(tri)
+        alphari = kfpri / (rhori * cpri)
+        muri = hot_fluid.get_dynamic_viscosity(tri)
+        prfri =  muri / alphari
+        nug =((cf / 2)*(redri - 1000) * prfri * (prf / prfri)**0.11 /
+              (1+12.7*(cf/2)**0.5 * (prf**(2/3) - 1)))
 
-
-        #  Para el cálculo de la solución del rendimiento a la entrada puedes
-        #  plantear como primera aproximación la solución de primer grado y
-        #  aplicar le método de Newton-Raphson para obtener
-
-        hext, eext = Model.get_hext_eext(hce, reext, tro, wind)
+        hint = kf * nug / dri
 
         #  Ec. 3.50 Barbero
         qcrit = sigma * eext * (tfe**4 - text**4) + hext * (tfe - text)
 
         #Ec. 3.51 Barbero
-        ucrit = 4*sigma*eext*tfe**3+hext
+        ucrit = 4 * sigma * eext * tfe**3 + hext
         #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
         # Ec. 3.22
         urec = 1/(
@@ -223,7 +198,29 @@ class ModelBarbero4grade(Model):
             while (errtro > 0.0001 or errpr > 0.000001):
 
                 step += 1
-                hext, eext = Model.get_hext_eext(hce, reext, tro1, wind)
+
+                # Ec. 4.14
+                mu = hot_fluid.get_dynamic_viscosity(tf)
+                rho = hot_fluid.get_density(tf)
+                kf = hot_fluid.get_thermal_conductivity(tf)
+                #  alpha : difusividad térmica
+                alpha = kf / (rho * cp)
+                prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
+                redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
+                #  Prandtl number at temperature tri
+                kfpri = hot_fluid.get_thermal_conductivity(tri)
+                rhori =  hot_fluid.get_density(tri)
+                cpri = hot_fluid.get_cp(tri)
+                alphari = kfpri / (rhori * cpri)
+                muri = hot_fluid.get_dynamic_viscosity(tri)
+                prfri =  muri / alphari
+                nug =((cf / 2)*(redri - 1000) * prfri * (prf / prfri)**0.11 /
+                      (1+12.7*(cf/2)**0.5 * (prf**(2/3) - 1)))
+
+                #nudb = 0.023 * redri**0.8 * prf**0.4
+                hint = kf * nug / dri
+
+                hext, eext = cls.get_hext_eext(hce, reext, tro1, wind)
                 trec = (tro1+tf)/2
                 # Ec. 4.22
                 krec = (0.0153)*(trec) + 14.77  # trec ya está en ºC
@@ -273,12 +270,67 @@ class ModelBarbero4grade(Model):
                 errtro = abs(tro2-tro1)
                 tro1 = tro2
                 pr1 = pr2
+                Model.set_tout(hce, qabs, pr1, cp)
+                tf = hce.tout
+                tri = tf
 
         else:
             pr1 = 0
 
         Model.set_tout(hce, qabs, pr1, cp)
         hce.pr = pr1
+
+    @classmethod
+    def get_hext_eext(cls, hce, reext, tro, wind):
+
+        eext = 0.
+        hext = 0.
+
+        if (hce.parameters['coating'] == 'CERMET' and
+            hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
+                hext = 0.
+            else:
+                eext = 2.44E-4*tro+0.0832
+                hext = 0.
+        elif (hce.parameters['coating'] == 'CERMET' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
+                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
+                hext = 2.34 * reext**0.0646
+            else:
+                eext = 1.97E-4 * tro + 0.0859
+                hext = 3.65
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = (2.53E-4 * reext**0.0614 * tro +
+                        1 / (9.92 + 1.5E-5 * reext))
+                hext = 0.
+            else:
+                eext = 4.66E-4 * tro + 0.0903
+                hext = 0.
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
+                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
+                hext = 2.77 * reext**0.043
+            else:
+                eext = 3.58E-4 * tro + 0.115
+                hext = 3.6
+
+        return hext, eext
+
+
+    @classmethod
+    def get_hint(cls, hce):
+
+        hint = nbiot * krec / e
+
+        pass
 
 
 class ModelBarbero1grade(Model):
@@ -293,9 +345,11 @@ class ModelBarbero1grade(Model):
         dni = dni
         cp = hot_fluid.get_cp(hce.tin)
         sigma = sc.constants.sigma
-        dro = hce.parameters['Dro']
-        dri = hce.parameters['Dri']
-        L = hce.parameters['Long']
+        dro = hce.parameters['dro']
+        dri = hce.parameters['din']
+        dgo = hce.parameters['dgo']
+        dgi = hce.parameters['dgi']
+        L = hce.parameters['long']
         hint = hce.parameters['hint']
         hext = hce.parameters['hext']
         eext = hce.parameters['eext']
@@ -354,9 +408,11 @@ class ModelBarberoSimplified(Model):
         dni = dni
         cp = hot_fluid.get_cp(hce.tin)
         sigma = sc.constants.sigma
-        dro = hce.parameters['Dro']
-        dri = hce.parameters['Dri']
-        L = hce.parameters['Long']
+        dro = hce.parameters['dro']
+        dri = hce.parameters['din']
+        dgo = hce.parameters['dgo']
+        dgi = hce.parameters['dgi']
+        L = hce.parameters['long']
         hint = hce.parameters['hint']
         hext = hce.parameters['hext']
         eext = hce.parameters['eext']
@@ -409,12 +465,12 @@ class ModelHottelWhilier(Model):
         def simulateHCE(cls, hce, hot_fluid, dni):
 
 
-            dro = hce.parameters['Dout']
-            dri = hce.parameters['Din']
-            x = hce.parameters['Long']
-            hint = hce.parameters['hint']
-            hext = hce.parameters['hext']
-            sigma = hce.parameters['sigma']
+            dro = hce.parameters['dro']
+            dri = hce.parameters['din']
+            dgo = hce.parameters['dgo']
+            dgi = hce.parameters['dgi']
+            L = hce.parameters['long']
+            sigma = sc.constants.sigma
             eext = hce.parameters['eext']
             krec = hce.parameters['krec']
             # En el modelo H-W uext es constante
@@ -483,7 +539,7 @@ class ModelASHRAE(Model):
             dni = 800 #provisional
             dro = hce.parameters['Dout']
             dri = hce.parameters['Din']
-            x = hce.parameters['Long']
+            L = hce.parameters['Long']
             hint = hce.parameters['hint']
             hext = hce.parameters['hext']
             sigma = hce.parameters['sigma']
@@ -679,9 +735,11 @@ class SolarField(object):
         H = 0.0
 
         for l in self.loops:
-            H += l.get_cp * (l.get_tout-l.get_tin)*l.massflow
+            H += hotfluid.get_cp(self.scas.hces[-1].tout) * (l.get_tout-l.get_tin)*l.massflow
 
-        self.tout = self.tin + H/(self.plant.hotfluid.get_cp()*self.get_massflow())
+        self.tout = (self.tin + H /
+                     (self.plant.hotfluid.get_cp(self.scas.hces[-1].tout) *
+                      self.get_massflow()))
 
     def set_tin(self):
 
@@ -968,7 +1026,8 @@ class Simulation(object):
                     for s in l.scas:
                         for h in s.hces:
                             model.simulateHCE(h, hot_fluid, row[1]['DNI'],
-                                              row[1]['Wspd'])
+                                              row[1]['Wspd'],
+                                              row[1]['DryBulb'])
                 print('PRtotal:', h.get_pr_total(row[0],  row[1], site))
 
 
@@ -1023,9 +1082,13 @@ class Fluid(object):
         self.parameters = _FLUIDS_PARAMS[name]
 
 
-    def get_density(self):
+    def get_density(self, t):
 
-        return self.density
+        d0 = self.parameters['d0']
+        d1 = self.parameters['d1']
+        d2 = self.parameters['d2']
+
+        return (d0 + d1 * t + d2 * t**2)
 
     def get_dynamic_viscosity(self, t):
 
@@ -1038,22 +1101,22 @@ class Fluid(object):
 
         return (v0 + v1 * t + v2 * t**2 + v3 * t**3 + v4 * t**4 + v5 * t**5)
 
-    def get_cp(self, t, p):
+    def get_cp(self, t):
 
         cp0 = self.parameters['cp0']
-        cpx = self.parameters['cpx']
-        cpy = self.parameters['cpy']
+        cp1 = self.parameters['cp1']
+        cp2 = self.parameters['cp2']
 
-        return (cp0 + cpx * t + cpy*p)
+        return (cp0 + cp1 * t + cp2 * t**2)
 
-    def get_kf(self, t, p):
-        ''' Fluid conductivity at temperature t and pressure p '''
+    def get_thermal_conductivity(self, t):
+        ''' Laturated Fluid conductivity at temperature t '''
 
-        kf0 = self.parameters['kf0']
-        kfx = self.parameters['kfx']
-        kfy = self.parameters['kfy']
+        k0 = self.parameters['k0']
+        k1 = self.parameters['k1']
+        k2 = self.parameters['k2']
 
-        return (kf0 + kfx * t + kfy*p)
+        return (k0 + k1 * t + k2 * t**2)
 
     def get_deltaH(self):
 

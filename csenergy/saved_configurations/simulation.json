@@ -22,9 +22,11 @@
 	"filepath": "./weather_files/"},
 "hce": {
 	"name": "Luz LS-3",
-	"Long": 4.012,
-	"Dri": 0.066,
-	"Dro": 0.070,
+	"long": 4.012,
+	"dri": 0.066,
+	"dro": 0.070,
+	"dgi": 0.109,
+	"dgo": 0.115,
 	"coating" : "CERMET",
 	"annulus" : "VACUUM"},
 "sca": {
