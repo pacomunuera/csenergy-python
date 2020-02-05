@@ -89,9 +89,6 @@ class Model(object):
                     (hce.sca.loop.massflow * cp))
 
 
-
-
-
 class ModelBarbero4grade(Model):
 
     def __ini__(self, settings):
@@ -103,7 +100,6 @@ class ModelBarbero4grade(Model):
     def simulateHCE(cls, hce, hot_fluid, dni, wind, text):
 
         Model.set_tin(hce)
-        cp = hot_fluid.get_cp(hce.tin)
         sigma = sc.constants.sigma
         dro = hce.parameters['dro']
         dri = hce.parameters['dri']
@@ -120,6 +116,7 @@ class ModelBarbero4grade(Model):
         hce.tout = tf
         tro = tf
         tri = tf
+        cp = hot_fluid.get_cp(tf)
 
         #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
         nu_air = 8.67886e-11 * text**2 + 8.81055e-8 * text + 1.33019e-5
@@ -148,7 +145,7 @@ class ModelBarbero4grade(Model):
         alpha = kf / (rho * cp)
         prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
         redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
-        nudb = 0.023 * redri**0.8 * prf**0.4
+        # nudb = 0.023 * redri**0.8 * prf**0.4
         cf = (1.58 * np.log(redri) - 3.28)**-2
 
         #  Prandtl number at temperature tri
@@ -200,6 +197,7 @@ class ModelBarbero4grade(Model):
                 step += 1
 
                 # Ec. 4.14
+                cp = hot_fluid.get_cp(tf)
                 mu = hot_fluid.get_dynamic_viscosity(tf)
                 rho = hot_fluid.get_density(tf)
                 kf = hot_fluid.get_thermal_conductivity(tf)
@@ -462,65 +460,6 @@ class ModelHottelWhilier(Model):
 
             super(Model, self).__init__(simulation)
 
-        def simulateHCE(cls, hce, hot_fluid, dni):
-
-
-            dro = hce.parameters['dro']
-            dri = hce.parameters['din']
-            dgo = hce.parameters['dgo']
-            dgi = hce.parameters['dgi']
-            L = hce.parameters['long']
-            sigma = sc.constants.sigma
-            eext = hce.parameters['eext']
-            krec = hce.parameters['krec']
-            # En el modelo H-W uext es constante
-            # uext = hce.parameters['uext']
-            massflow = hce.sca.loop.massflow
-            #cp = self.hot_fluid.get_cp(hce.tin)
-            cp = hot_fluid.get_cp(hce.tin)
-
-            Model.set_tin(hce)
-            time.sleep(0.010)
-            tfe = hce.tin
-            tf =  tfe
-
-            text = 22.0
-            tro = tf
-            # Ec. 3.70
-            # t3ro-ext = 4*tfe**3
-
-            qabs = (hce.parameters['pr_opt'] *
-                    hce.parameters['cg'] * dni *
-                    hce.parameters['pr_shw'] *
-                    hce.parameters['pr_geo'])
-
-            trec = tro
-
-            # Ec. 4.22
-            krec = (0.0153)*(trec) + 14.77  # trec ya está en ºC
-
-            # Ec. 2.27
-
-            # uext = sigma*eext*(tro**2+text**2)*(tro+text)+hext
-            uext = 10
-
-            # Ec. 3.22
-            urec = 1/(
-                    (1/hint) +
-                    (dro*np.log(dro/dri))/(2*krec)
-                    )
-
-            # Ec. 3.2
-            Fprime = urec/(uext+urec)
-
-            pr = ((1-uext*(tfe-text)/qabs) *
-                  massflow*cp/(w*x*uext) *
-                  (1-np.exp(-Fprime*w*x*uext/(massflow*cp))))
-
-
-            hce.pr = pr
-            hce.tout = tfe+sc.pi*dro*x*qabs*pr/(massflow*cp)
-
 
 class ModelNaumFrainderaich(Model):
 
@@ -534,17 +473,6 @@ class ModelASHRAE(Model):
 
             super(Model, self).__init__(simulation)
 
-        def simulateHCE(self, hce):
-
-            dni = 800 #provisional
-            dro = hce.parameters['Dout']
-            dri = hce.parameters['Din']
-            L = hce.parameters['Long']
-            hint = hce.parameters['hint']
-            hext = hce.parameters['hext']
-            sigma = hce.parameters['sigma']
-            eext = hce.parameters['eext']
-            krec = hce.parameters['krec']
 
 
 class HCE(object):
@@ -1013,6 +941,7 @@ class Simulation(object):
 
         solarplant.initializePlant()
         for row in weather.weatherdata[0].iterrows():
+            print('Date: ', row[0])
             solarposition = pvlib.solarposition.get_solarposition(row[0],
                                                         site.latitude,
                                                         site.longitude,
@@ -1022,13 +951,14 @@ class Simulation(object):
 
             aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0], solarposition['azimuth'][0]))
             for sf in solarplant.solarfields:
+                print('Subcampo: ', sf.name)
                 for l in sf.loops:
                     for s in l.scas:
                         for h in s.hces:
                             model.simulateHCE(h, hot_fluid, row[1]['DNI'],
                                               row[1]['Wspd'],
                                               row[1]['DryBulb'])
-                print('PRtotal:', h.get_pr_total(row[0],  row[1], site))
+                print('PRtotal:', sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],  row[1], site))
 
 
 class HeatExchanger(object):
