@@ -21,9 +21,9 @@ def simulation_new():
 def simulation_open():
     pass
 
-def simulation_save():
+def simulation_save(text):
     name=asksaveasfile(mode='w',defaultextension='.json')
-    text2save=str(text.get(0.0,END))
+    text2save=str(text.get(0.0,tk.END))
     name.write(text2save)
     name.close
 
@@ -143,7 +143,7 @@ def weather_load_dialog(f2, title, e, labeltext = '', path = None):
 
     except Exception:
         raise
-        txMessageBox.showerror('Error loading Weather Data File',
+        tk.txMessageBox.showerror('Error loading Weather Data File',
                                'Unable to open file: %r', path)
         f2.update()
 
@@ -260,7 +260,8 @@ btsavecfgweather.grid(row = 1, column = 7)
 
 #  Fluid contruction Tab
 
-def fluid_load_dialog(f3, config_fluid_table, title, labeltext = '' ):
+def fluid_load_dialog(f3, config_fluid_table, tmaxentry, tminentry, 
+                      entnamefluid, title, labeltext = '' ):
 
     path = askopenfilename(initialdir = ".saved_configurations/",
                            title = "choose your file",
@@ -271,13 +272,11 @@ def fluid_load_dialog(f3, config_fluid_table, title, labeltext = '' ):
 
     cp_coefs = [[]]*7
     rho_coefs = [[]]*7
-    d_coefs  = [[]]*7
     mu_coefs  = [[]]*7
     kt_coefs  = [[]]*7
 
     temp_cp = ["cp"]
     temp_rho = ["rho"]
-    temp_d = ["d"]
     temp_mu = ["mu"]
     temp_kt = ["kt"]
 
@@ -286,7 +285,6 @@ def fluid_load_dialog(f3, config_fluid_table, title, labeltext = '' ):
 
     temp_cp.extend(list(cfg['hot_fluid']['cp']))
     temp_rho.extend(list(cfg['hot_fluid']['rho']))
-    temp_d.extend(list(cfg['hot_fluid']['d']))
     temp_mu.extend(list(cfg['hot_fluid']['mu']))
     temp_kt.extend(list(cfg['hot_fluid']['kt']))
 
@@ -294,8 +292,6 @@ def fluid_load_dialog(f3, config_fluid_table, title, labeltext = '' ):
         cp_coefs[index] = temp_cp[index]
     for index in range(len(temp_rho)):
         rho_coefs[index] = temp_rho[index]
-    for index in range(len(temp_d)):
-        d_coefs[index] = temp_d[index]
     for index in range(len(temp_mu)):
         mu_coefs[index] = temp_mu[index]
     for index in range(len(temp_kt)):
@@ -305,15 +301,22 @@ def fluid_load_dialog(f3, config_fluid_table, title, labeltext = '' ):
     #datarow.append(grades)
     datarow.append(cp_coefs)
     datarow.append(rho_coefs)
-    datarow.append(d_coefs)
     datarow.append(mu_coefs)
     datarow.append(kt_coefs)
 
     config_fluid_table.table_data = datarow
     config_fluid_table.grid(row = 1, column = 1)
+    
+    entmaxfluid.delete(0, tk.END)
+    entmaxfluid.insert(0, cfg['hot_fluid']['tmax'])
+    entminfluid.delete(0, tk.END)
+    entminfluid.insert(0, cfg['hot_fluid']['tmin'])
+    entnamefluid.delete(0, tk.END)
+    entnamefluid.insert(0, cfg['hot_fluid']['name'])
+    
     f3.update()
 
-def fluid_save_dialog(f3, config_table, tmaxentry, tminentry,
+def fluid_save_dialog(f3, config_table, entmax, entmin,
                       name, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -326,19 +329,14 @@ def fluid_save_dialog(f3, config_table, tmaxentry, tminentry,
     cfg["hot_fluid"].update(dict({"name" : name}))
 
     datarow = list(config_table.table_data)
-    print(datarow)
-    dictkeys = ["name"]
-    dictkeys =[config_table.column_data(0)]
 
     for r in datarow:
         param_name = r[0]
         param_values = list(map(to_number, r[1:]))
         cfg["hot_fluid"].update(dict({param_name : param_values}))
 
-
-
-    cfg['hot_fluid'].update({"tmax" : float(tmaxentry.get())})
-    cfg['hot_fluid'].update({"tmin" : float(tminentry.get())})
+    cfg['hot_fluid'].update({"tmax" : float(entmax.get())})
+    cfg['hot_fluid'].update({"tmin" : float(entmin.get())})
     f.write(json.dumps(cfg))
     f.close()
 
@@ -357,26 +355,26 @@ lbnamefluid = ttk.Label(f3, text= "Name")
 lbnamefluid.grid(row = 0, column = 0)
 ennamefluid = ttk.Entry(f3, text= "Name")
 ennamefluid.grid(row = 0, column = 1)
-btloadcfgfluid = ttk.Button(
-        f3,
-        text= "Load config",
-        command= lambda : fluid_load_dialog(
-                f3, config_fluid_table, "Load config file", labeltext="HTF Config"))
+
+entmaxfluid = ttk.Entry(f3, text= "Tmax")
+entminfluid = ttk.Entry(f3, text= "Tmin")
+entmaxfluid.grid(row = 0, column = 3)
+entminfluid.grid(row = 0, column = 4)
+
+
+btloadcfgfluid = ttk.Button( 
+    f3, text= "Load config", 
+    command= lambda : fluid_load_dialog(
+            f3, config_fluid_table, entmaxfluid, entminfluid, ennamefluid,
+            "Load config file", labeltext="HTF Config"))
+
 btloadcfgfluid.grid(row = 0, column = 2)
-
-enmaxfluid = ttk.Entry(f3, text= "Tmax")
-enminfluid = ttk.Entry(f3, text= "Tmin")
-enmaxfluid.grid(row = 0, column = 3)
-enminfluid.grid(row = 0, column = 4)
-
-
-
 
 btsavecfgfluid = ttk.Button(
         f3,
         text= "Save config",
         command= lambda : fluid_save_dialog(
-                f3, config_fluid_table, enmaxfluid, enminfluid, "Name",  "Save config file", labeltext="HTF Config"))
+                f3, config_fluid_table, entmaxfluid, entminfluid, "Name",  "Save config file", labeltext="HTF Config"))
 btsavecfgfluid.grid(row = 0, column = 5)
 
 

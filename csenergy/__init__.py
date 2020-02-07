@@ -16,8 +16,10 @@ solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
                            simulation_settings['hce'],
                            simulation_settings['hce_model_settings'])
 
-hotfluid = cs.HotFluid(simulation_settings['hot_fluid'])
-coldfluid = cs.ColdFluid(simulation_settings['cold_fluid'])
+hotfluid = cs.Fluid(simulation_settings['hot_fluid'])
+print(simulation_settings['hot_fluid'])
+print('--------------------------------')
+coldfluid = cs.Fluid(simulation_settings['cold_fluid'])
 weather = cs.Weather(simulation_settings['weather'])
 
 #while  not hasattr(weather, 'weatherdata'):

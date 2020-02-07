@@ -24,9 +24,9 @@ import os.path
 #  import pint
 
 _FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 1522.77738, 'cp1': 2.59864, 'cp2': 0.00046,
-                                 'v0': 5.135e+00, 'v1': -8.395e-02,
-                                 'v2': 5.971e-04, 'v3': -2.409e-06,
-                                 'v4': 6.029e-09, 'v5': -9.579e-12,
+                                 'v0': 1.44502E-02, 'v1': -8.32838E-05,
+                                 'v2': 1.38092E-06, 'v3': -5.82052E-09,
+                                 'v4': 1.17142E-11, 'v5': -8.04330E-15,
                                  'd0': 1071.13711 , 'd1': -0.66794, 'd2': -0.00072,
                                  'k0': 1.856e-1 , 'k1': -1.600e-4 , 'k2': 5.913e-12,
                                  'tmax': 400, 'tmin': 15},
@@ -1007,58 +1007,54 @@ class ThermodynamicCycle (object):
 
 class Fluid(object):
 
-    def __init__(self, name):
+    def __init__(self, settings=None):
 
-        self.parameters = _FLUIDS_PARAMS[name]
-
+        print(settings)
+        self.name = settings['name']
+        self.cp = settings['cp']
+        self.rho = settings['rho']
+        self.mu = settings['mu']
+        self.kt = settings['kt']
+        self.tmax = settings['tmax']
+        self.tmin = settings['tmin']
+        
+        self.cp += [0] * (6 - len(self.cp))
+        self.rho += [0] * (6 - len(self.rho))
+        self.mu += [0] * (6 - len(self.mu))
+        self.kt += [0] * (6 - len(self.kt))
 
     def get_density(self, t):
 
-        d0 = self.parameters['d0']
-        d1 = self.parameters['d1']
-        d2 = self.parameters['d2']
+        rho0, rho1, rho2, rho3, rho4, rho5 = tuple(self.rho)
 
-        return (d0 + d1 * t + d2 * t**2)
+        return (rho0 + rho1 * t + rho2 * t**2 + rho3 * t**3 +
+                rho4 * t**4 + rho5 * t**5)
 
     def get_dynamic_viscosity(self, t):
 
-        v0 = self.parameters['v0']
-        v1 = self.parameters['v1']
-        v2 = self.parameters['v2']
-        v3 = self.parameters['v3']
-        v4 = self.parameters['v4']
-        v5 = self.parameters['v5']
-
-        return (v0 + v1 * t + v2 * t**2 + v3 * t**3 + v4 * t**4 + v5 * t**5)
+        mu0, mu1, mu2, mu3, mu4, mu5 = tuple(self.mu)
+        
+        return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 + 
+                mu4 * t**4 + mu5 * t**5)
 
     def get_cp(self, t):
+            
+        cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
 
-        cp0 = self.parameters['cp0']
-        cp1 = self.parameters['cp1']
-        cp2 = self.parameters['cp2']
-
-        return (cp0 + cp1 * t + cp2 * t**2)
+        return (cp0 + cp1 * t + cp2 * t**2 + cp3 * t**3 +
+                cp4 * t**4 + cp5 * t**5)
 
     def get_thermal_conductivity(self, t):
-        ''' Laturated Fluid conductivity at temperature t '''
+        ''' Saturated Fluid conductivity at temperature t '''
+        
+        kt0, kt1, kt2, kt3, kt4, kt5 = tuple(self.kt)
 
-        k0 = self.parameters['k0']
-        k1 = self.parameters['k1']
-        k2 = self.parameters['k2']
+        return (kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
+                kt4 * t**4 + kt5 * t**5)
 
-        return (k0 + k1 * t + k2 * t**2)
+    def get_deltaH(self, tin, tout):
 
-    def get_deltaH(self):
-
-        cp_0 = hot_fluid['cp_factors'][0]
-        cp_1 = hot_fluid['cp_factors'][1]
-        cp_2 = hot_fluid['cp_factors'][2]
-        cp_3 = hot_fluid['cp_factors'][3]
-
-        return m*(cp_0*(tout-tin)+
-                  (1/5)*cp_1*(tout**2-tin**2)+
-                  (1/3)*cp_2*(tout**3-tin**3)+
-                  (1/4)*cp_3*(tout**4-tin**4))
+        pass
 
     def get_Reynolds(self):
 
@@ -1079,19 +1075,18 @@ class Fluid(object):
                     )
 
 
-class HotFluid(Fluid):
+# class HotFluid(Fluid):
 
-    def __init__(self, settings):
+#     def __init__(self, settings):
 
-        self.name =  settings['name']
-        super().__init__(self.name)
+#         super().__init__(settings)
 
 
-class ColdFluid(Fluid):
+# class ColdFluid(Fluid):
 
-    def __init__(self, settings):
+#     def __init__(self, settings):
 
-        self.name = settings['name']
+#         super().__init__(settings)
 
 
 class Weather(object):
