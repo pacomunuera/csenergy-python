@@ -27,12 +27,12 @@ density, heat capacity, internal energy, enthalpy, entropy, viscosity and
 thermal conductivity. Hence, the available output keys are:
     T, P, D, C, U, H, S, V, L, Tmin and Tmax.
 '''
-
+#PropsSI('T','P',101325,'Q',0,'Water')
 
 rowT =[]
 pressure = 20000000
 for temp in range(288,670,10):
-    rowT.append([PropsSI('C','T',temp,'P', pressure,'INCOMP::S800'),
+    rowT.append([PropsSI('V','T',temp,'P', pressure,'INCOMP::TVP1'),
                  temp, pressure])
 
 dt = pd.DataFrame(rowT,columns=['y', 'temp','pressure'])

@@ -99,6 +99,8 @@ class ModelBarbero4grade(Model):
     @classmethod
     def simulateHCE(cls, hce, hot_fluid, dni, wind, text):
 
+        pressure = 1500000
+
         Model.set_tin(hce)
         sigma = sc.constants.sigma
         dro = hce.parameters['dro']
@@ -106,7 +108,7 @@ class ModelBarbero4grade(Model):
         dgo = hce.parameters['dgo']
         dgi = hce.parameters['dgi']
         L = hce.parameters['long']
-        A = hce.sca.parameters['aperture']
+        A = hce.sca.parameters['Aperture']
         krec = hce.parameters['krec']
         massflow = hce.sca.loop.massflow
         cg = A /(np.pi*dro)
@@ -116,7 +118,7 @@ class ModelBarbero4grade(Model):
         hce.tout = tf
         tro = tf
         tri = tf
-        cp = hot_fluid.get_cp(tf)
+        cp = hot_fluid.get_cp(tf, pressure)
 
         #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
         nu_air = 8.67886e-11 * text**2 + 8.81055e-8 * text + 1.33019e-5
@@ -138,9 +140,9 @@ class ModelBarbero4grade(Model):
 
 
         # Ec. 4.14
-        mu = hot_fluid.get_dynamic_viscosity(tf)
-        rho = hot_fluid.get_density(tf)
-        kf = hot_fluid.get_thermal_conductivity(tf)
+        mu = hot_fluid.get_dynamic_viscosity(tf, pressure)
+        rho = hot_fluid.get_density(tf, pressure)
+        kf = hot_fluid.get_thermal_conductivity(tf, pressure)
         #  alpha : difusividad térmica
         alpha = kf / (rho * cp)
         prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
@@ -149,11 +151,11 @@ class ModelBarbero4grade(Model):
         cf = (1.58 * np.log(redri) - 3.28)**-2
 
         #  Prandtl number at temperature tri
-        kfpri = hot_fluid.get_thermal_conductivity(tri)
-        rhori =  hot_fluid.get_density(tri)
-        cpri = hot_fluid.get_cp(tri)
+        kfpri = hot_fluid.get_thermal_conductivity(tri, pressure)
+        rhori =  hot_fluid.get_density(tri, pressure)
+        cpri = hot_fluid.get_cp(tri, pressure)
         alphari = kfpri / (rhori * cpri)
-        muri = hot_fluid.get_dynamic_viscosity(tri)
+        muri = hot_fluid.get_dynamic_viscosity(tri, pressure)
         prfri =  muri / alphari
         nug =((cf / 2)*(redri - 1000) * prfri * (prf / prfri)**0.11 /
               (1+12.7*(cf/2)**0.5 * (prf**(2/3) - 1)))
@@ -197,20 +199,20 @@ class ModelBarbero4grade(Model):
                 step += 1
 
                 # Ec. 4.14
-                cp = hot_fluid.get_cp(tf)
-                mu = hot_fluid.get_dynamic_viscosity(tf)
-                rho = hot_fluid.get_density(tf)
-                kf = hot_fluid.get_thermal_conductivity(tf)
+                cp = hot_fluid.get_cp(tf, pressure)
+                mu = hot_fluid.get_dynamic_viscosity(tf, pressure)
+                rho = hot_fluid.get_density(tf, pressure)
+                kf = hot_fluid.get_thermal_conductivity(tf, pressure)
                 #  alpha : difusividad térmica
                 alpha = kf / (rho * cp)
                 prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
                 redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
                 #  Prandtl number at temperature tri
-                kfpri = hot_fluid.get_thermal_conductivity(tri)
-                rhori =  hot_fluid.get_density(tri)
-                cpri = hot_fluid.get_cp(tri)
+                kfpri = hot_fluid.get_thermal_conductivity(tri, pressure)
+                rhori =  hot_fluid.get_density(tri, pressure)
+                cpri = hot_fluid.get_cp(tri, pressure)
                 alphari = kfpri / (rhori * cpri)
-                muri = hot_fluid.get_dynamic_viscosity(tri)
+                muri = hot_fluid.get_dynamic_viscosity(tri, pressure)
                 prfri =  muri / alphari
                 nug =((cf / 2)*(redri - 1000) * prfri * (prf / prfri)**0.11 /
                       (1+12.7*(cf/2)**0.5 * (prf**(2/3) - 1)))
@@ -273,7 +275,7 @@ class ModelBarbero4grade(Model):
                 tri = tf
 
         else:
-            pr1 = 0
+            pr = 0
 
         Model.set_tout(hce, qabs, pr1, cp)
         hce.pr = pr1
@@ -504,7 +506,7 @@ class HCE(object):
 
         alpha = self.get_absorptivity()
         tau = self.get_transmissivity()
-        rho = self.get_reflectivity()
+        rho = self.get_reflectance()
         gamma = self.get_solar_fraction()
 
         return alpha * tau * rho * gamma
@@ -526,8 +528,8 @@ class HCE(object):
         return 1.0
 
 
-    def get_reflectivity(self):
-        return 1.0
+    def get_reflectance(self):
+        return self.sca.parameters['Reflectance']
 
 
     def get_solar_fraction(self):
@@ -536,13 +538,13 @@ class HCE(object):
     def get_pr_shadows(self):
         return 1.0
 
-    def get_IAM(self, theta):
-
-        theta = np.radians(theta)
-        F0 = self.sca.parameters['F0']
-        F1 = self.sca.parameters['F1']
-        F2 = self.sca.parameters['F2']
-        return F0+(F1*theta+F2*theta**2)/np.cos(theta)
+#    def get_IAM(self, theta):
+#
+#        theta = np.radians(theta)
+#        F0 = self.sca.parameters['F0']
+#        F1 = self.sca.parameters['F1']
+#        F2 = self.sca.parameters['F2']
+#        return F0+(F1*theta+F2*theta**2)/np.cos(theta)
 
 
     def get_pr_total(self, dateindex, site, data):
@@ -551,7 +553,7 @@ class HCE(object):
 
         return (self.pr * self.get_pr_shadows() *
                 self.get_pr_opt_peak() * self.get_pr_geo() *
-                np.cos(np.radians(aoi)) * self.get_IAM(aoi))
+                np.cos(np.radians(aoi)) * self.sca.get_IAM(aoi))
 
 
 class SCA(object):
@@ -568,6 +570,14 @@ class SCA(object):
         self.surface_tilt = 0.0
         self.surface_azimuth = 180.0
 
+    def get_IAM(self, theta):
+
+        theta = np.radians(theta)
+        F0 = self.parameters['IAM Coefficient F0']
+        F1 = self.parameters['IAM Coefficient F1']
+        F2 = self.parameters['IAM Coefficient F2']
+
+        return F0+(F1*theta+F2*theta**2)/np.cos(theta)
 
     def get_tin(self, sca):
 
@@ -662,11 +672,13 @@ class SolarField(object):
         '''
         H = 0.0
 
+        pressure = 2000000
+
         for l in self.loops:
-            H += hotfluid.get_cp(self.scas.hces[-1].tout) * (l.get_tout-l.get_tin)*l.massflow
+            H += hotfluid.get_cp(self.scas.hces[-1].tout, pressure) * (l.get_tout-l.get_tin)*l.massflow
 
         self.tout = (self.tin + H /
-                     (self.plant.hotfluid.get_cp(self.scas.hces[-1].tout) *
+                     (self.plant.hotfluid.get_cp(self.scas.hces[-1].tout, pressure) *
                       self.get_massflow()))
 
     def set_tin(self):
@@ -941,7 +953,6 @@ class Simulation(object):
 
         solarplant.initializePlant()
         for row in weather.weatherdata[0].iterrows():
-            print('Date: ', row[0])
             solarposition = pvlib.solarposition.get_solarposition(row[0],
                                                         site.latitude,
                                                         site.longitude,
@@ -951,14 +962,14 @@ class Simulation(object):
 
             aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0], solarposition['azimuth'][0]))
             for sf in solarplant.solarfields:
-                print('Subcampo: ', sf.name)
                 for l in sf.loops:
                     for s in l.scas:
                         for h in s.hces:
                             model.simulateHCE(h, hot_fluid, row[1]['DNI'],
                                               row[1]['Wspd'],
                                               row[1]['DryBulb'])
-                print('PRtotal:', sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],  row[1], site))
+            print(row[0].strftime('%y/%m/%d %H:%M'),
+                 'PRtotal:', format( sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],  row[1], site), '.2f'))
 
 
 class HeatExchanger(object):
@@ -1004,12 +1015,57 @@ class ThermodynamicCycle (object):
 
         return (1-(text/tf))
 
+class Fluid_CoolProp(object):
 
-class Fluid(object):
+    def __init__(self, settings = None):
+
+        self.name = settings['name']
+        self.coolpropID = settings['CoolPropID']
+        print(self.coolpropID)
+
+    def get_density(self, t, p):
+
+        return PropsSI('D','T',t,'P', p, self.coolpropID)
+
+    def get_dynamic_viscosity(self, t, p):
+
+        return  PropsSI('V','T',t,'P', p, self.coolpropID)
+
+    def get_cp(self, t, p):
+
+        return PropsSI('C','T',t,'P', p, self.coolpropID)
+
+    def get_thermal_conductivity(self, t, p):
+        ''' Saturated Fluid conductivity at temperature t '''
+
+        return PropsSI('L','T',t,'P', p, self.coolpropID)
+
+    def get_deltaH(self, tin, tout, p):
+
+        return PropsSI('H','T',t,'P', p, self.coolpropID)
+
+    def get_Reynolds(self):
+
+        self.re = 0
+
+    def get_ReynoldsDRI(self):
+
+        self.redri = 0
+
+    def get_Nusselt_Dittus_Boelter(self):
+
+        self.nudb = 0.023*(redri**0.8)*(prf**0.4)
+
+    def get_Nusselt_Gnielinski(self):
+
+        self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /
+                    (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
+                    )
+
+class Fluid_Tabular(object):
 
     def __init__(self, settings=None):
 
-        print(settings)
         self.name = settings['name']
         self.cp = settings['cp']
         self.rho = settings['rho']
@@ -1017,42 +1073,42 @@ class Fluid(object):
         self.kt = settings['kt']
         self.tmax = settings['tmax']
         self.tmin = settings['tmin']
-        
+
         self.cp += [0] * (6 - len(self.cp))
         self.rho += [0] * (6 - len(self.rho))
         self.mu += [0] * (6 - len(self.mu))
         self.kt += [0] * (6 - len(self.kt))
 
-    def get_density(self, t):
+    def get_density(self, t, p):
 
         rho0, rho1, rho2, rho3, rho4, rho5 = tuple(self.rho)
 
         return (rho0 + rho1 * t + rho2 * t**2 + rho3 * t**3 +
                 rho4 * t**4 + rho5 * t**5)
 
-    def get_dynamic_viscosity(self, t):
+    def get_dynamic_viscosity(self, t, p):
 
         mu0, mu1, mu2, mu3, mu4, mu5 = tuple(self.mu)
-        
-        return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 + 
+
+        return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 +
                 mu4 * t**4 + mu5 * t**5)
 
-    def get_cp(self, t):
-            
+    def get_cp(self, t, p):
+
         cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
 
         return (cp0 + cp1 * t + cp2 * t**2 + cp3 * t**3 +
                 cp4 * t**4 + cp5 * t**5)
 
-    def get_thermal_conductivity(self, t):
+    def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
-        
+
         kt0, kt1, kt2, kt3, kt4, kt5 = tuple(self.kt)
 
         return (kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
                 kt4 * t**4 + kt5 * t**5)
 
-    def get_deltaH(self, tin, tout):
+    def get_deltaH(self, tin, tout, p):
 
         pass
 
@@ -1075,18 +1131,22 @@ class Fluid(object):
                     )
 
 
-# class HotFluid(Fluid):
-
+#class HotFluid(Fluid):
+#
 #     def __init__(self, settings):
-
+#
 #         super().__init__(settings)
-
-
-# class ColdFluid(Fluid):
-
+#
+#
+#class ColdFluid(Fluid):
+#
 #     def __init__(self, settings):
-
-#         super().__init__(settings)
+#
+#         if self.settings['name'] in ['Water']:
+#
+#
+#
+#          super().__init__(settings)
 
 
 class Weather(object):
@@ -1098,7 +1158,53 @@ class Weather(object):
         self.openWeatherDataFile(self.file)
 
     def openWeatherDataFile(self, path = None):
+        '''
+        
 
+        Parameters
+        ----------
+        path : string, optional
+            
+        DESCRIPTION. URI of the weatherfile. The default is None.
+             
+        Tuple of the form (data, metadata).
+        data : DataFrame
+             A pandas dataframe with the columns described in the table
+             below. For more detailed descriptions of each component, please
+             consult the TMY3 User's Manual ([1]), especially tables 1-1
+             through 1-6.
+        metadata : dict
+            The site metadata available in the file.
+        Notes
+        -----
+        The returned structures have the following fields.
+        ===============   ======  ===================
+        key               format  description
+        ===============   ======  ===================
+        altitude          Float   site elevation
+        latitude          Float   site latitudeitude
+        longitude         Float   site longitudeitude
+        Name              String  site name
+        State             String  state
+        TZ                Float   UTC offset
+        USAF              Int     USAF identifier
+        ===============   ======  ===================
+        =============================       ======================================================================================================================================================
+        TMYData field                       description
+        =============================       ======================================================================================================================================================
+        TMYData.Index                       A pandas datetime index. NOTE, the index is currently timezone unaware, and times are set to local standard time (daylight savings is not included)
+        TMYData.ETR                         Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+        TMYData.ETRN                        Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+        TMYData.GHI                         Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
+        TMYData.GHISource                   See [1]_, Table 1-4
+        TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
+        TMYData.DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
+        
+        Returns
+        -------
+        None
+        '''
+     
         try:
             if path is None:
                 root = Tk()
@@ -1131,6 +1237,8 @@ class Weather(object):
                     else:
                         print("unknow extension ", strext)
                         return
+                   # weatherdata.index = pd.to_datetime(weatherdata.index)
+                   # weatherdata = weatherdata.apply(pd.to_numeric, errors='coerce')
             else:
                 strfilename, strext = os.path.splitext(path)
 
@@ -1162,38 +1270,73 @@ class Weather(object):
 
         self.weatherdata = pvlib.iotools.tmy.read_tmy2(self.file)
 
-#Tuple of the form (data, metadata).
-#    data : DataFrame
-#        A pandas dataframe with the columns described in the table
-#        below. For more detailed descriptions of each component, please
-#        consult the TMY3 User's Manual ([1]), especially tables 1-1
-#        through 1-6.
-#    metadata : dict
-#        The site metadata available in the file.
-#    Notes
-#    -----
-#    The returned structures have the following fields.
-#    ===============   ======  ===================
-#    key               format  description
-#    ===============   ======  ===================
-#    altitude          Float   site elevation
-#    latitude          Float   site latitudeitude
-#    longitude         Float   site longitudeitude
-#    Name              String  site name
-#    State             String  state
-#    TZ                Float   UTC offset
-#    USAF              Int     USAF identifier
-#    ===============   ======  ===================
-#    =============================       ======================================================================================================================================================
-#    TMYData field                       description
-#    =============================       ======================================================================================================================================================
-#    TMYData.Index                       A pandas datetime index. NOTE, the index is currently timezone unaware, and times are set to local standard time (daylight savings is not included)
-#    TMYData.ETR                         Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-#    TMYData.ETRN                        Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-#    TMYData.GHI                         Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-#    TMYData.GHISource                   See [1]_, Table 1-4
-#    TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
-#    TMYData.DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
+
+class FieldData(object):
+
+    def __init__(self, settings):
+        self.filename = settings['filename']
+        self.filepath = settings['filepath']
+        self.file = self.filepath + self.filename
+        self.openFieldDataFile(self.file)
+
+    def openFieldDataFile(self, path = None):
+
+        '''
+        fielddata
+        '''
+
+        try:
+            if path is None:
+                root = Tk()
+                root.withdraw()
+                path = askopenfilename(initialdir = ".fielddata_files/",
+                                   title = "choose your file",
+                                   filetypes = (("csv files","*.csv"),
+                                                ("all files","*.*")))
+                root.update()
+                root.destroy()
+
+                if path is None:
+                    return
+                else:
+                    strfilename, strext = os.path.splitext(path)
+
+                    if  strext == ".csv":
+                        print("csv...")
+                        self.fielddata = pd.read_csv(path, skiprows=2, sep=';',
+                                                     decimal=b',', index_col=0)
+                        self.file = path
+                    elif strext == ".xls":
+                        print("xls...")
+                        self.fielddata = pd.read_excel(path)
+                        self.file = path
+                    else:
+                        print("unknow extension ", strext)
+                        return
+            else:
+                strfilename, strext = os.path.splitext(path)
+
+                if  strext == ".csv":
+                    print("csv...")
+                    self.fielddata = pd.read_csv(path)
+                    self.file = path
+                elif strext == ".xls":
+                    print("xls...")
+                    self.fielddata = pd.read_excel(path)
+                    self.file = path
+                else:
+                    print("unknow extension ", strext)
+                    return
+
+        except Exception:
+            raise
+            txMessageBox.showerror('Error loading FieldData File',
+                                   'Unable to open file: %r', self.file)
+
+
+
+
+
 
 
 #        date_rng = pd.date_range(start='1/1/2014',end='31/12/2014',freq='H')
@@ -1203,13 +1346,6 @@ class Weather(object):
 #        print(weatherdata)
 #        robj = weatherdata.resample('10T').mean()
 #        print(robj)
-
-
-
-
-    def get_dni(self):
-        return 800
-
 
 
 

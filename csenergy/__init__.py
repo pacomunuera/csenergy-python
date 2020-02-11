@@ -16,10 +16,21 @@ solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
                            simulation_settings['hce'],
                            simulation_settings['hce_model_settings'])
 
-hotfluid = cs.Fluid(simulation_settings['hot_fluid'])
-print(simulation_settings['hot_fluid'])
-print('--------------------------------')
-coldfluid = cs.Fluid(simulation_settings['cold_fluid'])
+coolPropFluids = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
+
+if simulation_settings['hot_fluid']['CoolPropID'] in coolPropFluids:
+    print("Fluid data from CoolProp")
+    hotfluid = cs.Fluid_CoolProp(simulation_settings['hot_fluid'])
+else:
+    print("Fluid data from table")
+    hotfluid = cs.Fluid_Tabular(simulation_settings['hot_fluid'])
+
+# TO-DO: FUNCIONES PARA DATOS DEL AGUA
+if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
+    coldfluid = cs.Fluid_CoolProp(simulation_settings['cold_fluid'])
+else:
+    coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
+
 weather = cs.Weather(simulation_settings['weather'])
 
 #while  not hasattr(weather, 'weatherdata'):

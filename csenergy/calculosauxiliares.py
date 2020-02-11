@@ -26,7 +26,7 @@ rowT =[]
 
 for temp in range(288,670,10):
     for pressure in range (1100000, 2000000, 100000):
-        rowT.append([PropsSI('D','T',temp,'P', pressure,'INCOMP::S800'),
+        rowT.append([PropsSI('D','T',temp,'P', pressure,'Water'),
                     temp, pressure])
 
 dt = pd.DataFrame(rowT,columns=['y', 'temp','pressure'])
