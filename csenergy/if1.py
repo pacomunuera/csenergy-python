@@ -5,14 +5,25 @@ Created on Wed Feb  5 12:08:03 2020
 @author: fmunuera
 '''
 
+import sys
+sys.path.append('./libs')
+
+import os.path
+
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfile
 import tkinter.ttk as ttk
-import recipe5807461 as rcp1
+
+# recipe-580746-1.py from
+# http://code.activestate.com/recipes/
+# 580746-t kinter-treeview-like-a-table-or-multicolumn-listb/
+import recipe-580746-1 as table
+
 import json
 from decimal import Decimal
 from json import encoder
-import os.path
+
+
 
 def simulation_new():
     pass
@@ -158,7 +169,7 @@ def solarfield_save_dialog(f1, solarfield_table, ennamesolarfield, title, labelt
     f.write(json.dumps(cfg))
     f.close()
 
-solarfield_table = rcp1.Tk_Table(
+solarfield_table = table.Tk_Table(
                 f1,
                 ["NAME", "LOOPS", "SCAS", "HCES","MASSFLOW","ROWSPACING"],
                 row_numbers=True,
@@ -347,7 +358,7 @@ def fluid_save_dialog(f3, fluid_table, entmax, entmin,
     f.write(json.dumps(cfg))
     f.close()
 
-fluid_table = rcp1.Tk_Table(
+fluid_table = table.Tk_Table(
                 f3,
                 ["Parameter [x]", " A x^0", "B x^1", "C x^2","D x^3",
                  "E x^4", "F x^5"],
@@ -423,7 +434,7 @@ def hce_save_dialog(f4, hce_table, title, labeltext = '' ):
     file.write(json.dumps(cfg))
     file.close()
 
-hce_table = rcp1.Tk_Table(
+hce_table = table.Tk_Table(
                 f4,
                 ["Name", "Description", "Condition", "Broken", "Bellows",
                  "Transmissivity", "Absorption", "Unaccounted",
@@ -491,7 +502,7 @@ def sca_save_dialog(f5, sca_table, title, labeltext = '' ):
     file.write(json.dumps(cfg))
     file.close()
 
-sca_table = rcp1.Tk_Table(
+sca_table = table.Tk_Table(
                 f5, ["Name","SCA Length","Aperture","Aperture Area","Focal Len",
                     "IAM Coefficient F0","IAM Coefficient F1", "AM Coefficient F2",
                     "Track  Twist", "Geom.Accuracy", "Reflectance", "Cleanliness",
