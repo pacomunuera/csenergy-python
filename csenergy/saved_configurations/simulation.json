@@ -6,10 +6,10 @@
 	"name": "My plant",
 	"tsetpoint": 398.0,
 	"solarfields": [
-		{"name": "c0", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "c1", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "c2", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "c3", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250}]},
+		{"name": "NO", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
+		{"name": "NE", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
+		{"name": "SO", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
+		{"name": "SE", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250}]},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
@@ -19,12 +19,38 @@
 	"technology": "parabolic trough",
 	"tracking axis type": "single",
 	"tracking axis azimuth": 0},
-"weather": {
+"weather_data_file": {
 	"filename": "prueba2.tm2",
 	"filepath": "./weather_files/"},
-"fielddatafile": {
+"field_data_file": {
 	"filename": "fielddata.csv",
-	"filepath": "./fielddata_files/"},
+	"filepath": "./fielddata_files/",
+	"tags": {
+	    "NO.f": "1110-FT-1800.UNIT1@ASTE1A",
+        "NO.tin": "1110-TT-1800.UNIT1@ASTE1A",
+        "NO.tout": "1110-TT-1802.UNIT1@ASTE1A",
+    	"NO.pin": "1110-PT-1800.UNIT1@ASTE1A",
+    	"NO.pout": "1110-PT-1802.UNIT1@ASTE1A",
+	    "NE.f": "1110-FT-1801.UNIT1@ASTE1A",
+        "NE.tin": "1110-TT-1801.UNIT1@ASTE1A",
+        "NE.tout": "1110-TT-1803.UNIT1@ASTE1A",
+    	"NE.pin": "1110-PT-1801.UNIT1@ASTE1A",
+    	"NE.pout": "1110-PT-1803.UNIT1@ASTE1A",
+	    "SO.f": "1110-FT-1809.UNIT1@ASTE1A",
+        "SO.tin": "1110-TT-1809.UNIT1@ASTE1A",
+        "SO.tout": "1110-TT-1807.UNIT1@ASTE1A",
+    	"SO.pin": "1110-PT-1809.UNIT1@ASTE1A",
+    	"SO.pout": "1110-PT-1807.UNIT1@ASTE1A",
+	    "SE.f": "1110-FT-1810.UNIT1@ASTE1A",
+        "SE.tin": "1110-TT-1810.UNIT1@ASTE1A",
+        "SE.tout": "1110-TT-1808.UNIT1@ASTE1A",
+    	"SE.pin": "1110-PT-1810.UNIT1@ASTE1A",
+    	"SE.pout": "1110-PT-1808.UNIT1@ASTE1A",
+	    "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
+        "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
+        "DryBulb": "1100-AXT-1877R.UNIT1@ASTE1A",
+    	"Pressure": "1100-AXT-1877R.UNIT1@ASTE1A"}
+	},
 "hce": {
 	"name": "Luz LS-3",
 	"long": 4.012,

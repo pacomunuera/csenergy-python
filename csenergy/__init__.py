@@ -1,7 +1,6 @@
 import csenergy as cs
 import pandas as pd
 from tkinter import *
-import interface
 import json
 
 #  TO-DO: PASO PREVIO -> INTERFAZ GRAFICA PARA CREAR EL simulation_file
@@ -31,13 +30,6 @@ if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
 else:
     coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
 
-weather = cs.Weather(simulation_settings['weather'])
-
-#while  not hasattr(weather, 'weatherdata'):
-#    weather.openWeatherDataFile()
-
-site.name = weather.get_weather_data_site()['City']
-
 hcemask = cs.HCEScatterMask(simulation_settings['solar_plant'],
                             simulation_settings['hce_scattered_params'])
 scamask = cs.SCAScatterMask(simulation_settings['solar_plant'],
@@ -53,8 +45,18 @@ model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
 
 #model.simulateSolarPlant(solarplant, site, weather, hotfluid)
 
-simulation = cs.Simulation('sim1')
-simulation.simulateSolarPlant(model, solarplant, site, weather, hotfluid)
+simulation = cs.Simulation(simulation_settings['simulation'])
+
+if simulation.type == "type0":
+    data_source = cs.Weather(simulation_settings['weather_data_file'])
+    site.name = data_source.get_weather_data_site()['City']
+elif simulation.type == "type1":
+    data_file = cs.FieldData(simulation_settings['field_data_file'])
+
+#while  not hasattr(weather, 'weatherdata'):
+#    weather.openWeatherDataFile()
+
+simulation.runSolarPlant(model, solarplant, site, data_source, hotfluid)
 
 
 # Crea aplicación

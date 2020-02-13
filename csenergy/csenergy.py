@@ -939,8 +939,9 @@ class Simulation(object):
 
     '''
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, settings):
+        self.ID =  settings['ID']
+        self.type = settings['type']
 
     def calcRequired_massflow():
         '''calcula el caudal promedio requerido en cada lazo para alzanzar
@@ -949,10 +950,52 @@ class Simulation(object):
         subcampo. De esta forma tenemos el caudal '''
         pass
 
+    def runSolarPlant(self, model, solarplant, site, data_source, hot_fluid):
+
+        if self.type == "type0":
+            self.simulateSolarPlant(model, solarplant, site, data_source, hot_fluid)
+        elif self.type == "type1":
+            self.benchmarkSolarPlant(model, solarplant, site, data_source, hot_fluid)
+        else:
+            return None
+
+
     def simulateSolarPlant(self, model, solarplant, site, weather, hot_fluid):
 
+        if self.type != 'type0':
+            return None
+
         solarplant.initializePlant()
+
         for row in weather.weatherdata[0].iterrows():
+            solarpos = pvlib.solarposition.get_solarposition(row[0],
+                                                        site.latitude,
+                                                        site.longitude,
+                                                        site.altitude,
+                                                        pressure = row[1]['Pressure'],
+                                                        temperature=row[1]['DryBulb'])
+
+            aoi = float(pvlib.irradiance.aoi(0, 0, solarpos['zenith'][0],
+                                             solarpos['azimuth'][0]))
+            for sf in solarplant.solarfields:
+                for l in sf.loops:
+                    for s in l.scas:
+                        for h in s.hces:
+                            model.simulateHCE(h, hot_fluid, row[1]['DNI'],
+                                              row[1]['Wspd'], row[1]['DryBulb'])
+            print(row[0].strftime('%y/%m/%d %H:%M'), 'PRtotal:',
+                  format(sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],
+                         row[1], site), '.2f'))
+
+
+    def benchmarkSolarPlant(self, model, solarplant, site, fielddata, hot_fluid):
+
+        if self.type != 'type1':
+            return None
+
+        solarplant.initializePlant()
+
+        for row in fielddata.iterrows():
             solarposition = pvlib.solarposition.get_solarposition(row[0],
                                                         site.latitude,
                                                         site.longitude,
@@ -960,7 +1003,8 @@ class Simulation(object):
                                                         pressure = row[1]['Pressure'],
                                                         temperature=row[1]['DryBulb'])
 
-            aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0], solarposition['azimuth'][0]))
+            aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0],
+                                             solarposition['azimuth'][0]))
             for sf in solarplant.solarfields:
                 for l in sf.loops:
                     for s in l.scas:
@@ -970,6 +1014,9 @@ class Simulation(object):
                                               row[1]['DryBulb'])
             print(row[0].strftime('%y/%m/%d %H:%M'),
                  'PRtotal:', format( sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],  row[1], site), '.2f'))
+
+
+
 
 
 class HeatExchanger(object):
@@ -1159,14 +1206,14 @@ class Weather(object):
 
     def openWeatherDataFile(self, path = None):
         '''
-        
+
 
         Parameters
         ----------
         path : string, optional
-            
+
         DESCRIPTION. URI of the weatherfile. The default is None.
-             
+
         Tuple of the form (data, metadata).
         data : DataFrame
              A pandas dataframe with the columns described in the table
@@ -1199,12 +1246,12 @@ class Weather(object):
         TMYData.GHISource                   See [1]_, Table 1-4
         TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
         TMYData.DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-        
+
         Returns
         -------
         None
         '''
-     
+
         try:
             if path is None:
                 root = Tk()
@@ -1332,10 +1379,6 @@ class FieldData(object):
             raise
             txMessageBox.showerror('Error loading FieldData File',
                                    'Unable to open file: %r', self.file)
-
-
-
-
 
 
 
