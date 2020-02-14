@@ -66,6 +66,7 @@ _IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
                    {'F0': 1.0, 'F1': -0.008, 'F2': -0.117, 'thetamin': 0,
                     'thetamax': 80}}
 
+
 class Model(object):
 
     def __init__(self, settings):
@@ -619,6 +620,10 @@ class Loop(object):
         self.tin = 0.0
         self.massflow = 0.0
 
+    def get_tin(self):
+
+        return self.scas[0].hces[0].tin
+
 
     def tempOut(self, weatherstatus, plantstatus):
         '''
@@ -654,17 +659,26 @@ class SolarField(object):
 
     '''
 
-    def __init__(self, plant, settings):
+    def __init__(self, plant, solarfield_settings, loop_settings):
 
         self.plant = plant
-        self.name = settings['name']
+        self.name = solarfield_settings['name']
         self.loops = []
-        self.massflow =settings['massflow']
+        self.massflow =loop_settings['massflow']
         self.tin= 1
         self.tout = self.tin
 
 
-    def get_tout(self):
+    def get_massflow(self):
+
+        totalmassflow = 0.0
+        for l in self.loops:
+            totalmassflow += l.massflow
+
+        return totalmassflow
+
+
+    def get_tout(self, hotfluid):
         '''
         Calculates HTF output temperature throughout the solar field as a
         weighted average based on the enthalpy of the mass flow in each
@@ -675,11 +689,14 @@ class SolarField(object):
         pressure = 2000000
 
         for l in self.loops:
-            H += hotfluid.get_cp(self.scas.hces[-1].tout, pressure) * (l.get_tout-l.get_tin)*l.massflow
+            H += (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
+                  (l.scas[-1].hces[-1].tout-l.get_tin())*l.massflow)
 
         self.tout = (self.tin + H /
-                     (self.plant.hotfluid.get_cp(self.scas.hces[-1].tout, pressure) *
+                     (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
                       self.get_massflow()))
+
+        return self.tout
 
     def set_tin(self):
 
@@ -704,25 +721,24 @@ class SolarPlant(object):
 
         self.name = plant_settings['name']
         self.solarfields = []
-        self.solarfield_to_exchanger_thermal_lost = 0.1
-        self.exchanger_performance = 0.9
-        self.exchanger_to_turbogroup_thermal_lost = 0.1
-        self.steam_cycle_performance = 0.9
-        self.turbogenerator_performance = 0.9
+        self.ratedtin = plant_settings['ratedtin']
+        self.ratedtout = plant_settings['ratedtout']
+        self.ratedpressure = plant_settings['ratedpressure']
+        self.min_massflow = 0.0
 
-        self.tin = 300
+        self.tin = self.ratedtin
 
         for sf in plant_settings['solarfields']:
-            self.solarfields.append(SolarField(self, sf))
+            self.solarfields.append(SolarField(self, sf, plant_settings['loop']))
             for l in range(sf.get('loops')):
                 self.solarfields[-1].loops.append(
                     Loop(self.solarfields[-1], l))
-                for s in range(sf.get('scas')):
+                for s in range(plant_settings['loop']['scas']):
                     self.solarfields[-1].loops[-1].scas.append(
                         SCA(self.solarfields[-1].loops[-1],
                             s,
                             sca_settings))
-                    for h in range (sf.get('hces')):
+                    for h in range (plant_settings['loop']['hces']):
                         self.solarfields[-1].loops[-1].scas[-1].hces.append(
                             HCE(self.solarfields[-1].loops[-1].scas[-1],
                             h,
@@ -733,6 +749,28 @@ class SolarPlant(object):
 
         for sf in self.solarfields:
             self.total_loops += len(sf.loops)
+
+        proto_settings = {'name': 'prototype',
+                          'massflow': 0}
+
+        self.protosolarfield = SolarField(self, proto_settings, plant_settings['loop'])
+
+        for l in range(self.total_loops):
+                self.protosolarfield.loops.append(
+                    Loop(self.protosolarfield, l))
+                for s in range(plant_settings['loop']['scas']):
+                    self.protosolarfield.loops[-1].scas.append(
+                        SCA(self.protosolarfield.loops[-1],
+                            s,
+                            sca_settings))
+                    for h in range (plant_settings['loop']['hces']):
+                        self.protosolarfield.loops[-1].scas[-1].hces.append(
+                            HCE(self.protosolarfield.loops[-1].scas[-1],
+                            h,
+                            hce_settings,
+                            hce_model_settings))
+
+
 
     def calcRequired_massflow(self):
         req_massflow = 0
@@ -776,57 +814,59 @@ class SolarPlant(object):
                               "tout", "=", h.tout)
 
 
-class SolarSystem(object):
+#class SolarSystem(object):
+#
+#    pass
 
-    def __init__(self, settings):
-
-        self.parameters = settings
-
-
-    #  Duffie - Beckman calculation of the incidence angle
-    @classmethod
-    def aoi_DB(self, sca, index):
-
-        delta = 0
-        phi = 0
-        beta = 0
-        gamma_s = 0
-        omega = 0
-
-        return  np.arccos(
-                (np.sin(delta) * np.sin(phi) * np.sin(beta) -
-                np.sin(delta) * np.cos(phi) * np.cos(gamma_s) +
-                np.cos(delta) * np.cos(phi) * np.cos(beta) * cos(omega) +
-                np.cos(delta) * np.sin(phi) * np.sin(beta) *
-                np.cos(gamma_s) * np.cos(omega) +
-                np.cos(delta) * np.sen(beta) * np.sen(gamma_s) *
-                np.sen(omega)))
-
-
-    #  Rabl calculation of the incidence angle with N-S axis
-    @classmethod
-    def aoi_Rabl_NS(self, sca, index):
-
-        delta = 0
-        phi = 0
-        omega = 0
-
-        return np.arccos(np.cos(delta) *
-                          np.sqrt(
-                                  (np.cos(phi)*np.cos(omega)+
-                                   np.tan(delta)*np.sin(phi))**2 +
-                        (np.sin(omega))**2))
-
-    #  Rabl calculation of the incidence angle with E-W axis
-    @classmethod
-    def aoi_Rabl_EW(self, sca, index):
-
-        delta = 0
-        omega = 0
-
-        return np.arccos(np.sqrt(1 +
-                                 (np.cos(delta)**2) *
-                                 ((np.cos(omega))**2 - 1)))
+#    def __init__(self, settings):
+#
+#        self.parameters = settings
+#
+#
+#    #  Duffie - Beckman calculation of the incidence angle
+#    @classmethod
+#    def aoi_DB(self, sca, index):
+#
+#        delta = 0
+#        phi = 0
+#        beta = 0
+#        gamma_s = 0
+#        omega = 0
+#
+#        return  np.arccos(
+#                (np.sin(delta) * np.sin(phi) * np.sin(beta) -
+#                np.sin(delta) * np.cos(phi) * np.cos(gamma_s) +
+#                np.cos(delta) * np.cos(phi) * np.cos(beta) * cos(omega) +
+#                np.cos(delta) * np.sin(phi) * np.sin(beta) *
+#                np.cos(gamma_s) * np.cos(omega) +
+#                np.cos(delta) * np.sen(beta) * np.sen(gamma_s) *
+#                np.sen(omega)))
+#
+#
+#    #  Rabl calculation of the incidence angle with N-S axis
+#    @classmethod
+#    def aoi_Rabl_NS(self, sca, index):
+#
+#        delta = 0
+#        phi = 0
+#        omega = 0
+#
+#        return np.arccos(np.cos(delta) *
+#                          np.sqrt(
+#                                  (np.cos(phi)*np.cos(omega)+
+#                                   np.tan(delta)*np.sin(phi))**2 +
+#                        (np.sin(omega))**2))
+#
+#    #  Rabl calculation of the incidence angle with E-W axis
+#    @classmethod
+#    def aoi_Rabl_EW(self, sca, index):
+#
+#        delta = 0
+#        omega = 0
+#
+#        return np.arccos(np.sqrt(1 +
+#                                 (np.cos(delta)**2) *
+#                                 ((np.cos(omega))**2 - 1)))
 
 
 class PowerSystem(object):
@@ -841,14 +881,37 @@ class PowerSystem(object):
 
     def __init__(self, settings):
 
-        self.name = settings['powersystem']['name']
-        self.powerrate = settings['powersystem']['powerrate']
+        self.ratedpower = settings['ratedpower']
+        self.solarfield_to_exchanger_pr = settings['solarfield_to_exchanger_pr']
+        self.exchanger_pr = settings['exchanger_pr']
+        self.exchanger_to_turbogroup_pr = settings['exchanger_to_turbogroup_pr']
+        self.steam_cycle_pr = settings['steam_cycle_pr']
+        self.turbogenerator_pr = settings['turbogenerator_pr']
+
 
     def get_poweroutput(self):
         pass
 
     def get_powerinput(self):
         pass
+
+    def get_demanded_thermalpower(self, netpower):
+
+        return netpower / (self.solarfield_to_exchanger_pr *
+                                  self.exchanger_pr *
+                                  self.exchanger_to_turbogroup_pr *
+                                  self.steam_cycle_pr *
+                                  self.turbogenerator_pr)
+
+    def get_demanded_rated_massflow(self, ratedpower, solarplant, hotfluid, coldfluid = None):
+
+        cp_avg = 0.5 * (hotfluid.get_cp(solarplant.ratedtin, solarplant.ratedpressure) +
+                        hotfluid.get_cp(solarplant.ratedtout, solarplant.ratedpressure))
+
+        drm = (self.get_demanded_thermalpower(self.ratedpower) /
+               (cp_avg * (solarplant.ratedtout - solarplant.ratedtin)))
+
+        return drm
 
 
 class BOPSystem(object):
@@ -893,9 +956,9 @@ class HCEScatterMask(object):
             self.matrix[sf["name"]]=[]
             for l in range(sf.get('loops')):
                 self.matrix[sf["name"]].append([])
-                for s in range(sf.get('scas')):
+                for s in range(plant_settings['loop']['scas']):
                     self.matrix[sf["name"]][-1].append([])
-                    for h in range (sf.get('hces')):
+                    for h in range (plant_settings['loop']['hces']):
                         self.matrix[sf["name"]][-1][-1].append(hce_mask_settings)
 
     def applyMask(self, plant):
@@ -919,7 +982,7 @@ class SCAScatterMask(object):
             self.matrix[sf["name"]]=[]
             for l in range(sf.get('loops')):
                 self.matrix[sf["name"]].append([])
-                for s in range(sf.get('scas')):
+                for s in range(plant_settings['loop']['scas']):
                     self.matrix[sf["name"]][-1].append(sca_mask_settings)
 
     def applyMask(self, plant):
@@ -936,19 +999,36 @@ class Simulation(object):
     Definimos la clase simulacion para representar las diferentes
     pruebas que lancemos, variando el archivo TMY, la configuracion del
     site, la planta, el modo de operacion o el modelo empleado.
-
     '''
 
     def __init__(self, settings):
         self.ID =  settings['ID']
         self.type = settings['type']
 
-    def calcRequired_massflow():
-        '''calcula el caudal promedio requerido en cada lazo para alzanzar
-        la temperatura deseada. Calcula el caudal en cada lazo (si son todos
-        iguales solo lo hace una vez) y después calcula el promedio en cada
-        subcampo. De esta forma tenemos el caudal '''
-        pass
+    def precalc(self, powersystem, solarplant,
+                hotfluid, simulation, hce_settings):
+
+        loop_min_massflow = hotfluid.get_massflow_from_Reynolds(
+                hce_settings['dri'],
+                solarplant.ratedtin,
+                solarplant.ratedpressure,
+                hce_settings['min_reynolds'])
+
+
+        solarplant.min_massflow = solarplant.total_loops * loop_min_massflow
+        solarplant.rated_massflow = powersystem.get_demanded_rated_massflow(
+                powersystem.ratedpower, solarplant, hotfluid)
+
+        v = 4 * loop_min_massflow / ( np.pi * hce_settings['dri']**2 *
+                hotfluid.get_density(solarplant.ratedtin,
+                                     solarplant.ratedpressure))
+
+        if solarplant.min_massflow > solarplant.rated_massflow:
+            print("Too low massflow", solarplant.min_massflow ,">",
+                  solarplant.rated_massflow)
+        else:
+            print("Rated massflow = ", solarplant.rated_massflow, ">",
+                  "Min massflow=", solarplant.min_massflow)
 
     def runSolarPlant(self, model, solarplant, site, data_source, hot_fluid):
 
@@ -977,15 +1057,19 @@ class Simulation(object):
 
             aoi = float(pvlib.irradiance.aoi(0, 0, solarpos['zenith'][0],
                                              solarpos['azimuth'][0]))
+
+
             for sf in solarplant.solarfields:
                 for l in sf.loops:
                     for s in l.scas:
                         for h in s.hces:
                             model.simulateHCE(h, hot_fluid, row[1]['DNI'],
                                               row[1]['Wspd'], row[1]['DryBulb'])
+            # print(row[0].strftime('%y/%m/%d %H:%M'), 'PRtotal:',
+            #       format(sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],
+            #              row[1], site), '.2f'))
             print(row[0].strftime('%y/%m/%d %H:%M'), 'PRtotal:',
-                  format(sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],
-                         row[1], site), '.2f'))
+                  round(sf.get_tout(hot_fluid)))
 
 
     def benchmarkSolarPlant(self, model, solarplant, site, fielddata, hot_fluid):
@@ -1014,6 +1098,14 @@ class Simulation(object):
                                               row[1]['DryBulb'])
             print(row[0].strftime('%y/%m/%d %H:%M'),
                  'PRtotal:', format( sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],  row[1], site), '.2f'))
+
+        #TO-DO
+        estimated_pr = 0.0
+        actual_pr = 0.0
+        estimated_tout = 0.0
+        actual_tout = 0.0
+        rejected_solar_energy = 0.0
+
 
 
 
@@ -1072,28 +1164,38 @@ class Fluid_CoolProp(object):
 
     def get_density(self, t, p):
 
+        t += 273.15
         return PropsSI('D','T',t,'P', p, self.coolpropID)
 
     def get_dynamic_viscosity(self, t, p):
 
+        t += 273.15
         return  PropsSI('V','T',t,'P', p, self.coolpropID)
 
     def get_cp(self, t, p):
 
+        t += 273.15
         return PropsSI('C','T',t,'P', p, self.coolpropID)
 
     def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
-
+        t += 273.15
         return PropsSI('L','T',t,'P', p, self.coolpropID)
 
-    def get_deltaH(self, tin, tout, p):
+    def get_deltaH(self, t, p):
 
+        t += 273.15
         return PropsSI('H','T',t,'P', p, self.coolpropID)
 
-    def get_Reynolds(self):
+    def get_Reynolds(self, dri, t, p, massflow):
 
-        self.re = 0
+        t += 273.15
+        return massflow * np.pi * (dri**3) /( 4 * self.get_density(t, p))
+
+    def get_massflow_from_Reynolds(self, dri, t, p, re):
+
+        t += 273.15
+        return re * 4 * self.get_density(t, p) / (np.pi * (dri**3))
 
     def get_ReynoldsDRI(self):
 
@@ -1121,10 +1223,10 @@ class Fluid_Tabular(object):
         self.tmax = settings['tmax']
         self.tmin = settings['tmin']
 
-        self.cp += [0] * (6 - len(self.cp))
-        self.rho += [0] * (6 - len(self.rho))
-        self.mu += [0] * (6 - len(self.mu))
-        self.kt += [0] * (6 - len(self.kt))
+        self.cp += [0.] * (6 - len(self.cp))
+        self.rho += [0.] * (6 - len(self.rho))
+        self.mu += [0.] * (6 - len(self.mu))
+        self.kt += [0.] * (6 - len(self.kt))
 
     def get_density(self, t, p):
 
@@ -1159,9 +1261,14 @@ class Fluid_Tabular(object):
 
         pass
 
-    def get_Reynolds(self):
+    def get_Reynolds(self, dri, t, p, massflow):
 
-        self.re = 0
+        return (4 * massflow /
+                (np.pi * dri * self.get_dynamic_viscosity(t,p)))
+
+    def get_massflow_from_Reynolds(self, dri, t, p, re):
+
+        return re * np.pi * dri * self.get_dynamic_viscosity(t,p) / 4
 
     def get_ReynoldsDRI(self):
 
@@ -1271,34 +1378,27 @@ class Weather(object):
                     strfilename, strext = os.path.splitext(path)
 
                     if  strext == ".csv":
-                        print("csv...")
                         self.weatherdata = pvlib.iotools.tmy.read_tmy3(path)
                         self.file = path
                     elif (strext == ".tm2" or strext == ".tmy"):
-                        print("tmy...")
                         self.weatherdata = pvlib.iotools.tmy.read_tmy2(path)
                         self.file = path
                     elif strext == ".xls":
-                        print("xls...")
                         pass
                     else:
                         print("unknow extension ", strext)
                         return
-                   # weatherdata.index = pd.to_datetime(weatherdata.index)
-                   # weatherdata = weatherdata.apply(pd.to_numeric, errors='coerce')
+
             else:
                 strfilename, strext = os.path.splitext(path)
 
                 if  strext == ".csv":
-                    print("csv...")
                     self.weatherdata = pvlib.iotools.tmy.read_tmy3(path)
                     self.file = path
                 elif (strext == ".tm2" or strext == ".tmy"):
-                    print("tmy...")
                     self.weatherdata = pvlib.iotools.tmy.read_tmy2(path)
                     self.file = path
                 elif strext == ".xls":
-                    print("xls...")
                     pass
                 else:
                     print("unknow extension ", strext)
@@ -1325,12 +1425,14 @@ class FieldData(object):
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
         self.openFieldDataFile(self.file)
+        self.tags = settings['tags']
 
     def openFieldDataFile(self, path = None):
 
         '''
         fielddata
         '''
+        dateparse = lambda x: pd.datetime.strptime(x, '%Y/%m/%d %H:%M')
 
         try:
             if path is None:
@@ -1349,9 +1451,14 @@ class FieldData(object):
                     strfilename, strext = os.path.splitext(path)
 
                     if  strext == ".csv":
-                        print("csv...")
-                        self.fielddata = pd.read_csv(path, skiprows=2, sep=';',
-                                                     decimal=b',', index_col=0)
+                        print("csv........")
+                        
+                        self.fielddata = pd.read_csv(path, sep=';',
+                                                     decimal= ',',
+                                                     dtype= float,
+                                                     parse_dates=['datetime'], 
+                                                     date_parser=dateparse,
+                                                     index_col=0)
                         self.file = path
                     elif strext == ".xls":
                         print("xls...")
@@ -1365,7 +1472,10 @@ class FieldData(object):
 
                 if  strext == ".csv":
                     print("csv...")
-                    self.fielddata = pd.read_csv(path)
+                    self.fielddata = pd.read_csv(path, sep=';',
+                                                 decimal= ',',
+                                                 dayfirst=True,
+                                                 index_col=0)
                     self.file = path
                 elif strext == ".xls":
                     print("xls...")
@@ -1379,8 +1489,15 @@ class FieldData(object):
             raise
             txMessageBox.showerror('Error loading FieldData File',
                                    'Unable to open file: %r', self.file)
+            
+        #self.fielddata.index = pd.to_datetime(self.fielddata.index)
 
+    def rename_columns(self):
+        
+        rename_dict = dict(zip(self.tags.values(), self.tags.keys()))
+        self.fielddata.rename(columns = rename_dict, inplace = True)
 
+        
 
 #        date_rng = pd.date_range(start='1/1/2014',end='31/12/2014',freq='H')
 #        weatherdata = pd.read_csv(file, sep=';', decimal=',', index_col=0)

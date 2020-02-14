@@ -35,15 +35,13 @@ hcemask = cs.HCEScatterMask(simulation_settings['solar_plant'],
 scamask = cs.SCAScatterMask(simulation_settings['solar_plant'],
                             simulation_settings['sca_scattered_params'])
 
-cycle = cs.ThermodynamicCycle(simulation_settings['cycle'])
-
 # TO-DO: MÁSCARAS PARA INTRODUCIR DISPERSIÓN EN LOS PARÁMETROS.
 #hcemask.applyMask(solarplant)
 #scamask.applyMask(solarplant)
 
-model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
+cycle = cs.ThermodynamicCycle(simulation_settings['cycle'])
 
-#model.simulateSolarPlant(solarplant, site, weather, hotfluid)
+model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
 
 simulation = cs.Simulation(simulation_settings['simulation'])
 
@@ -51,13 +49,28 @@ if simulation.type == "type0":
     data_source = cs.Weather(simulation_settings['weather_data_file'])
     site.name = data_source.get_weather_data_site()['City']
 elif simulation.type == "type1":
-    data_file = cs.FieldData(simulation_settings['field_data_file'])
+    data_source = cs.FieldData(simulation_settings['field_data_file'])
+    data_source.fielddata.index = pd.to_datetime(data_source.fielddata.index)
+    data_source.rename_columns()
+    #print(data_source.fielddata.index)
+    
+    
+
+powersystem = cs.PowerSystem(simulation_settings['powersystem'])
+
+#simulation.precalc(powersystem, solarplant, hotfluid, simulation,
+#                   simulation_settings['hce'])
+
+#simulation.runSolarPlant(model, solarplant, site, data_source, hotfluid)
+
+
+
+
+
+
 
 #while  not hasattr(weather, 'weatherdata'):
 #    weather.openWeatherDataFile()
-
-simulation.runSolarPlant(model, solarplant, site, data_source, hotfluid)
-
 
 # Crea aplicación
 #root = Tk()

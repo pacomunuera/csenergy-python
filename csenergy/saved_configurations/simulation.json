@@ -1,15 +1,25 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type0"},
+    "type" : "type1"},
+"powersystem" : {
+    "ratedpower": 50000000,
+    "solarfield_to_exchanger_pr" : 0.95,
+    "exchanger_pr" : 0.9,
+    "exchanger_to_turbogroup_pr" : 0.9,
+    "steam_cycle_pr" : 0.4,
+    "turbogenerator_pr" : 0.9},
 "solar_plant": {
 	"name": "My plant",
-	"tsetpoint": 398.0,
+    "ratedtin": 293,
+    "ratedtout": 393,
+    "ratedpressure": 20000000,
 	"solarfields": [
-		{"name": "NO", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "NE", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "SO", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250},
-		{"name": "SE", "loops": 1, "scas": 4, "hces": 12, "massflow": 6.0, "row_spacing": 16.250}]},
+		{"name": "NO", "loops": 2, "row_spacing": 16.250},
+		{"name": "NE", "loops": 2, "row_spacing": 16.250},
+		{"name": "SO", "loops": 2, "row_spacing": 16.250},
+		{"name": "SE", "loops": 2, "row_spacing": 16.250}],
+	"loop": {"scas": 4, "hces": 12, "massflow": 9.0}},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
@@ -23,7 +33,7 @@
 	"filename": "prueba2.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
-	"filename": "fielddata.csv",
+	"filename": "fielddata_1Hb.csv",
 	"filepath": "./fielddata_files/",
 	"tags": {
 	    "NO.f": "1110-FT-1800.UNIT1@ASTE1A",
@@ -48,8 +58,8 @@
     	"SE.pout": "1110-PT-1808.UNIT1@ASTE1A",
 	    "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
         "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
-        "DryBulb": "1100-AXT-1877R.UNIT1@ASTE1A",
-    	"Pressure": "1100-AXT-1877R.UNIT1@ASTE1A"}
+        "DryBulb": "1100-AXT-1873R.UNIT1@ASTE1A",
+    	"Pressure": "1100-AXT-1883R.UNIT1@ASTE1A"}
 	},
 "hce": {
 	"name": "Luz LS-3",
@@ -58,6 +68,7 @@
 	"dro": 0.070,
 	"dgi": 0.109,
 	"dgo": 0.115,
+	"min_reynolds": 3.0e5,
 	"coating" : "CERMET",
 	"annulus" : "VACUUM"},
 "sca": {

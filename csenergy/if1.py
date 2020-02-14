@@ -17,7 +17,7 @@ import tkinter.ttk as ttk
 # recipe-580746-1.py from
 # http://code.activestate.com/recipes/
 # 580746-t kinter-treeview-like-a-table-or-multicolumn-listb/
-import recipe-580746-1 as table
+import recipe5807461 as table
 
 import json
 from decimal import Decimal
