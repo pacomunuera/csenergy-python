@@ -550,7 +550,7 @@ class HCE(object):
 
     def get_pr_total(self, dateindex, site, data):
 
-        aoi = self.sca.get_aoi(dateindex, data, site)
+        aoi = self.sca.get_aoi(dateindex, site, data)
 
         return (self.pr * self.get_pr_shadows() *
                 self.get_pr_opt_peak() * self.get_pr_geo() *
@@ -665,9 +665,10 @@ class SolarField(object):
         self.name = solarfield_settings['name']
         self.loops = []
         self.massflow =loop_settings['massflow']
-        self.tin= 1
-        self.tout = self.tin
+        self.tin= 0.0
+        self.tout = 0.0
 
+  
 
     def get_massflow(self):
 
@@ -697,6 +698,25 @@ class SolarField(object):
                       self.get_massflow()))
 
         return self.tout
+    
+    
+    def set_tout(self, hotfluid):
+        '''
+        Calculates HTF output temperature throughout the solar field as a
+        weighted average based on the enthalpy of the mass flow in each
+        loop of the solar field
+        '''
+        H = 0.0
+
+        pressure = 2000000
+
+        for l in self.loops:
+            H += (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
+                  (l.scas[-1].hces[-1].tout-l.tin)*l.massflow)
+
+        self.tout = (self.tin + H /
+                     (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
+                      self.massflow))
 
     def set_tin(self):
 
@@ -725,8 +745,9 @@ class SolarPlant(object):
         self.ratedtout = plant_settings['ratedtout']
         self.ratedpressure = plant_settings['ratedpressure']
         self.min_massflow = 0.0
-
+        self.tout = 0.0
         self.tin = self.ratedtin
+        self.massflow = 0.0
 
         for sf in plant_settings['solarfields']:
             self.solarfields.append(SolarField(self, sf, plant_settings['loop']))
@@ -771,6 +792,52 @@ class SolarPlant(object):
                             hce_model_settings))
 
 
+    def set_tout(self, hotfluid):
+        '''
+        Calculates HTF output temperature throughout the solar plant as a
+        weighted average based on the enthalpy of the mass flow in each
+        loop of the solar field
+        '''
+        H = 0.0
+
+        pressure = 2000000
+
+        for sf in self.solarfields:
+                 
+            H += (hotfluid.get_cp(sf.tin, pressure) *
+                  (sf.tout - sf.tin)*sf.massflow)
+
+        print("Tin planta", self.tin)
+        self.tout = (self.tin + (H /
+                     (hotfluid.get_cp(self.tin, pressure) * self.massflow)))
+        
+    def set_tin(self, hotfluid):
+        '''
+        Calculates HTF output temperature throughout the solar plant as a
+        weighted average based on the enthalpy of the mass flow in each
+        loop of the solar field
+        '''
+        H = 0.0
+
+        pressure = 2000000
+
+        for sf in self.solarfields:
+                 
+            H += (hotfluid.get_cp(sf.tin, pressure) *
+                  (sf.tin - 25.0)*sf.massflow)
+
+        self.tin = (25.0 + (H /
+                     (hotfluid.get_cp(25.0, pressure) * self.massflow)))
+    
+    def set_massflow(self):
+        
+        mf = 0.0
+        
+        for sf in self.solarfields:      
+            mf += sf.massflow           
+        
+        self.massflow = mf
+
 
     def calcRequired_massflow(self):
         req_massflow = 0
@@ -778,7 +845,7 @@ class SolarPlant(object):
             req_massflow += sf.calc_required_massflow()
         self.req_massflow = req_massflow
 
-    def initializePlant(self, measures = None):
+    def initializePlant(self, simulation, datasource = None):
         '''
         Set initial values for some parameters
 
@@ -787,16 +854,17 @@ class SolarPlant(object):
         Nothing
 
         '''
-        if measures is not None:
+        if simulation.type == "type0":
             for sf in self.solarfields:
                 for l in sf.loops:
                     l.set_inputs(measures)
-        else:
+        elif (simulation.type == "type1" and datasource is not None):
             for sf in self.solarfields:
-                #sf.tin = self.exchanger.hot_fluid_Tout()
-                sf.tin = self.tin
+                print(sf.name+'.tin')
+                sf.tin = datasource[sf.name+'.tin'][0]
+                sf.massflow = datasource[sf.name+'.mf'][0]
                 for l in sf.loops:
-                    l.massflow = sf.massflow/len(sf.loops)
+                    l.massflow = sf.massflow/len(sf.loops)                   
                     l.tin = sf.tin
 
 
@@ -939,10 +1007,10 @@ class BOPSystem(object):
 class Site(object):
     def __init__(self, settings):
 
-        self.name = settings['site']['name']
-        self.latitude = settings['site']['latitude']
-        self.longitude = settings['site']['longitude']
-        self.altitude = settings['site']['altitude']
+        self.name = settings['name']
+        self.latitude = settings['latitude']
+        self.longitude = settings['longitude']
+        self.altitude = settings['altitude']
 
 
 class HCEScatterMask(object):
@@ -1045,7 +1113,7 @@ class Simulation(object):
         if self.type != 'type0':
             return None
 
-        solarplant.initializePlant()
+        solarplant.initializePlant(self)
 
         for row in weather.weatherdata[0].iterrows():
             solarpos = pvlib.solarposition.get_solarposition(row[0],
@@ -1065,11 +1133,10 @@ class Simulation(object):
                         for h in s.hces:
                             model.simulateHCE(h, hot_fluid, row[1]['DNI'],
                                               row[1]['Wspd'], row[1]['DryBulb'])
-            # print(row[0].strftime('%y/%m/%d %H:%M'), 'PRtotal:',
-            #       format(sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],
-            #              row[1], site), '.2f'))
-            print(row[0].strftime('%y/%m/%d %H:%M'), 'PRtotal:',
-                  round(sf.get_tout(hot_fluid)))
+                sf.set_tout(hot_fluid)
+            solarplant.set_tout(hot_fluid)
+ 
+
 
 
     def benchmarkSolarPlant(self, model, solarplant, site, fielddata, hot_fluid):
@@ -1077,27 +1144,43 @@ class Simulation(object):
         if self.type != 'type1':
             return None
 
-        solarplant.initializePlant()
+        solarplant.initializePlant(self, fielddata.fielddata)
+        
+        results = pd.DataFrame(fielddata.fielddata.index)
+        
+        #print(results)    
 
-        for row in fielddata.iterrows():
+        for row in fielddata.fielddata.iterrows():            
             solarposition = pvlib.solarposition.get_solarposition(row[0],
                                                         site.latitude,
                                                         site.longitude,
                                                         site.altitude,
                                                         pressure = row[1]['Pressure'],
                                                         temperature=row[1]['DryBulb'])
-
             aoi = float(pvlib.irradiance.aoi(0, 0, solarposition['zenith'][0],
                                              solarposition['azimuth'][0]))
             for sf in solarplant.solarfields:
+                sf.massflow = row[1][sf.name+'.mf']
+                sf.tin = row[1][sf.name+'.tin']
                 for l in sf.loops:
+                    l.massflow = sf.massflow / len(sf.loops)
                     for s in l.scas:
                         for h in s.hces:
                             model.simulateHCE(h, hot_fluid, row[1]['DNI'],
                                               row[1]['Wspd'],
                                               row[1]['DryBulb'])
-            print(row[0].strftime('%y/%m/%d %H:%M'),
-                 'PRtotal:', format( sf.loops[-1].scas[-1].hces[-1].get_pr_total(row[0],  row[1], site), '.2f'))
+                sf.set_tout(hot_fluid)
+                print(sf.name, "Tout:",sf.tout, "massflow", sf.massflow)
+            
+            solarplant.set_massflow()
+            solarplant.set_tin(hot_fluid)
+            solarplant.set_tout(hot_fluid)
+            # print(row.index.strftime('%y/%m/%d %H:%M'),
+            #      'PRtotal:', format( sf.loops[-1].scas[-1].hces[-1].get_pr_total(row.index, site, site), '.2f'))
+            print(row[0].strftime('%y/%m/%d %H:%M'), 'DNI: ', row[1]['DNI'], 
+                  "MF:", solarplant.massflow, 'Real:',row[1][sf.name+'.tin'],
+                  '->',row[1][sf.name+'.tout'], 'Calc:', sf.tin, '->', 
+                  round(solarplant.tout))
 
         #TO-DO
         estimated_pr = 0.0
@@ -1424,8 +1507,11 @@ class FieldData(object):
         self.filename = settings['filename']
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
-        self.openFieldDataFile(self.file)
         self.tags = settings['tags']
+                
+        self.openFieldDataFile(self.file)
+        self.rename_columns()
+
 
     def openFieldDataFile(self, path = None):
 
@@ -1490,24 +1576,21 @@ class FieldData(object):
             txMessageBox.showerror('Error loading FieldData File',
                                    'Unable to open file: %r', self.file)
             
-        #self.fielddata.index = pd.to_datetime(self.fielddata.index)
+        self.fielddata.index = pd.to_datetime(self.fielddata.index)
+        
 
     def rename_columns(self):
-        
+                 
         rename_dict = dict(zip(self.tags.values(), self.tags.keys()))
         self.fielddata.rename(columns = rename_dict, inplace = True)
+        columns_to_drop = []
+        for c in  self.fielddata.columns:
+            if c not in self.tags.keys():
+                columns_to_drop.append(c)
+        self.fielddata.drop(columns = columns_to_drop, inplace = True)
+
 
         
-
-#        date_rng = pd.date_range(start='1/1/2014',end='31/12/2014',freq='H')
-#        weatherdata = pd.read_csv(file, sep=';', decimal=',', index_col=0)
-#        weatherdata.index = pd.to_datetime(weatherdata.index)
-#        weatherdata = weatherdata.apply(pd.to_numeric, errors='coerce')
-#        print(weatherdata)
-#        robj = weatherdata.resample('10T').mean()
-#        print(robj)
-
-
 
 # format = '%Y-%m-%d %H:%M:%S'
 # df['Datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'], format=format)

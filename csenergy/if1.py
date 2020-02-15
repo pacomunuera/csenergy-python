@@ -24,7 +24,6 @@ from decimal import Decimal
 from json import encoder
 
 
-
 def simulation_new():
     pass
 

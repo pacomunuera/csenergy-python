@@ -8,7 +8,14 @@ import json
 with open("./saved_configurations/simulation.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
-site = cs.Site(simulation_settings)
+simulation = cs.Simulation(simulation_settings['simulation'])
+
+if simulation.type == "type0":
+    data_source = cs.Weather(simulation_settings['weather_data_file'])
+elif simulation.type == "type1":
+    data_source = cs.FieldData(simulation_settings['field_data_file'])
+       
+site = cs.Site(simulation_settings['site'])
 
 solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
                            simulation_settings['sca'],
@@ -41,27 +48,14 @@ scamask = cs.SCAScatterMask(simulation_settings['solar_plant'],
 
 cycle = cs.ThermodynamicCycle(simulation_settings['cycle'])
 
-model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
-
-simulation = cs.Simulation(simulation_settings['simulation'])
-
-if simulation.type == "type0":
-    data_source = cs.Weather(simulation_settings['weather_data_file'])
-    site.name = data_source.get_weather_data_site()['City']
-elif simulation.type == "type1":
-    data_source = cs.FieldData(simulation_settings['field_data_file'])
-    data_source.fielddata.index = pd.to_datetime(data_source.fielddata.index)
-    data_source.rename_columns()
-    #print(data_source.fielddata.index)
-    
-    
+model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])  
 
 powersystem = cs.PowerSystem(simulation_settings['powersystem'])
 
 #simulation.precalc(powersystem, solarplant, hotfluid, simulation,
 #                   simulation_settings['hce'])
 
-#simulation.runSolarPlant(model, solarplant, site, data_source, hotfluid)
+simulation.runSolarPlant(model, solarplant, site, data_source, hotfluid)
 
 
 
