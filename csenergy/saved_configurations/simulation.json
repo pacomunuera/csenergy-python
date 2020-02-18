@@ -1,25 +1,32 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type1"},
+    "type" : "type0"},
 "powersystem" : {
     "ratedpower": 50000000,
     "solarfield_to_exchanger_pr" : 0.95,
     "exchanger_pr" : 0.9,
     "exchanger_to_turbogroup_pr" : 0.9,
-    "steam_cycle_pr" : 0.4,
+    "steam_cycle_pr" : 0.25,
     "turbogenerator_pr" : 0.9},
+"heatexchanger": {
+    "name": "GEA",
+    "pr": 0.8},
+"generator" : {
+    "name": "SIEMENS",
+    "pr": 0.99},
 "solar_plant": {
 	"name": "My plant",
     "ratedtin": 293,
     "ratedtout": 393,
-    "ratedpressure": 20000000,
+    "ratedpressure": 20,
+    "ratedmassflow": 480.0,
 	"solarfields": [
 		{"name": "NO", "loops": 30, "row_spacing": 16.250},
 		{"name": "NE", "loops": 30, "row_spacing": 16.250},
 		{"name": "SO", "loops": 30, "row_spacing": 16.250},
 		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
-	"loop": {"scas": 4, "hces": 12, "massflow": 4.0}},
+	"loop": {"scas": 4, "hces": 12}},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
@@ -30,7 +37,7 @@
 	"tracking axis type": "single",
 	"tracking axis azimuth": 0},
 "weather_data_file": {
-	"filename": "prueba2.tm2",
+	"filename": "A1A_07_2018.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
@@ -89,7 +96,7 @@
     "Availability":0.99},
 "hot_fluid": {
 	"name": "THERMINOL VP1",
-    "CoolPropID": "INCOMP::TVP1",
+    "CoolPropID": "INCOMP::S80x",
     "cp": [1522.77738, 2.59864, 0.00046],
 	"kt": [1.856e-1 , -1.600e-4 , 5.913e-12],
 	"mu": [6.1435e-3 , -1.2034e-4, 1.056e-6, -4.64e-9, 9.893e-12, -8.125e-15],
@@ -105,9 +112,11 @@
 	"rho": [1071.13711 , -0.66794, -0.00072],
     "tmax": 400.0,
 	"tmin": 15.0},
-"cycle" : {
+"powercycle" : {
    "name": "Rankine",
-   "pr_calculation": "NBA"},
+   "pr_calculation": "NBA",
+   "pin": 100e5,
+   "tin": 240},
 "hce_model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,
@@ -121,5 +130,5 @@
     "hint": {"mu":1.0, "sigma": 0.02},
     "urec": {"mu":1.0, "sigma": 0.02}},
 "sca_scattered_params": {
-	"reflectivity": 1.0}
+	"Reflectance": 1.0}
 }

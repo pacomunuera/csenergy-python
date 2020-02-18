@@ -11,16 +11,11 @@ with open("./saved_configurations/simulation.json") as simulation_file:
 simulation = cs.Simulation(simulation_settings['simulation'])
 
 if simulation.type == "type0":
-    data_source = cs.Weather(simulation_settings['weather_data_file'])
+    datasource = cs.Weather(simulation_settings['weather_data_file'])
 elif simulation.type == "type1":
-    data_source = cs.FieldData(simulation_settings['field_data_file'])
-       
-site = cs.Site(simulation_settings['site'])
+    datasource = cs.FieldData(simulation_settings['field_data_file'])
 
-solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
-                           simulation_settings['sca'],
-                           simulation_settings['hce'],
-                           simulation_settings['hce_model_settings'])
+site = cs.Site(simulation_settings['site'])
 
 coolPropFluids = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
@@ -31,11 +26,15 @@ else:
     print("Fluid data from table")
     hotfluid = cs.Fluid_Tabular(simulation_settings['hot_fluid'])
 
-# TO-DO: FUNCIONES PARA DATOS DEL AGUA
 if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
     coldfluid = cs.Fluid_CoolProp(simulation_settings['cold_fluid'])
 else:
     coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
+
+solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
+                           simulation_settings['sca'],
+                           simulation_settings['hce'],
+                           simulation_settings['hce_model_settings'])
 
 hcemask = cs.HCEScatterMask(simulation_settings['solar_plant'],
                             simulation_settings['hce_scattered_params'])
@@ -46,42 +45,42 @@ scamask = cs.SCAScatterMask(simulation_settings['solar_plant'],
 #hcemask.applyMask(solarplant)
 #scamask.applyMask(solarplant)
 
-cycle = cs.ThermodynamicCycle(simulation_settings['cycle'])
+powercycle = cs.PowerCycle(simulation_settings['powercycle'])
 
-model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])  
+heatexchanger = cs.HeatExchanger(simulation_settings['heatexchanger'],
+                                 hotfluid, coldfluid)
+
+generator = cs.Generator(simulation_settings['generator'])
+
+model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
 
 powersystem = cs.PowerSystem(simulation_settings['powersystem'])
 
 #simulation.precalc(powersystem, solarplant, hotfluid, simulation,
 #                   simulation_settings['hce'])
 
-simulation.runSolarPlant(model, solarplant, site, data_source, hotfluid)
+prototypeloop = cs.PrototypeLoop(simulation_settings['solar_plant'],
+                                 simulation_settings['sca'],
+                                 simulation_settings['hce'],
+                                 simulation_settings['hce_model_settings']
+                                 )
+
+simulation.hotfluid = hotfluid
+simulation.coldfluid = coldfluid
+simulation.site = site
+simulation.solarplant = solarplant
+simulation.model = model
+simulation.datasource = datasource
+simulation.prototypeloop = prototypeloop
+simulation.powercycle = powercycle
+simulation.heatexchanger = heatexchanger
+simulation.generator = generator
+simulation.powersystem = powersystem
+
+simulation.runSimulation()
 
 
 
-
-
-
-
-#while  not hasattr(weather, 'weatherdata'):
-#    weather.openWeatherDataFile()
-
-# Crea aplicación
-#root = Tk()
-## Creamos una ventana
-#a = interface.main(root, simulation)
-#
-##Lanza la aplicación en continuo
-#root.mainloop()
-
-'''
-pandas.merge_asof(left, right, on=None, left_on=None, right_on=None, left_index=False, right_index=False, by=None, left_by=None, right_by=None, suffixes=('_x', '_y'), tolerance=None, allow_exact_matches=True, direction='backward')[source]¶
-'''
-
-' Campos del dataframe inicial: '
-'    | timestamp | Tamb | Wind | Winddir | DNI | Vector Solar | MassFlow | Tin | Tout |'
-
-#  HCE_status = {"Hydrogen ": 0, "Vacuum ": 0, "Broken ": False}
 
 
 

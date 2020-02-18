@@ -74,6 +74,11 @@ def to_number(s):
         pass
     return s
 
+_DIR = {'saved_configurations' : './saved_configurations/',
+        'weather_files' : './weather_files/',
+        'fluid_files' : './fluid_files',
+        'hce_files' : './hce_files',
+        'sca_files' : './sca_files'}
 
 root = tk.Tk()
 root.attributes('-fullscreen', True)
@@ -119,7 +124,7 @@ nb.pack()
 def solarfield_load_dialog(f1, solarfield_table, ennamesolarfield,
                            title, labeltext = '' ):
 
-    path = askopenfilename(initialdir = ".saved_configurations/",
+    path = askopenfilename(initialdir = _DIR['saved_configurations'],
                            title = "choose your file",
                            filetypes = [("JSON files", "*.json")])
 
@@ -141,7 +146,7 @@ def solarfield_load_dialog(f1, solarfield_table, ennamesolarfield,
 def solarfield_save_dialog(f1, solarfield_table, ennamesolarfield, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-    f = asksaveasfile(initialdir = ".saved_configurations/",
+    f = asksaveasfile(initialdir = _DIR['saved_configurations'],
                            title = "choose your file name",
                            filetypes = [("JSON files", "*.json")],
                            defaultextension = "json")
@@ -212,7 +217,7 @@ def weather_load_dialog(f2, title, e, labeltext = '', path = None):
     try:
         if path is None:
 
-            path = askopenfilename(initialdir = ".weather_files/",
+            path = askopenfilename(initialdir = _DIR['weather_files'],
                                title = "choose your file",
                                filetypes = (("TMY files","*.tm2"),
                                             ("TMY files","*.tm3"),
@@ -241,7 +246,7 @@ def weather_load_dialog(f2, title, e, labeltext = '', path = None):
 def weather_save_dialog(f2, name, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-    f = asksaveasfile(initialdir = ".saved_configurations/",
+    f = asksaveasfile(initialdir = _DIR['weather_files'],
                            title = "choose your file name",
                            filetypes = [("JSON files", "*.json")],
                            defaultextension = "json")
@@ -280,7 +285,7 @@ btsavecfgweather.grid(row = 1, column = 7)
 def fluid_load_dialog(f3, fluid_table, tmaxentry, tminentry,
                       entnamefluid, title, labeltext = '' ):
 
-    path = askopenfilename(initialdir = ".saved_configurations/",
+    path = askopenfilename(initialdir = _DIR['fluid_files'],
                            title = "choose your file",
                            filetypes = [("JSON files", "*.json")])
 
@@ -337,7 +342,7 @@ def fluid_save_dialog(f3, fluid_table, entmax, entmin,
                       ennamefluid, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-    f = asksaveasfile(initialdir = ".saved_configurations/",
+    f = asksaveasfile(initialdir = _DIR['fluid_files'],
                            title = "choose your file name",
                            filetypes = [("JSON files", "*.json")],
                            defaultextension = "json")
@@ -400,7 +405,7 @@ btsavecfgfluid.grid(row = 0, column = 7)
 
 def hce_load_dialog(f4, hce_table, title, labeltext = '' ):
 
-    path = askopenfilename(initialdir = ".saved_configurations/",
+    path = askopenfilename(initialdir = _DIR['hce_files'],
                                title = "choose your file",
                                filetypes = [("JSON files", "*.json")])
     with open(path) as cfg_file:
@@ -417,7 +422,7 @@ def hce_load_dialog(f4, hce_table, title, labeltext = '' ):
 def hce_save_dialog(f4, hce_table, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-    file = asksaveasfile(initialdir = ".saved_configurations/",
+    file = asksaveasfile(initialdir = _DIR['hce_files'],
                            title = "choose your file name",
                            filetypes = [("JSON files", "*.json")],
                            defaultextension = "json")
@@ -466,7 +471,7 @@ f4.update()
 
 def sca_load_dialog(f5, sca_table, title, labeltext = '' ):
 
-    path = askopenfilename(initialdir = ".saved_configurations/",
+    path = askopenfilename(initialdir = _DIR['sca_files'],
                            title = "choose your file",
                            filetypes = [("JSON files", "*.json")])
 
@@ -485,7 +490,7 @@ def sca_load_dialog(f5, sca_table, title, labeltext = '' ):
 def sca_save_dialog(f5, sca_table, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-    file = asksaveasfile(initialdir = ".saved_configurations/",
+    file = asksaveasfile(initialdir = _DIR['sca_files'],
                            title = "choose your file name",
                            filetypes = [("JSON files", "*.json")],
                            defaultextension = "json")
