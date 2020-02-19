@@ -292,15 +292,20 @@ def fluid_load_dialog(f3, fluid_table, tmaxentry, tminentry,
     with open(path) as cfg_file:
         cfg = json.load(cfg_file, parse_float= float, parse_int= int)
 
+    print(cfg)
     cp_coefs = [[]]*7
     rho_coefs = [[]]*7
     mu_coefs  = [[]]*7
     kt_coefs  = [[]]*7
+    h_coefs = [[]]*7
+    t_coefs = [[]]*7
 
     temp_cp = ["cp"]
     temp_rho = ["rho"]
     temp_mu = ["mu"]
     temp_kt = ["kt"]
+    temp_h = ["h"]
+    temp_t = ["t"]
 
     grades = ["Factor"]
     grades.extend([0, 1, 2, 3, 4, 5])
@@ -309,6 +314,8 @@ def fluid_load_dialog(f3, fluid_table, tmaxentry, tminentry,
     temp_rho.extend(list(cfg['hot_fluid']['rho']))
     temp_mu.extend(list(cfg['hot_fluid']['mu']))
     temp_kt.extend(list(cfg['hot_fluid']['kt']))
+    temp_h.extend(list(cfg['hot_fluid']['h']))
+    temp_t.extend(list(cfg['hot_fluid']['t']))
 
     for index in range(len(temp_cp)):
         cp_coefs[index] = temp_cp[index]
@@ -318,6 +325,10 @@ def fluid_load_dialog(f3, fluid_table, tmaxentry, tminentry,
         mu_coefs[index] = temp_mu[index]
     for index in range(len(temp_kt)):
         kt_coefs[index] = temp_kt[index]
+    for index in range(len(temp_h)):
+        h_coefs[index] = temp_h[index]
+    for index in range(len(temp_t)):
+        t_coefs[index] = temp_t[index]
 
     datarow = []
     #datarow.append(grades)
@@ -325,6 +336,9 @@ def fluid_load_dialog(f3, fluid_table, tmaxentry, tminentry,
     datarow.append(rho_coefs)
     datarow.append(mu_coefs)
     datarow.append(kt_coefs)
+
+    datarow.append(h_coefs)
+    datarow.append(t_coefs)
 
     fluid_table.table_data = datarow
     fluid_table.grid(row = 1, column = 1, columnspan = 7)

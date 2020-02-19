@@ -9,6 +9,7 @@ import scipy as sc
 from scipy import constants
 import math as mt
 from CoolProp.CoolProp import PropsSI
+import CoolProp.CoolProp as CP
 import time
 import pandas as pd
 import pvlib as pvlib
@@ -26,27 +27,8 @@ import seaborn as sns
 
 #  import pint
 
-_FLUIDS_PARAMS = {'DOWTHERM A': {'cp0': 1522.77738, 'cp1': 2.59864, 'cp2': 0.00046,
-                                 'v0': 1.44502E-02, 'v1': -8.32838E-05,
-                                 'v2': 1.38092E-06, 'v3': -5.82052E-09,
-                                 'v4': 1.17142E-11, 'v5': -8.04330E-15,
-                                 'd0': 1071.13711 , 'd1': -0.66794, 'd2': -0.00072,
-                                 'k0': 1.856e-1 , 'k1': -1.600e-4 , 'k2': 5.913e-12,
-                                 'tmax': 400, 'tmin': 15},
-                 'SYLTHERM 800': {'cp0': 1574.36919, 'cp1': 1.71019, 'cp2': -0.00001,
-                                  'v0': 1.5223e-2 , 'v1': -2.63195e-4,
-                                  'v2': 2.09535e-6, 'v3': -8.615274e-9,
-                                  'v4': 1.75478e-11, 'v5': -1.396471e-14,
-                                  'd0': 947.65387 , 'd1': -0.74514, 'd2': -0.00061,
-                                  'k0': 1.387691e-1 , 'k1':- 1.88054e-4 , 'k2':-1.14165e-10,
-                                  'tmax': 400, 'tmin': -40},
-                 'THERMINOL VP1': {'cp0': 1499.03529, 'cp1': 2.71399, 'cp2': -0.00009,
-                                   'v0': 6.1345e-3 , 'v1': -1.1974e-4,
-                                   'v2': 1.0466e-6, 'v3': -4.5758e-9,
-                                   'v4': 9.6995e-12, 'v5': -7.9178e-15,
-                                   'd0': 1074.61508 , 'd1': -0.67848, 'd2': -0.00063,
-                                   'k0': 1.381091e-1 , 'k1':-8.7078e-5 , 'k2':-1.7298e-7,
-                                   'tmax': 400, 'tmin': 15}}
+# ASHRAE: saturated liquid (Q=0) at T=233.15 K
+_T_REF = 285.856
 
 _IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
                                     'thetamin': 0, 'thetamax': 80},
@@ -85,13 +67,11 @@ class Model(object):
             hce.tin = hce.sca.loop.tin
 
 
-
 class ModelBarbero4grade(Model):
 
     def __ini__(self, settings):
 
         super(Model, self).__init__(settings)
-
 
     @classmethod
     def set_pr(cls, hce, hotfluid, dni, wind, text, aoi):
@@ -119,33 +99,24 @@ class ModelBarbero4grade(Model):
         cp = hotfluid.get_cp(tf, pressure)
 
         #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
-        nu_air = 8.67886e-11 * text**2 + 8.81055e-8 * text + 1.33019e-5
+        # tabla en K
+        nu_air = 8.678862e-11 * text**2 + 4.069284e-08 * text + -4.288741e-06
 
         #  Reynols number for wind at
         reext = dgo * wind / nu_air
         hext, eext = cls.get_hext_eext(hce, reext, tro, wind)
 
-        #hint = kf * nuint / dri
-        #hint = Model.get_hint(hce)
-        #hint = hce.parameters['hint']
-
-        #  mu viscosidad dinámica (Pa·s)
-
-
-        # mal, reext es para el exteior
-        #reext = 4 * massflow / (np.pi * dri * mu)
-        #air = CP.HAProps('W', 'T', 300, 'P', 101.325, 'R', 0.5)
-
-
         # Ec. 4.14
         mu = hotfluid.get_dynamic_viscosity(tf, pressure)
         rho = hotfluid.get_density(tf, pressure)
         kf = hotfluid.get_thermal_conductivity(tf, pressure)
-        #  alpha : difusividad térmica
         alpha = kf / (rho * cp)
         prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
+
         redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
-        # nudb = 0.023 * redri**0.8 * prf**0.4
+        if redri <= 0:
+            print("mu", mu, "massflow", massflow)
+            
         cf = (1.58 * np.log(redri) - 3.28)**-2
 
         #  Prandtl number at temperature tri
@@ -158,31 +129,23 @@ class ModelBarbero4grade(Model):
         nug =((cf / 2)*(redri - 1000) * prfri * (prf / prfri)**0.11 /
               (1+12.7*(cf/2)**0.5 * (prf**(2/3) - 1)))
 
-
         hint = kf * nug / dri
 
         #  Ec. 3.50 Barbero
         qcrit = sigma * eext * (tfe**4 - text**4) + hext * (tfe - text)
+        
+        # Ec. 3.23
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         #Ec. 3.51 Barbero
         ucrit = 4 * sigma * eext * tfe**3 + hext
-        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        
         # Ec. 3.22
-        urec = 1/(
-            (1/hint) +
-            (dro*np.log(dro/dri))/(2*krec)
-            )
+        urec = 1 / ((1 / hint) + ( dro * np.log(dro / dri)) / ( 2 * krec))
 
         #Ec. 3.20 Barbero
-        qabs = (pr_opt_peak * IAM * cg * dni *
-                hce.get_pr_shadows() *
+        qabs = (pr_opt_peak * IAM * cg * dni * hce.get_pr_shadows() *
                 hce.get_pr_geo())
-
-#        #Ec. 3.20 Barbero
-#        qabs = (hce.get_ * IAM *
-#                cg * dni *
-#                hce.get_pr_shadows() *
-#                hce.get_pr_geo())
 
         if qabs > 0:
             pr0 = (1-qcrit/qabs)/(1+ucrit/urec)
@@ -260,7 +223,7 @@ class ModelBarbero4grade(Model):
                 root = sc.optimize.newton(fx,
                                           pr0,
                                           fprime=dfx,
-                                          maxiter=10000)
+                                          maxiter=100000)
 
                 pr0 = root
                 z = pr0 + (1/f0)
@@ -282,16 +245,20 @@ class ModelBarbero4grade(Model):
                 hce.set_tout(qabs, hotfluid)
                 tf = hce.tout
                 tri = tf
+                hce.pr = pr1
+                hce.set_tout(qabs, hotfluid)
 
         else:
             pr1 = 0
+            hce.pr = pr1
+            h1 = hotfluid.get_deltaH(hce.tin, hce.sca.loop.pin)
+            h2 = qperd / hce.sca.loop.massflow
+            hce.tout = hotfluid.get_T(h1 + h2, hce.sca.loop.pin)
+            
 
-        #hce.pr = pr1
-        hce.pr = pr1
-        hce.set_tout(qabs, hotfluid)
-        #hce.PR = (IAM * np.cos(np.radians(aoi)) * hce.get_pr_shadows() *
-                #hce.get_pr_geo()) * pr1
-        #Model.set_tout(hce, qabs, pr1, cp)
+
+
+
 
 
     @classmethod
@@ -508,11 +475,20 @@ class HCE(object):
 
 
     def set_tout(self, qabs, hotfluid):
+        
+        h1 = hotfluid.get_deltaH(self.tin, self.sca.loop.pin)
+        h2 = (np.pi * self.parameters['dro'] * self.parameters['long'] * 
+              qabs * self.pr / self.sca.loop.massflow)
+        
+        self.tout = hotfluid.get_T(h1 + h2, self.sca.loop.pin)
 
-        self.tout = (self.tin + np.pi * self.parameters['dro'] *
-                    self.parameters['long'] * qabs * self.pr /
-                    (self.sca.loop.massflow * hotfluid.get_cp(self.tin,
-                                                              self.sca.loop.pin)))
+        # self.tout = (self.tin + np.pi * self.parameters['dro'] *
+        #             self.parameters['long'] * qabs * self.pr /
+        #             (self.sca.loop.massflow * hotfluid.get_cp(self.tin,
+        #                                                       self.sca.loop.pin)))
+
+        # if (self.hce_order == 11 and self.sca.sca_order == 3 and self.sca.loop.loop_order == 29):
+        #     print(qabs)
 
     def get_previous(self):
 
@@ -604,19 +580,19 @@ class SCA(object):
 
         return F0+(F1*theta+F2*theta**2)/np.cos(theta)
 
-    def get_tin(self, sca):
+    # def get_tin(self, sca):
 
-        if not sca:
-            sca = self
-        if sca.sca_order > 0:
-            return SCA.get_tout(sca.loop.scas[sca.sca_order-1])
-        else:
-            return Loop.get_tin(sca.loop)
+    #     if not sca:
+    #         sca = self
+    #     if sca.sca_order > 0:
+    #         return SCA.get_tout(sca.loop.scas[sca.sca_order-1])
+    #     else:
+    #         return Loop.get_tin(sca.loop)
 
-    def get_tout(self, sca):
-        if not sca:
-            sca = self
-        return HCE.get_tout(sca.hces[-1])
+    # def get_tout(self, sca):
+    #     if not sca:
+    #         sca = self
+    #     return HCE.get_tout(sca.hces[-1])
 
     def get_aoi(self, dateindex, site, data):
 
@@ -656,9 +632,9 @@ class Loop(object):
         self.pin = self.solarfield.pin
         self.pout = self.solarfield.pout
 
-    def get_tin(self):
+    # def get_tin(self):
 
-        return self.scas[0].hces[0].tin
+    #     return self.scas[0].hces[0].tin
 
 
     def tempOut(self, weatherstatus, plantstatus):
@@ -694,6 +670,7 @@ class PrototypeLoop(object):
     def __init__(self, plant_settings, sca_settings, hce_settings, model_settings):
 
         self.scas = []
+        self.loop_order = 0
         self.plant_settings = plant_settings
         self.sca_settings = sca_settings
         self.hce_settings = hce_settings
@@ -736,7 +713,6 @@ class PrototypeLoop(object):
         dec_ratio = 0.99
         max_error = 1.0
 
-
         search = True
 
         while search:
@@ -748,21 +724,21 @@ class PrototypeLoop(object):
                     #print("HCE", h.hce_order, h.tout)
             self.tout = self.scas[-1].hces[-1].tout
 
-            err = round(abs(self.tout-self.ratedtout)/self.ratedtout,3)
+            err = round(100 * abs(self.tout-self.ratedtout)/self.ratedtout,2)
 
-            if abs(self.tout-self.ratedtout) > max_error:
+            if err > max_error:
+
                 if self.tout >= self.ratedtout:
-                    self.massflow *= (1 + err)
+                    self.massflow *= (1 + err/100)
+                    search = True
+                elif (self.massflow > self.min_massflow):
+                    self.massflow *= (1 - err/100)
                     search = True
                 else:
-                    if self.massflow > self.min_massflow:
-                        self.massflow *= (1 - err)
-                        search = True
-                    else:
-                        search = False
+                    self.massflow = self.min_massflow
+                    search = False
             else:
                 search = False
-
 
         return self.massflow
 
@@ -792,25 +768,30 @@ class SolarField(object):
         self.massflow = mf
 
 
-    def get_tout(self, hotfluid):
-        '''
-        Calculates HTF output temperature throughout the solar field as a
-        weighted average based on the enthalpy of the mass flow in each
-        loop of the solar field
-        '''
-        H = 0.0
+    # def get_tout(self, hotfluid):
+    #     '''
+    #     Calculates HTF output temperature throughout the solar field as a
+    #     weighted average based on the enthalpy of the mass flow in each
+    #     loop of the solar field
+    #     '''
+    #     H = 0.0
 
-        pressure = 2000000
+    #     HH = 0.0
 
-        for l in self.loops:
-            H += (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
-                  (l.scas[-1].hces[-1].tout-l.get_tin())*l.massflow)
+    #     pressure = 2000000
 
-        self.tout = (self.tin + H /
-                     (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
-                      self.get_massflow()))
+    #     for l in self.loops:
+    #         H += (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
+    #               (l.scas[-1].hces[-1].tout-l.get_tin())*l.massflow)
 
-        return self.tout
+    #         HH += PropsSI('T','H',HH ,'P', l.pin, hotfluid.coolpropID)
+
+    #     HH /= l
+    #     self.tout = (self.tin + H /
+    #                  (hotfluid.get_cp(l.scas[-1].hces[-1].tout, pressure) *
+    #                   self.get_massflow()))
+
+    #     return self.tout
 
 
     def set_tout(self, hotfluid):
@@ -819,24 +800,32 @@ class SolarField(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-        H = 0.0
-        H2 = 0.0
-
-        pressure = 2000000
+        # H = 0.0
+        # H2 = 0.0
+        dH = 0.0
+        dH_cut_tout = 0.0
 
         for l in self.loops:
-            H += (hotfluid.get_cp(l.tout, l.pout) *
-                  (l.tout-l.tin)*l.massflow)
 
-            H2  += (hotfluid.get_cp(l.cut_tout, l.pout) *
-                  (l.cut_tout-l.tin)*l.massflow)
+            # H += (hotfluid.get_cp(l.tout, l.pout) *
+            #       (l.tout-l.tin)*l.massflow)
+            # H2  += (hotfluid.get_cp(l.cut_tout, l.pout) *
+            #       (l.cut_tout-l.tin)*l.massflow)
 
-        self.tout = (self.tin + H /
-                     (hotfluid.get_cp(l.tout, l.pout) *
-                      self.massflow))
-        self.cut_tout =  (self.tin + H2 /
-                     (hotfluid.get_cp(l.cut_tout, l.pout) *
-                      self.massflow))
+            dH += l.massflow * hotfluid.get_deltaH(l.cut_tout, l.pout)
+            dH_cut_tout += l.massflow * hotfluid.get_deltaH(l.tout, l.pout)
+
+        dH /= self.massflow
+        dH_cut_tout /= self.massflow
+        self.tout =  hotfluid.get_T(dH, self.pout)
+        self.cut_tout = hotfluid.get_T(dH_cut_tout, self.pout)
+
+        # self.tout = (self.tin + H /
+        #              (hotfluid.get_cp(l.tout, l.pout) *
+        #               self.massflow))
+        # self.cut_tout =  (self.tin + H2 /
+        #              (hotfluid.get_cp(l.cut_tout, l.pout) *
+        #               self.massflow))
 
     def set_tin(self):
 
@@ -961,22 +950,32 @@ class SolarPlant(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-        H = 0.0
-        H2 = 0.0
+        # H = 0.0
+        # H2 = 0.0
+
+        dH = 0.0
+        dH_cut_tout = 0.0
 
         for sf in self.solarfields:
 
-            H += (hotfluid.get_cp(sf.tin, sf.pin) *
-                  (sf.tout - sf.tin)*sf.massflow)
+            # H += (hotfluid.get_cp(sf.tin, sf.pin) *
+            #       (sf.tout - sf.tin)*sf.massflow)
+            # H2 += (hotfluid.get_cp(sf.tin, sf.pin) *
+            #       (sf.cut_tout - sf.tin)*sf.massflow)
 
-            H2 += (hotfluid.get_cp(sf.tin, sf.pin) *
-                  (sf.cut_tout - sf.tin)*sf.massflow)
+            dH += sf.massflow * hotfluid.get_deltaH(sf.tout, sf.pout)
+            dH_cut_tout += sf.massflow * hotfluid.get_deltaH(sf.cut_tout, sf.pout)
 
-        self.tout = (self.tin + (H /
-                     (hotfluid.get_cp(self.tin, sf.pin) * self.massflow)))
+        dH /= self.massflow
+        dH_cut_tout /= self.massflow
+        self.tout = hotfluid.get_T(dH, self.pout)
+        self.cut_tout = hotfluid.get_T(dH_cut_tout, self.pout)
 
-        self.cut_tout = (self.tin + (H2 /
-             (hotfluid.get_cp(self.tin, sf.pin) * self.massflow)))
+        # self.tout = (self.tin + (H /
+        #              (hotfluid.get_cp(self.tin, self.pin) * self.massflow)))
+
+        # self.cut_tout = (self.tin + (H2 /
+        #      (hotfluid.get_cp(self.tin, self.pin) * self.massflow)))
 
     def set_tin(self, hotfluid):
         '''
@@ -984,16 +983,27 @@ class SolarPlant(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-        H = 0.0
+        # H = 0.0
+        dH = 0.0
+
+        # TT = 0.0
 
         for sf in self.solarfields:
 
-            H += (hotfluid.get_cp(sf.tin, sf.pin) *
-                  (sf.tin- 288.0)*sf.massflow)
+            # H += (hotfluid.get_cp(sf.tin, sf.pin) *
+            #       (sf.tin- 488.0)*sf.massflow)
 
-        self.tin = (288.0 + (H /
-                     (hotfluid.get_cp(288.0, self.pin) * self.massflow)))
+            dH += (hotfluid.get_deltaH(sf.tin, sf.pin) * sf.massflow)
 
+            # TT += sf.tin * sf.massflow
+
+        # self.tin = (488.0 + (H /
+        #              (hotfluid.get_cp(488.0, self.pin) * self.massflow)))
+
+        dH /= self.massflow
+
+        self.tin = hotfluid.get_T(dH, self.pin)
+        #self.tin = 1e-3 * HH / self.massflow
 
     def set_massflow(self):
 
@@ -1362,18 +1372,19 @@ class Simulation(object):
                 sf.apply_temp_limitation(self.hotfluid)
                 sf.set_tout(self.hotfluid)
 
+
             self.solarplant.set_massflow()
             self.solarplant.set_tin(self.hotfluid)
             self.solarplant.set_tout(self.hotfluid)
 
             self.heatexchanger.set_hotfluid_in(self.solarplant.massflow,
                                              self.solarplant.tin,
-                                             self.solarplant.tout)
+                                             self.solarplant.pin)
 
             #self.heatexchanger.set_coldfluid_in() PENDIENTE
 
             self.heatexchanger.set_thermalpowertransfered(self.solarplant.tin)
-            self.powercycle.set_pr_NCA(15.0) #Provisonal temperatura agua coondensador
+            self.powercycle.set_pr_NCA(288.15) #Provisonal temperatura agua coondensador
             self.generator.set_pr()
             r_cycle_pr.append(round(self.powercycle.pr,2))
             r_heatexchanger_pr.append(round(self.heatexchanger.pr,2))
@@ -1455,7 +1466,7 @@ class Simulation(object):
                                              self.solarplant.tin,
                                              self.solarplant.tout)
             self.heatexchanger.set_thermalpowertransfered(self.solarplant.tin)
-            self.powercycle.set_pr_NCA(15.0) #Provisonal temperatura agua coondensador
+            self.powercycle.set_pr_NCA(288.15) #Provisonal temperatura agua coondensador
             self.generator.set_pr()
             r_cycle_pr.append(round(self.powercycle.pr,2))
             r_heatexchanger_pr.append(round(self.heatexchanger.pr,2))
@@ -1495,10 +1506,6 @@ class Simulation(object):
         estimated_tout = 0.0
         actual_tout = 0.0
         rejected_solar_energy = 0.0
-
-
-
-
 
 
 class HeatExchanger(object):
@@ -1557,7 +1564,7 @@ class HeatStorage(object):
 
     def __init__(self, settings):
 
-        self.name = pr_heatexchanger
+        self.name = settings['heatstorage']
 
     def set_fluid_tout(self):
         pass
@@ -1574,49 +1581,50 @@ class Fluid_CoolProp(object):
         self.tmax = settings['tmax']
         self.tmin = settings['tmin']
         self.coolpropID = settings['CoolPropID']
-        print(self.coolpropID)
 
     def get_density(self, t, p):
 
-        t += 273.15
-        p *= 100000
         return PropsSI('D','T',t,'P', p, self.coolpropID)
 
     def get_dynamic_viscosity(self, t, p):
 
-        t += 273.15
-        p *= 100000
         return  PropsSI('V','T',t,'P', p, self.coolpropID)
 
     def get_cp(self, t, p):
 
-        t += 273.15
-        p *= 100000
         return PropsSI('C','T',t,'P', p, self.coolpropID)
 
     def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
-        t += 273.15
-        p *= 100000
+
         return PropsSI('L','T',t,'P', p, self.coolpropID)
 
     def get_deltaH(self, t, p):
 
-        t += 273.15
-        p *= 100000
-        return PropsSI('H','T',t,'P', p, self.coolpropID)
+        CP.set_reference_state(self.coolpropID,'ASHRAE')
+
+        deltaH = PropsSI('H','T',t ,'P', p, self.coolpropID)
+
+        CP.set_reference_state(self.coolpropID, 'DEF')
+
+        return deltaH
+
+    def get_T(self, h, p):
+
+        CP.set_reference_state(self.coolpropID,'ASHRAE')
+        temperature = PropsSI('T', 'H', h, 'P', p, self.coolpropID)
+        CP.set_reference_state(self.coolpropID, 'DEF')
+
+        return temperature
+
 
     def get_Reynolds(self, dri, t, p, massflow):
 
-        t += 273.15
-        p *= 100000
-        return massflow * np.pi * (dri**3) /( 4 * self.get_density(t, p/100000))
+        return massflow * np.pi * (dri**3) /( 4 * self.get_density(t, p))
 
     def get_massflow_from_Reynolds(self, dri, t, p, re):
 
-        t += 273.15
-        p *= 100000
-        return re * np.pi * dri * self.get_dynamic_viscosity(t-273.15, p/100000) / 4
+        return re * np.pi * dri * self.get_dynamic_viscosity(t, p) / 4
 
     def get_ReynoldsDRI(self):
 
@@ -1641,6 +1649,8 @@ class Fluid_Tabular(object):
         self.rho = settings['rho']
         self.mu = settings['mu']
         self.kt = settings['kt']
+        self.h = settings['h']
+        self.t = settings['t']
         self.tmax = settings['tmax']
         self.tmin = settings['tmin']
 
@@ -1678,9 +1688,22 @@ class Fluid_Tabular(object):
         return (kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
                 kt4 * t**4 + kt5 * t**5)
 
-    def get_deltaH(self, tin, tout, p):
+    def get_deltaH(self, t, p):
 
-        pass
+        h0, h1, h2, h3, h4, h5 = tuple(self.h)
+
+        href =(h0 + h1 * _T_REF + h2 * _T_REF**2 + h3 * _T_REF**3 +
+               h4 * _T_REF**4 + h5 * _T_REF**5)
+
+        h = (h0 + h1 * t + h2 * t**2 + h3 * t**3 + h4 * t**4 + h5 * t**5)
+        return (h - href)
+
+    def get_T(self, h, p):
+
+        t0, t1, t2, t3, t4, t5 = tuple(self.t)
+
+        return (t0 + t1 * h + t2 * h**2 + t3 * h**3 +
+                t4 * h**4 + t5 * h**5)
 
     def get_Reynolds(self, dri, t, p, massflow):
 
@@ -1706,79 +1729,21 @@ class Fluid_Tabular(object):
                     )
 
 
-#class HotFluid(Fluid):
-#
-#     def __init__(self, settings):
-#
-#         super().__init__(settings)
-#
-#
-#class ColdFluid(Fluid):
-#
-#     def __init__(self, settings):
-#
-#         if self.settings['name'] in ['Water']:
-#
-#
-#
-#          super().__init__(settings)
-
-
 class Weather(object):
 
     def __init__(self, settings):
         self.filename = settings['filename']
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
+        self.weatherdata = None
         self.openWeatherDataFile(self.file)
 
+
+        self.change_units()
+        self.filter_columns()
+
     def openWeatherDataFile(self, path = None):
-        '''
 
-
-        Parameters
-        ----------
-        path : string, optional
-
-        DESCRIPTION. URI of the weatherfile. The default is None.
-
-        Tuple of the form (data, metadata).
-        data : DataFrame
-             A pandas dataframe with the columns described in the table
-             below. For more detailed descriptions of each component, please
-             consult the TMY3 User's Manual ([1]), especially tables 1-1
-             through 1-6.
-        metadata : dict
-            The site metadata available in the file.
-        Notes
-        -----
-        The returned structures have the following fields.
-        ===============   ======  ===================
-        key               format  description
-        ===============   ======  ===================
-        altitude          Float   site elevation
-        latitude          Float   site latitudeitude
-        longitude         Float   site longitudeitude
-        Name              String  site name
-        State             String  state
-        TZ                Float   UTC offset
-        USAF              Int     USAF identifier
-        ===============   ======  ===================
-        =============================       ======================================================================================================================================================
-        TMYData field                       description
-        =============================       ======================================================================================================================================================
-        TMYData.Index                       A pandas datetime index. NOTE, the index is currently timezone unaware, and times are set to local standard time (daylight savings is not included)
-        TMYData.ETR                         Extraterrestrial horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-        TMYData.ETRN                        Extraterrestrial normal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-        TMYData.GHI                         Direct and diffuse horizontal radiation recv'd during 60 minutes prior to timestamp, Wh/m^2
-        TMYData.GHISource                   See [1]_, Table 1-4
-        TMYData.GHIUncertainty              Uncertainty based on random and bias error estimates                        see [2]_
-        TMYData.DNI                         Amount of direct normal radiation (modeled) recv'd during 60 mintues prior to timestamp, Wh/m^2
-
-        Returns
-        -------
-        None
-        '''
 
         try:
             if path is None:
@@ -1829,14 +1794,31 @@ class Weather(object):
             txMessageBox.showerror('Error loading Weather Data File',
                                    'Unable to open file: %r', self.file)
 
+    def change_units(self):
 
-    def get_weather_data_site(self):
+        for c in self.weatherdata[0].columns:
+            if (c == 'DryBulb') or (c == 'DewPoint'): # From Celsius Degrees to K
+                self.weatherdata[0][c] *= 0.1
+                self.weatherdata[0][c] += 273.15
+            if c=='Pressure': # from mbar to Pa
+                self.weatherdata[0][c] *= 1e2
 
-        return self.weatherdata[1]
+    def filter_columns(self):
 
-    def loadWeatherDataFile(self):
+        needed_columns = ['DNI', 'DryBulb', 'DewPoint', 'Wspd', 'Wdir', 'Pressure']
+        columns_to_drop = []
+        for c in  self.weatherdata[0].columns:
+            if c not in needed_columns:
+                columns_to_drop.append(c)
+        self.weatherdata[0].drop(columns = columns_to_drop, inplace = True)
 
-        self.weatherdata = pvlib.iotools.tmy.read_tmy2(self.file)
+#    def get_weather_data_site(self):
+#
+#        return self.weatherdata[1]
+#
+#    def loadWeatherDataFile(self):
+#
+#        self.weatherdata = pvlib.iotools.tmy.read_tmy2(self.file)
 
 
 class FieldData(object):
@@ -1846,9 +1828,11 @@ class FieldData(object):
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
         self.tags = settings['tags']
+        self.dataframe = None
 
         self.openFieldDataFile(self.file)
         self.rename_columns()
+        self.change_units()
 
 
     def openFieldDataFile(self, path = None):
@@ -1916,6 +1900,13 @@ class FieldData(object):
 
         self.dataframe.index = pd.to_datetime(self.dataframe.index)
 
+    def change_units(self):
+
+        for c in self.dataframe.columns:
+            if ('.t' in c) or ('DryBulb' in c) or ('Dew' in c):
+                self.dataframe[c] += 273.15 # From Celsius Degrees to K
+            if '.p' in c:
+                self.dataframe[c] *= 1e5 # From Bar to Pa
 
     def rename_columns(self):
 
@@ -1926,6 +1917,10 @@ class FieldData(object):
             if c not in self.tags.keys():
                 columns_to_drop.append(c)
         self.dataframe.drop(columns = columns_to_drop, inplace = True)
+
+
+
+
 
 
 
