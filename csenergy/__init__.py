@@ -3,8 +3,6 @@ import pandas as pd
 from tkinter import *
 import json
 
-#  TO-DO: PASO PREVIO -> INTERFAZ GRAFICA PARA CREAR EL simulation_file
-
 with open("./saved_configurations/simulation.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
@@ -12,24 +10,28 @@ simulation = cs.Simulation(simulation_settings['simulation'])
 
 if simulation.type == "type0":
     datasource = cs.Weather(simulation_settings['weather_data_file'])
+    print("Simulation based on weather data")
 elif simulation.type == "type1":
     datasource = cs.FieldData(simulation_settings['field_data_file'])
+    print("Benchmarking based on actual data")
 
 site = cs.Site(simulation_settings['site'])
 
 coolPropFluids = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
 if simulation_settings['hot_fluid']['CoolPropID'] in coolPropFluids:
-    print("Fluid data from CoolProp")
     hotfluid = cs.Fluid_CoolProp(simulation_settings['hot_fluid'])
+    print("Fluid data from CoolProp: ", hotfluid.name)
 else:
-    print("Fluid data from table")
     hotfluid = cs.Fluid_Tabular(simulation_settings['hot_fluid'])
+    print("Fluid data from table: ", hotfluid.name )
 
 if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
     coldfluid = cs.Fluid_CoolProp(simulation_settings['cold_fluid'])
+    print("Cold fluid data from CoolProp: ", coldfluid.name)
 else:
     coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
+    print("Cold fluid data from table: ", coldfluid.name)
 
 solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
                            simulation_settings['sca'],
