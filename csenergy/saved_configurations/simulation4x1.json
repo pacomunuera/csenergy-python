@@ -1,7 +1,7 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type0"},
+    "type" : "type1"},
 "weather_data_file": {
 	"filename": "prueba24H.tm2",
 	"filepath": "./weather_files/"},
@@ -60,7 +60,7 @@
 		{"name": "NE", "loops": 30, "row_spacing": 16.250},
 		{"name": "SO", "loops": 30, "row_spacing": 16.250},
 		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
-	"loop": {"scas": 4, "hces": 12}},
+	"loop": {"scas": 4, "hces": 1}},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
@@ -72,7 +72,7 @@
 	"tracking axis azimuth": 0},
 "hce": {
 	"name": "Luz LS-3",
-	"long": 4.012,
+	"long": 48.144,
 	"dri": 0.066,
 	"dro": 0.070,
 	"dgi": 0.109,
@@ -120,11 +120,8 @@
 "powercycle" : {
    "name": "Rankine",
    "pr_calculation": "NBA",
-   "ratedpin": 100e5,
-   "ratedtin": 533.15,
-   "ratedpout": 100,
-   "ratedtout": 288.0,
-   "ratedmassflow": 20},
+   "pin": 100e5,
+   "tin": 533.15},
 "hce_model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,

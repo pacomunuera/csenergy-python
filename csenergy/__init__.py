@@ -3,7 +3,7 @@ import pandas as pd
 from tkinter import *
 import json
 
-with open("./saved_configurations/simulation.json") as simulation_file:
+with open("./saved_configurations/simulation1x1.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
 simulation = cs.Simulation(simulation_settings['simulation'])

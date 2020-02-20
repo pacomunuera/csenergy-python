@@ -1,7 +1,41 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type0"},
+    "type" : "type1"},
+"powersystem" : {
+    "ratedpower": 50000000,
+    "solarfield_to_exchanger_pr" : 0.95,
+    "exchanger_pr" : 0.9,
+    "exchanger_to_turbogroup_pr" : 0.9,
+    "steam_cycle_pr" : 0.25,
+    "turbogenerator_pr" : 0.9},
+"heatexchanger": {
+    "name": "GEA",
+    "pr": 0.8},
+"generator" : {
+    "name": "SIEMENS",
+    "pr": 0.99},
+"solar_plant": {
+	"name": "My plant",
+    "ratedtin": 566.15,
+    "ratedtout": 666.15,
+    "ratedpressure": 2000000,
+    "ratedmassflow": 480.0,
+	"solarfields": [
+		{"name": "NO", "loops": 30, "row_spacing": 16.250},
+		{"name": "NE", "loops": 30, "row_spacing": 16.250},
+		{"name": "SO", "loops": 30, "row_spacing": 16.250},
+		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
+	"loop": {"scas": 4, "hces": 1}},
+"site": {
+	"name": "Alcázar de San Juan",
+	"latitude": 39.10,
+	"longitude": -3.16,
+	"altitude": 645},
+"solar_system": {
+	"technology": "parabolic trough",
+	"tracking axis type": "single",
+	"tracking axis azimuth": 0},
 "weather_data_file": {
 	"filename": "prueba24H.tm2",
 	"filepath": "./weather_files/"},
@@ -31,48 +65,12 @@
     	"SE.pout": "1110-PT-1808.UNIT1@ASTE1A",
 	    "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
         "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
-        "Wdir": "1100-AXT-1872R.UNIT1@ASTE1A",
         "DryBulb": "1100-AXT-1873R.UNIT1@ASTE1A",
-    	"Pressure": "1100-AXT-1883R.UNIT1@ASTE1A"}},
-"powersystem" : {
-    "ratedpower": 50000000,
-    "solarfield_to_exchanger_pr" : 0.95,
-    "exchanger_pr" : 0.9,
-    "exchanger_to_turbogroup_pr" : 0.9,
-    "steam_cycle_pr" : 0.25,
-    "turbogenerator_pr" : 0.9},
-"heatexchanger": {
-    "name": "GEA",
-    "pr": 0.8},
-"generator" : {
-    "name": "SIEMENS",
-    "pr": 0.99},
-"solar_plant": {
-	"name": "My plant",
-    "ratedtin": 566.15,
-    "ratedtout": 663.15,
-    "tmax": 670.0,
-    "tmin": 288.0,
-    "ratedpressure": 2000000,
-    "ratedmassflow": 480.0,
-	"solarfields": [
-		{"name": "NO", "loops": 30, "row_spacing": 16.250},
-		{"name": "NE", "loops": 30, "row_spacing": 16.250},
-		{"name": "SO", "loops": 30, "row_spacing": 16.250},
-		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
-	"loop": {"scas": 4, "hces": 12}},
-"site": {
-	"name": "Alcázar de San Juan",
-	"latitude": 39.10,
-	"longitude": -3.16,
-	"altitude": 645},
-"solar_system": {
-	"technology": "parabolic trough",
-	"tracking axis type": "single",
-	"tracking axis azimuth": 0},
+    	"Pressure": "1100-AXT-1883R.UNIT1@ASTE1A"}
+	},
 "hce": {
 	"name": "Luz LS-3",
-	"long": 4.012,
+	"long": 48.144,
 	"dri": 0.066,
 	"dro": 0.070,
 	"dgi": 0.109,
@@ -98,15 +96,15 @@
     "Availability":0.99},
 "hot_fluid" :
 	{
-		"name" : "THERMINOL-VP1",
-		"CoolPropID": "INCOMP::TVPx",
-		"cp" : [2.88111e02, 5.87494, -6.85657e-03, 4.84416e-06, 1.34662e-14, -5.19062e-18],
-		"mu": [2.76215e-01, -2.72677e-03, 1.07520e-05, -2.10810e-08, 2.05132e-11, -7.91778e-15],
-		"rho": [1.40271e03 , -1.61326e00, 2.13784e-03, -1.93107e-06, -1.00061e-15 , 4.91279e-19],
-		"kt": [1.48620e-01, 1.00259e-05, -1.79349e-07, 6.71676e-12, -3.82962e-15 , 1.80339e-18],
-		"h": [244679 , -1.23735e2 , 4.97969, -7.29273e-3, 7.32737e-6, -3.08987e-9],
-		"t": [2.86196e2 ,  6.55572e-4 ,  -3.98571e-10,  4.59831e-16,  -3.90899e-22,  1.52529e-28],
-		"tmax": 673,
+        "name" : "DOWTHERM-A",
+        "CoolPropID": "INCOMP::XXXX",
+		"cp" : [-2.364e03, 3.946e01, -1.703e-01, 3.904e-04, -4.422e-07, 1.979e-10],
+		"mu": [3.40130E-01, -3.37267E-03, 1.33042E-05, -2.60139E-08, 2.51799E-11, -9.64750E-15],
+		"rho": [1.493e+03, -3.332e+00, 1.248e-02, -2.968e-05, 3.444e-08, -1.622e-11],
+		"kt": [1.856e-01, -1.600e-04, 5.913e-12, 0.0, 0.0, 0.0],
+		"h": [-6.511e+05, 4.121e+03, -1.235e01, 2.771e-02, -2.777e-05, 1.106e-08],
+		"t": [2.85344e+02, 6.20726e-04, -1.82158e-10, -1.42322e-16, 3.31588e-22, -1.75256e-28],
+        "tmax": 673,
 		"tmin": 288},
 "cold_fluid": {
 	"name": "Water",
@@ -120,11 +118,8 @@
 "powercycle" : {
    "name": "Rankine",
    "pr_calculation": "NBA",
-   "ratedpin": 100e5,
-   "ratedtin": 533.15,
-   "ratedpout": 100,
-   "ratedtout": 288.0,
-   "ratedmassflow": 20},
+   "pin": 100e5,
+   "tin": 533.15},
 "hce_model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,

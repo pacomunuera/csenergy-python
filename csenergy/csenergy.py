@@ -115,8 +115,8 @@ class ModelBarbero4grade(Model):
 
         redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
         if redri <= 0:
-            print("mu", mu, "massflow", massflow)
-            
+            print("tf", tf, "p", pressure, "mu", mu)
+
         cf = (1.58 * np.log(redri) - 3.28)**-2
 
         #  Prandtl number at temperature tri
@@ -133,13 +133,13 @@ class ModelBarbero4grade(Model):
 
         #  Ec. 3.50 Barbero
         qcrit = sigma * eext * (tfe**4 - text**4) + hext * (tfe - text)
-        
+
         # Ec. 3.23
         qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         #Ec. 3.51 Barbero
         ucrit = 4 * sigma * eext * tfe**3 + hext
-        
+
         # Ec. 3.22
         urec = 1 / ((1 / hint) + ( dro * np.log(dro / dri)) / ( 2 * krec))
 
@@ -251,10 +251,10 @@ class ModelBarbero4grade(Model):
         else:
             pr1 = 0
             hce.pr = pr1
-            h1 = hotfluid.get_deltaH(hce.tin, hce.sca.loop.pin)
-            h2 = qperd / hce.sca.loop.massflow
-            hce.tout = hotfluid.get_T(h1 + h2, hce.sca.loop.pin)
-            
+            HL = hotfluid.get_deltaH(hce.tin, hce.sca.loop.pin)
+            h = qperd / hce.sca.loop.massflow
+            hce.tout = hotfluid.get_T(HL - h, hce.sca.loop.pin)
+
 
 
 
@@ -475,12 +475,13 @@ class HCE(object):
 
 
     def set_tout(self, qabs, hotfluid):
-        
-        h1 = hotfluid.get_deltaH(self.tin, self.sca.loop.pin)
-        h2 = (np.pi * self.parameters['dro'] * self.parameters['long'] * 
+
+        HL = hotfluid.get_deltaH(self.tin, self.sca.loop.pin)
+        h = (np.pi * self.parameters['dro'] * self.parameters['long'] *
               qabs * self.pr / self.sca.loop.massflow)
-        
-        self.tout = hotfluid.get_T(h1 + h2, self.sca.loop.pin)
+
+        self.tout = hotfluid.get_T(HL + h, self.sca.loop.pin)
+
 
         # self.tout = (self.tin + np.pi * self.parameters['dro'] *
         #             self.parameters['long'] * qabs * self.pr /
@@ -571,14 +572,28 @@ class SCA(object):
         self.surface_tilt = 0.0
         self.surface_azimuth = 180.0
 
+
     def get_IAM(self, theta):
 
-        theta = np.radians(theta)
+
         F0 = self.parameters['IAM Coefficient F0']
         F1 = self.parameters['IAM Coefficient F1']
         F2 = self.parameters['IAM Coefficient F2']
 
-        return F0+(F1*theta+F2*theta**2)/np.cos(theta)
+        #PROVISIONAL HASTA ACLARAR LA FÓRMULA DE IAM
+
+#        kiam = (1-2.23073e-4 * theta - 1.1e-4 * theta**2 +
+#                3.1859e-6 * theta**3 - 4.85509e-8 * theta** 4)
+        #return kiam
+        
+        if (theta >= 0 and theta <= 80):
+            theta = np.radians(theta)
+            kiam = F0 + (F1*theta+F2*theta**2) / np.cos(theta)
+        else:
+            kiam = 0.0
+
+        return kiam
+
 
     # def get_tin(self, sca):
 
@@ -709,9 +724,7 @@ class PrototypeLoop(object):
                                    self.tin, self.pin,
                                    self.hce_settings['min_reynolds'])
 
-        inc_ratio = 1.01
-        dec_ratio = 0.99
-        max_error = 1.0
+        max_error = 1.0  # % desviation tolerance
 
         search = True
 
@@ -812,8 +825,8 @@ class SolarField(object):
             # H2  += (hotfluid.get_cp(l.cut_tout, l.pout) *
             #       (l.cut_tout-l.tin)*l.massflow)
 
-            dH += l.massflow * hotfluid.get_deltaH(l.cut_tout, l.pout)
-            dH_cut_tout += l.massflow * hotfluid.get_deltaH(l.tout, l.pout)
+            dH += l.massflow * hotfluid.get_deltaH(l.tout, l.pout)
+            dH_cut_tout += l.massflow * hotfluid.get_deltaH(l.cut_tout, l.pout)
 
         dH /= self.massflow
         dH_cut_tout /= self.massflow
@@ -837,9 +850,12 @@ class SolarField(object):
 
         for l in self.loops:
             if l.tout > hotfluid.tmax:
+                HH = hotfluid.get_deltaH(l.tout, l.pout)
+                HL = hotfluid.get_deltaH(hotfluid.tmax, l.pout)
                 l.cut_tout = hotfluid.tmax
-                l.wasted_power = l.massflow * hotfluid.get_cp(
-                        l.cut_tout, l.pout)*(l.tout - l.cut_tout)
+                l.wasted_power = l.massflow * (HH - HL)
+#                l.wasted_power = l.massflow * hotfluid.get_cp(
+#                        l.cut_tout, l.pout)*(l.tout - l.cut_tout)
             else:
                 l.cut_tout = l.tout
                 l.wasted_power = 0.0
@@ -860,8 +876,8 @@ class SolarField(object):
         if row is not None:
             self.massflow = row[1][self.name+'.mf']
             self.tin = row[1][self.name+'.tin']
-            self.pin = 100000 * row[1][self.name+'.pin']
-            self.pout = 100000 * row[1][self.name+'.pout']
+            self.pin = row[1][self.name+'.pin']
+            self.pout = row[1][self.name+'.pout']
         else:
             self.massflow = (self.plant.ratedmassflow * len(self.loops) /
                              self.plant.total_loops)
@@ -999,10 +1015,11 @@ class SolarPlant(object):
 
         # self.tin = (488.0 + (H /
         #              (hotfluid.get_cp(488.0, self.pin) * self.massflow)))
-
         dH /= self.massflow
+        
+        self.tin = 566.15
 
-        self.tin = hotfluid.get_T(dH, self.pin)
+        #self.tin = hotfluid.get_T(dH, self.pin)
         #self.tin = 1e-3 * HH / self.massflow
 
     def set_massflow(self):
@@ -1013,6 +1030,14 @@ class SolarPlant(object):
             mf += sf.massflow
 
         self.massflow = mf
+
+    def get_thermalpoweroutput(self, hotfluid):
+
+        HL = hotfluid.get_deltaH(self.tin, self.pin)
+        HH = hotfluid.get_deltaH(self.tout, self.pout)
+
+        return (HH - HL) * self.massflow
+
 
 
     def calcRequired_massflow(self):
@@ -1189,15 +1214,16 @@ class PowerCycle(object):
     def __init__(self, settings):
 
         self.name = settings['name']
-        self.pin = settings['pin']
-        self.tin = settings['tin']
-        self.pout = 0.0
-        self.tout = 0.0
+        self.pin = settings['ratedpin']
+        self.tin = settings['ratedtin']
+        self.pout = settings['ratedpout']
+        self.tout = settings['ratedtout']
+        self.massflow = settings['ratedmassflow']
         self.pr = 0.0
 
-    def set_pr_NCA(self, tdewpoint): #Novikov-Curzon-Ahlbor
+    def set_pr_NCA(self, tout): #Novikov-Curzon-Ahlbor
 
-        self.pr = 1 - np.sqrt((tdewpoint+273.15)/(self.tin + 273.15))
+        self.pr = 1 - np.sqrt((tout)/(self.tin))
 
 class Generator(object):
 
@@ -1342,6 +1368,8 @@ class Simulation(object):
         r_netpower = []
         r_cycle_pr = []
         r_heatexchanger_pr = []
+        r_aoi = []
+        r_iam = []
 
 
         for row in self.datasource.weatherdata[0].iterrows():
@@ -1377,27 +1405,35 @@ class Simulation(object):
             self.solarplant.set_tin(self.hotfluid)
             self.solarplant.set_tout(self.hotfluid)
 
+
+            self.solarplant.set_massflow()
+            self.solarplant.set_tin(self.hotfluid)
+            self.solarplant.set_tout(self.hotfluid)
+
             self.heatexchanger.set_hotfluid_in(self.solarplant.massflow,
                                              self.solarplant.tin,
                                              self.solarplant.pin)
 
-            #self.heatexchanger.set_coldfluid_in() PENDIENTE
+            self.heatexchanger.set_coldfluid_in(self.powercycle.massflow, self.powercycle.tout, self.powercycle.pin) #PENDIENTE
 
             self.heatexchanger.set_thermalpowertransfered(self.solarplant.tin)
-            self.powercycle.set_pr_NCA(288.15) #Provisonal temperatura agua coondensador
+            self.powercycle.set_pr_NCA(self.powercycle.tout) #Provisonal temperatura agua coondensador
             self.generator.set_pr()
             r_cycle_pr.append(round(self.powercycle.pr,2))
             r_heatexchanger_pr.append(round(self.heatexchanger.pr,2))
 
             r_tout.append(round(self.solarplant.tout, 0))
-            r_powerout.append(round((self.solarplant.tout - self.solarplant.tin) *
-                          self.solarplant.massflow * 1e-6 *
-                          self.hotfluid.get_cp(
-                                  self.solarplant.tout, self.solarplant.pout),0))
+#            r_powerout.append(round((
+#                    self.solarplant.tout - self.solarplant.tin) *
+#                          self.solarplant.massflow * 1e-6 *
+#                          self.hotfluid.get_cp(
+#                                  self.solarplant.tout, self.solarplant.pout),0))
+            r_powerout.append(round(self.solarplant.get_thermalpoweroutput(self.hotfluid)/1e6,1))
             r_massflow.append(round(self.solarplant.massflow,0))
-            r_netpower.append(round(
-                    1e-6 * self.heatexchanger.thermalpowertransfered *
-                    self.powercycle.pr * self.generator.pr, 2))
+            r_netpower.append(round(self.solarplant.get_thermalpoweroutput(self.hotfluid) * 
+                    1e-6 * self.powercycle.pr * self.generator.pr, 2))
+            r_aoi.append(aoi)
+            r_iam.append(self.solarplant.solarfields[3].loops[29].scas[0].get_IAM(aoi))
 
             print(row[0].strftime('%y/%m/%d %H:%M'), 'DNI: ', round(row[1]['DNI']),
               "MF:", round(self.solarplant.massflow), 'Calc:',
@@ -1412,8 +1448,8 @@ class Simulation(object):
 
         print(self.datasource.weatherdata[0])
         self.datasource.weatherdata[0][[
-                'DNI','Powerout','Tout','MF', 'NetPower', 'Cycle.pr',
-                'HE.pr']].plot(figsize=(20,10), linewidth=5, fontsize=20)
+                'DNI','Powerout','Tout','MF', 'NetPower',
+                'Cycle.pr', 'HE.pr']].plot(figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
 
 
@@ -1431,16 +1467,50 @@ class Simulation(object):
         r_netpower = []
         r_cycle_pr = []
         r_heatexchanger_pr = []
+        r_aoi = []
+        r_iam = []
 
         for row in self.datasource.dataframe.iterrows():
-            solarpos = pvlib.solarposition.get_solarposition(row[0],
-                                                        self.site.latitude,
-                                                        self.site.longitude,
-                                                        self.site.altitude,
-                                                        pressure = row[1]['Pressure'],
-                                                        temperature=row[1]['DryBulb'])
-            aoi = float(pvlib.irradiance.aoi(0, 0, solarpos['zenith'][0],
-                                             solarpos['azimuth'][0]))
+            
+            solarpos = pvlib.solarposition.get_solarposition(
+                    row[0],
+                    self.site.latitude,
+                    self.site.longitude,
+                    self.site.altitude,
+                    pressure = row[1]['Pressure'],
+                    temperature=row[1]['DryBulb'])
+            
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90
+            else:
+                surface_azimuth = 270
+            
+            aoi = pvlib.irradiance.aoi(solarpos['elevation'][0],
+                                       surface_azimuth,
+                                       solarpos['zenith'][0],
+                                       solarpos['azimuth'][0])
+            """
+            def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
+                
+            Calculates the angle of incidence of the solar vector on a surface.
+            This is the angle between the solar vector and the surface normal.
+            Input all angles in degrees.
+            Parameters
+            ----------
+            surface_tilt : numeric
+                Panel tilt from horizontal.
+            surface_azimuth : numeric
+                Panel azimuth from north.
+            solar_zenith : numeric
+                Solar zenith angle.
+            solar_azimuth : numeric
+                Solar azimuth angle.
+            Returns
+            -------
+            aoi : numeric
+                Angle of incidence in degrees.
+            """
+    
             for sf in self.solarplant.solarfields:
                 sf.initialize(row)
                 for l in sf.loops:
@@ -1448,44 +1518,63 @@ class Simulation(object):
                     for s in l.scas:
                         for h in s.hces:
                             self.model.set_pr(h, self.hotfluid,
-                                                   row[1]['DNI'],
-                                                   row[1]['Wspd'],
-                                                   row[1]['DryBulb'], aoi)
+                                                    row[1]['DNI'],
+                                                    row[1]['Wspd'],
+                                                    row[1]['DryBulb'], aoi)
 #                            h.set_PR(hce, aoi)
 #                            self.model.set_tout(h, qabs, h.pr, cp)
+
                     l.tout = l.scas[-1].hces[-1].tout
 
                 sf.apply_temp_limitation(self.hotfluid)
                 sf.set_tout(self.hotfluid)
 
+
+            print(row[0].strftime('%y/%m/%d %H:%M'), 
+                  'DNI: ', round(row[1]['DNI']),
+                  'aoi:', round(aoi, 2),
+                  'IAM', round(self.solarplant.solarfields[3].loops[29].scas[0].get_IAM(aoi),3),
+                  'Elev', round(solarpos['elevation'][0],2),
+                  'Zenith', round(solarpos['zenith'][0],2),
+                  'Azim', round(solarpos['azimuth'][0]),2)
             self.solarplant.set_massflow()
             self.solarplant.set_tin(self.hotfluid)
             self.solarplant.set_tout(self.hotfluid)
 
             self.heatexchanger.set_hotfluid_in(self.solarplant.massflow,
                                              self.solarplant.tin,
-                                             self.solarplant.tout)
+                                             self.solarplant.pin)
+
+            self.heatexchanger.set_coldfluid_in(self.powercycle.massflow, self.powercycle.tout, self.powercycle.pin) #PENDIENTE
+
             self.heatexchanger.set_thermalpowertransfered(self.solarplant.tin)
-            self.powercycle.set_pr_NCA(288.15) #Provisonal temperatura agua coondensador
+            self.powercycle.set_pr_NCA(self.powercycle.tout) #Provisonal temperatura agua coondensador
             self.generator.set_pr()
             r_cycle_pr.append(round(self.powercycle.pr,2))
             r_heatexchanger_pr.append(round(self.heatexchanger.pr,2))
 
             r_tout.append(round(self.solarplant.tout, 0))
-            r_powerout.append(round((self.solarplant.tout - self.solarplant.tin) *
-                          self.solarplant.massflow * 1e-6 *
-                          self.hotfluid.get_cp(
-                                  self.solarplant.tout, self.solarplant.pout),0))
+#            r_powerout.append(round((
+#                    self.solarplant.tout - self.solarplant.tin) *
+#                          self.solarplant.massflow * 1e-6 *
+#                          self.hotfluid.get_cp(
+#                                  self.solarplant.tout, self.solarplant.pout),0))
+            r_powerout.append(round(self.solarplant.get_thermalpoweroutput(self.hotfluid)/1e6,1))
             r_massflow.append(round(self.solarplant.massflow,0))
             r_netpower.append(round(
                     1e-6 * self.heatexchanger.thermalpowertransfered *
                     self.powercycle.pr * self.generator.pr, 2))
+            r_aoi.append(aoi)
+            r_iam.append(self.solarplant.solarfields[3].loops[29].scas[0].get_IAM(aoi))
+#            r_aoi.append(solarpos['azimuth'][0])
+#           r_iam.append(solarpos['zenith'][0]) #r_iam.append(self.solarplant.solarfields[3].loops[29].scas[0].get_IAM(aoi))
 
-            print(row[0].strftime('%y/%m/%d %H:%M'), 'DNI: ', round(row[1]['DNI']),
-                  "MF:", round(self.solarplant.massflow), 'Real:',
-                  round(row[1][sf.name+'.tin']), '->',
-                  round(row[1][sf.name+'.tout']), 'Calc:', round(sf.tin), '->',
-                  round(self.solarplant.tout))
+
+            # print(row[0].strftime('%y/%m/%d %H:%M'), 'DNI: ', round(row[1]['DNI']),
+            #       "MF:", round(self.solarplant.massflow), 'Real:',
+            #       round(row[1][sf.name+'.tin']), '->',
+            #       round(row[1][sf.name+'.tout']), 'Calc:', round(sf.tin), '->',
+            #       round(self.solarplant.tout))
 
         self.datasource.dataframe['Powerout'] = r_powerout
         self.datasource.dataframe['Tout'] = r_tout
@@ -1493,12 +1582,20 @@ class Simulation(object):
         self.datasource.dataframe['NetPower'] = r_netpower
         self.datasource.dataframe['Cycle.pr'] = r_cycle_pr
         self.datasource.dataframe['HE.pr'] = r_heatexchanger_pr
+        self.datasource.dataframe['aoi'] = r_aoi
+        self.datasource.dataframe['iam'] = r_iam
 
-        print(self.datasource.dataframe)
         self.datasource.dataframe[[
-                'DNI','Powerout','Tout','MF', 'NetPower', 'Cycle.pr',
-                'HE.pr']].plot(figsize=(20,10), linewidth=5, fontsize=20)
+                'DNI','MF', 'Powerout', 'aoi', 'iam', 'NetPower']].plot(figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
+
+        # pd.set_option('display.max_rows', None)
+        # pd.set_option('display.max_columns', None)
+        # pd.set_option('display.width', None)
+        # pd.set_option('display.max_colwidth', -1)
+
+        print(self.datasource.dataframe[['DNI', 'Tout','MF',
+                                         'Powerout', 'NetPower','aoi', 'iam']])
 
         #TO-DO
         estimated_pr = 0.0
@@ -1549,11 +1646,15 @@ class HeatExchanger(object):
 #                self.hotfluid.get_cp(self.hotfluid.tin, self.hotfluid.pin) *
 #                self.hotfluidtin -self.hotfluidtout)
 
-        self.thermalpowertransfered = (
-                self.pr *
-                self.hotfluidmassflow *
-                self.hotfluid.get_cp(self.hotfluidtin, self.hotfluidpin) *
-                self.hotfluidtin - hftout)
+        HH = self.hotfluid.get_deltaH(self.hotfluidtin, self.hotfluidpin)
+        HL = self.hotfluid.get_deltaH(self.hotfluidtout, self.hotfluidpout)
+
+        self.thermalpowertransfered = ((HH-HL)*self.hotfluidmassflow)
+#        self.thermalpowertransfered = (
+#                self.pr *
+#                self.hotfluidmassflow *
+#                self.hotfluid.get_cp(self.hotfluidtin, self.hotfluidpin) *
+#                self.hotfluidtin - hftout)
 
 
     def hot_fluid_tout():
@@ -1572,8 +1673,25 @@ class HeatStorage(object):
     def hot_fluid_tout():
         return
 
+class Fluid(object):
 
-class Fluid_CoolProp(object):
+    def test_fluid(self, tmax, tmin, p):
+
+        data = []
+
+        for tt in range(int(round(tmax)), int(round(tmin)), -5):
+            data.append({'T': tt,
+                         'P': p,
+                         'cp': self.get_cp(tt, p),
+                         'rho': self.get_density(tt, p),
+                         'mu': self.get_dynamic_viscosity(tt, p),
+                         'kt': self.get_thermal_conductivity(tt, p),
+                         'H': self.get_deltaH(tt, p),
+                         'T-H': self.get_T(self.get_deltaH(tt, p), p)})
+        df = pd.DataFrame(data)
+        print(round(df, 6))
+
+class Fluid_CoolProp(Fluid):
 
     def __init__(self, settings = None):
 
@@ -1584,22 +1702,36 @@ class Fluid_CoolProp(object):
 
     def get_density(self, t, p):
 
+        if t > self.tmax:
+            t = self.tmax
+
         return PropsSI('D','T',t,'P', p, self.coolpropID)
 
     def get_dynamic_viscosity(self, t, p):
+
+        if t > self.tmax:
+            t = self.tmax
 
         return  PropsSI('V','T',t,'P', p, self.coolpropID)
 
     def get_cp(self, t, p):
 
+        if t > self.tmax:
+            t = self.tmax
         return PropsSI('C','T',t,'P', p, self.coolpropID)
 
     def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
 
+        if t > self.tmax:
+            t = self.tmax
+
         return PropsSI('L','T',t,'P', p, self.coolpropID)
 
     def get_deltaH(self, t, p):
+
+        if t > self.tmax:
+            t = self.tmax
 
         CP.set_reference_state(self.coolpropID,'ASHRAE')
 
@@ -1611,6 +1743,9 @@ class Fluid_CoolProp(object):
 
     def get_T(self, h, p):
 
+        if t > self.tmax:
+            t = self.tmax
+
         CP.set_reference_state(self.coolpropID,'ASHRAE')
         temperature = PropsSI('T', 'H', h, 'P', p, self.coolpropID)
         CP.set_reference_state(self.coolpropID, 'DEF')
@@ -1620,27 +1755,20 @@ class Fluid_CoolProp(object):
 
     def get_Reynolds(self, dri, t, p, massflow):
 
+        if t > self.tmax:
+            t = self.tmax
+
         return massflow * np.pi * (dri**3) /( 4 * self.get_density(t, p))
 
     def get_massflow_from_Reynolds(self, dri, t, p, re):
 
+        if t > self.tmax:
+            t = self.tmax
+
         return re * np.pi * dri * self.get_dynamic_viscosity(t, p) / 4
 
-    def get_ReynoldsDRI(self):
 
-        self.redri = 0
-
-    def get_Nusselt_Dittus_Boelter(self):
-
-        self.nudb = 0.023*(redri**0.8)*(prf**0.4)
-
-    def get_Nusselt_Gnielinski(self):
-
-        self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /
-                    (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
-                    )
-
-class Fluid_Tabular(object):
+class Fluid_Tabular(Fluid):
 
     def __init__(self, settings=None):
 
@@ -1659,16 +1787,22 @@ class Fluid_Tabular(object):
         self.mu += [0.] * (6 - len(self.mu))
         self.kt += [0.] * (6 - len(self.kt))
 
+
     def get_density(self, t, p):
+
+        # Dowtherm A.pdf, 2.2 Single Phase Liquid Properties. pg. 8.
 
         rho0, rho1, rho2, rho3, rho4, rho5 = tuple(self.rho)
 
         return (rho0 + rho1 * t + rho2 * t**2 + rho3 * t**3 +
-                rho4 * t**4 + rho5 * t**5)
+                rho4 * t**4 + rho5 * t**5) * (p* 1.0e-4)**1.0e-3
 
     def get_dynamic_viscosity(self, t, p):
 
         mu0, mu1, mu2, mu3, mu4, mu5 = tuple(self.mu)
+
+        if t > self.tmax:
+            t= self.tmax
 
         return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 +
                 mu4 * t**4 + mu5 * t**5)
@@ -1707,26 +1841,18 @@ class Fluid_Tabular(object):
 
     def get_Reynolds(self, dri, t, p, massflow):
 
+        if t > self.tmax:
+            t= self.tmax
+
         return (4 * massflow /
                 (np.pi * dri * self.get_dynamic_viscosity(t,p)))
 
     def get_massflow_from_Reynolds(self, dri, t, p, re):
 
+        if t > self.tmax:
+            t= self.tmax
+
         return re * np.pi * dri * self.get_dynamic_viscosity(t,p) / 4
-
-    def get_ReynoldsDRI(self):
-
-        self.redri = 0
-
-    def get_Nusselt_Dittus_Boelter(self):
-
-        self.nudb = 0.023*(redri**0.8)*(prf**0.4)
-
-    def get_Nusselt_Gnielinski(self):
-
-        self.nug = ((cf/2)*(redri-1000)*prf*(prf/prri)**0.11 /
-                    (1+12.7*(cf/2)**(1/2)*(prf**(2/3)-1))
-                    )
 
 
 class Weather(object):
@@ -1907,6 +2033,8 @@ class FieldData(object):
                 self.dataframe[c] += 273.15 # From Celsius Degrees to K
             if '.p' in c:
                 self.dataframe[c] *= 1e5 # From Bar to Pa
+            if 'Pressure' in c:
+                self.dataframe[c] *= 1e2 # From mBar to Pa
 
     def rename_columns(self):
 
@@ -1917,10 +2045,6 @@ class FieldData(object):
             if c not in self.tags.keys():
                 columns_to_drop.append(c)
         self.dataframe.drop(columns = columns_to_drop, inplace = True)
-
-
-
-
 
 
 

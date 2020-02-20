@@ -3,7 +3,7 @@
     "ID" : "00000",
     "type" : "type0"},
 "weather_data_file": {
-	"filename": "prueba24H.tm2",
+	"filename": "marzo3.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
@@ -60,7 +60,7 @@
 		{"name": "NE", "loops": 30, "row_spacing": 16.250},
 		{"name": "SO", "loops": 30, "row_spacing": 16.250},
 		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
-	"loop": {"scas": 4, "hces": 12}},
+	"loop": {"scas": 1, "hces": 1}},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
@@ -72,7 +72,7 @@
 	"tracking axis azimuth": 0},
 "hce": {
 	"name": "Luz LS-3",
-	"long": 4.012,
+	"long": 192.576,
 	"dri": 0.066,
 	"dro": 0.070,
 	"dgi": 0.109,
