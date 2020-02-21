@@ -56,11 +56,12 @@
     "ratedpressure": 2000000,
     "ratedmassflow": 480.0,
 	"solarfields": [
-		{"name": "NO", "loops": 30, "row_spacing": 16.250},
-		{"name": "NE", "loops": 30, "row_spacing": 16.250},
-		{"name": "SO", "loops": 30, "row_spacing": 16.250},
-		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
-	"loop": {"scas": 1, "hces": 1}},
+		{"name": "NO", "loops": 30},
+		{"name": "NE", "loops": 30},
+		{"name": "SO", "loops": 30},
+		{"name": "SE", "loops": 30}],
+	"loop": {"scas": 1, "hces": 1},
+	"row_spacing": 16.250},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,

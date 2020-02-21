@@ -71,7 +71,7 @@ class ModelBarbero4grade(Model):
         super(Model, self).__init__(settings)
 
     @classmethod
-    def set_pr(cls, hce, hotfluid, aoi, row, solarpos = None):
+    def set_pr(cls, hce, hotfluid, aoi, solarpos, row):
 
         pressure = hce.sca.loop.pin
         hce.set_tin()
@@ -531,14 +531,32 @@ class HCE(object):
     def get_pr_geo(self, aoi, solarpos, row):
         
         # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
-        return 1.0
+        pr_geo = 1- (self.sca.parameters["Focal Len"] * np.tan(np.radians(aoi)) /
+                     (len(self.sca.hces) * self.parameters["long"]))
+        
+        if pr_geo > 1:
+            pr_geo = 1.0
+        
+        return pr_geo
 
 
     def get_pr_shadows(self, aoi, solarpos, row):
         
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
-
-         return 1.0
+        
+        # Sombras debidas a otros lazos 
+        
+        shadowing = (1 - 
+                     np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+                     self.sca.loop.row_spacing /
+                     self.sca.parameters['Aperture'])
+        
+        if shadowing < 0.0:       
+            shadowing = 0.0
+        
+        pr_shadows = 1 - shadowing
+                                   
+        return pr_shadows
 
 
     def get_absorptance(self):
@@ -615,8 +633,10 @@ class SCA(object):
         # Pérdidas por sombras en el sca:
         # - Sombras de otros SCA. Cálculo geometrico a partir de la distancia entre lazos.
         # - Nubes
+        
+        pr_shadows = 1.0
 
-        return 1.0
+        return pr_shadows
 
 
     def get_IAM(self, theta):
@@ -640,18 +660,19 @@ class SCA(object):
         return kiam
 
 
-    def get_aoi(self, dateindex, site, data):
+    def get_aoi(self, solarpos):
+        
+        
+        if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+            surface_azimuth = 90
+        else:
+            surface_azimuth = 270
+        
+        aoi = pvlib.irradiance.aoi(solarpos['elevation'][0],
+                                       surface_azimuth,
+                                       solarpos['zenith'][0],
+                                       solarpos['azimuth'][0])
 
-        solarposition = pvlib.solarposition.get_solarposition(dateindex,
-                                                        site.latitude,
-                                                        site.longitude,
-                                                        site.altitude,
-                                                        pressure = data['Pressure'],
-                                                        temperature=data['DryBulb'])
-        aoi = float(pvlib.irradiance.aoi(self.surface_tilt,
-                                               self.surface_azimuth,
-                                               solarposition.zenith[0],
-                                               solarposition.azimuth[0]))
         return aoi
 
 
@@ -668,6 +689,7 @@ class Loop(object):
         self.pout = 0.0
         self.cut_tout = 0.0
         self.wasted_power = 0.0
+        self.row_spacing = self.solarfield.plant.parameters['row_spacing']
 
     def initialize(self):
 
@@ -718,6 +740,7 @@ class PrototypeLoop(object):
         self.plant_settings = plant_settings
         self.sca_settings = sca_settings
         self.hce_settings = hce_settings
+        self.row_spacing = plant_settings['row_spacing']
         self.solarplant = None
         self.tin = 0.0
         self.tout = 0.0
@@ -727,6 +750,8 @@ class PrototypeLoop(object):
         self.req_massflow = 0.0
         self.wasted_power = 0.0
         self.min_massflow = 0.0
+        self.row_spacing = plant_settings['row_spacing']
+        print(self.row_spacing)
 
 
 
@@ -740,7 +765,7 @@ class PrototypeLoop(object):
 
         self.solarplant = solarplant
 
-    def precalcmassflow(self, row, aoi, hotfluid, model):
+    def precalcmassflow(self, row, solarpos, hotfluid, model):
 
         self.tin = self.solarplant.tin
         self.ratedtout = self.solarplant.ratedtout
@@ -760,8 +785,9 @@ class PrototypeLoop(object):
         while search:
 
             for s in self.scas:
+                aoi = s.get_aoi(solarpos) 
                 for h in s.hces:
-                    model.set_pr(h, self.hotfluid, aoi, row)
+                    model.set_pr(h, self.hotfluid, aoi, solarpos, row)
                     #print("HCE", h.hce_order, h.tout)
             self.tout = self.scas[-1].hces[-1].tout
 
@@ -794,6 +820,7 @@ class SolarField(object):
 
         self.plant = plant
         self.name = solarfield_settings['name']
+        self.parameters = solarfield_settings
         self.loops = []
         self.massflow = 0.0
         self.tin= 0.0
@@ -899,6 +926,7 @@ class SolarPlant(object):
                  hce_model_settings):
 
         self.name = plant_settings['name']
+        self.parameters = plant_settings
         self.solarfields = []
         self.ratedtin = plant_settings['ratedtin']
         self.ratedtout = plant_settings['ratedtout']
@@ -1242,8 +1270,18 @@ class Simulation(object):
                                                         pressure = row[1]['Pressure'],
                                                         temperature=row[1]['DryBulb'])
 
-            aoi = float(pvlib.irradiance.aoi(0, 0, solarpos['zenith'][0],
-                                             solarpos['azimuth'][0]))
+            # aoi = float(pvlib.irradiance.aoi(0, 0, solarpos['zenith'][0],
+            #                                  solarpos['azimuth'][0]))
+            
+            # if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+            #     surface_azimuth = 90
+            # else:
+            #     surface_azimuth = 270
+
+            # aoi = pvlib.irradiance.aoi(solarpos['elevation'][0],
+            #                            surface_azimuth,
+            #                            solarpos['zenith'][0],
+            #                            solarpos['azimuth'][0])
 
             for sf in self.solarplant.solarfields:
                 sf.initialize()
@@ -1251,10 +1289,11 @@ class Simulation(object):
                     l.initialize()
                     self.prototypeloop.initialize(self.solarplant)
                     l.massflow = self.prototypeloop.precalcmassflow(
-                            row, aoi, self.hotfluid, self.model)
-                    for s in l.scas:
+                            row, solarpos, self.hotfluid, self.model)
+                    for s in l.scas:                        
+                        aoi = s.get_aoi(solarpos)                
                         for h in s.hces:
-                            self.model.set_pr(h, self.hotfluid, aoi, row, solarpos)
+                            self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
                     l.tout = l.scas[-1].hces[-1].tout
                 sf.set_massflow()
                 sf.apply_temp_limitation(self.hotfluid)
@@ -1282,15 +1321,15 @@ class Simulation(object):
                     pressure = row[1]['Pressure'],
                     temperature=row[1]['DryBulb'])
             
-            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-                surface_azimuth = 90
-            else:
-                surface_azimuth = 270
+            # if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+            #     surface_azimuth = 90
+            # else:
+            #     surface_azimuth = 270
 
-            aoi = pvlib.irradiance.aoi(solarpos['elevation'][0],
-                                       surface_azimuth,
-                                       solarpos['zenith'][0],
-                                       solarpos['azimuth'][0])
+            # aoi = pvlib.irradiance.aoi(solarpos['elevation'][0],
+            #                            surface_azimuth,
+            #                            solarpos['zenith'][0],
+            #                            solarpos['azimuth'][0])
             """
             def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
 
@@ -1318,8 +1357,9 @@ class Simulation(object):
                 for l in sf.loops:
                     l.initialize()
                     for s in l.scas:
+                        aoi = s.get_aoi(solarpos) 
                         for h in s.hces:
-                            self.model.set_pr(h, self.hotfluid, aoi, row, solarpos)
+                            self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
 #                            h.set_PR(hce, aoi)
 #                            self.model.set_tout(h, qabs, h.pr, cp)
 
