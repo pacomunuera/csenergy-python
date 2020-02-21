@@ -1,7 +1,7 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type0"},
+    "type" : "type1"},
 "weather_data_file": {
 	"filename": "marzo3.tm2",
 	"filepath": "./weather_files/"},
