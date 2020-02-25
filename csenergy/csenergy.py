@@ -82,7 +82,7 @@ class ModelBarbero4grade(Model):
         tri = hce.tin
 
         massflow = hce.sca.loop.massflow
-        
+
         dni = row[1]['DNI']
         wspd = row[1]['Wspd']
         text = row[1]['DryBulb']
@@ -101,7 +101,7 @@ class ModelBarbero4grade(Model):
         pr_opt_peak = hce.get_pr_opt_peak(aoi, solarpos, row)
         pr_geo = hce.get_pr_geo(aoi, solarpos, row)
         pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
-        
+
 
         cg = A /(np.pi*dro)
 
@@ -529,33 +529,33 @@ class HCE(object):
 
 
     def get_pr_geo(self, aoi, solarpos, row):
-        
+
         # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
         pr_geo = 1- (self.sca.parameters["Focal Len"] * np.tan(np.radians(aoi)) /
                      (len(self.sca.hces) * self.parameters["long"]))
-        
+
         if pr_geo > 1:
             pr_geo = 1.0
-        
+
         return pr_geo
 
 
     def get_pr_shadows(self, aoi, solarpos, row):
-        
+
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
-        
-        # Sombras debidas a otros lazos 
-        
-        shadowing = (1 - 
+
+        # Sombras debidas a otros lazos
+
+        shadowing = (1 -
                      np.sin(np.radians(abs(solarpos['elevation'][0]))) *
                      self.sca.loop.row_spacing /
                      self.sca.parameters['Aperture'])
-        
-        if shadowing < 0.0:       
+
+        if shadowing < 0.0:
             shadowing = 0.0
-        
+
         pr_shadows = 1 - shadowing
-                                   
+
         return pr_shadows
 
 
@@ -605,13 +605,17 @@ class SCA(object):
         self.surface_azimuth = 180.0
 
 
+
+
+
     def get_solar_fraction(self, aoi, solarpos, row):
 
         if self.status == 'defocused':
             solarfraction = 0.0
         elif self.status == 'focused':
-            
-            # faltaría: factor de forma del Sol, dependiente de solpos y atmósfera
+
+            # faltaría: factor de forma del Sol, dependiente de solpos, geometría
+            # absorbedor, sca y atmósfera.
             # Factor: se puede usar para tasa de espejos rotos, por ejemplo
             # Availability: podría ser un valor binario 0 o 1
 
@@ -629,11 +633,11 @@ class SCA(object):
         return solarfraction
 
     def get_sca_shadows(self, aoi, solarpos, row):
-        
+
         # Pérdidas por sombras en el sca:
         # - Sombras de otros SCA. Cálculo geometrico a partir de la distancia entre lazos.
         # - Nubes
-        
+
         pr_shadows = 1.0
 
         return pr_shadows
@@ -661,17 +665,39 @@ class SCA(object):
 
 
     def get_aoi(self, solarpos):
-        
-        
-        if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-            surface_azimuth = 90
+
+        sigmabeta = 0.0
+        beta0 = 0.0
+
+        if self.parameters['Tracking Type'] == 1: # N-S single axis tracker
+
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90 # Surface facing east
+            else:
+                surface_azimuth = 270 # Surface facing west
+
+        elif sself.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+
+            surface_azimuth = 180  # Surface facing the equator
+
+
+        beta0 = np.degrees(
+                    np.arctan(np.tan(np.radians(solarpos['zenith'][0])) *
+                              np.cos(np.radians(surface_azimuth -
+                                                solarpos['azimuth'][0]))))
+        if beta0 >= 0:
+
+            sigmabeta = 0
+
         else:
-            surface_azimuth = 270
-        
-        aoi = pvlib.irradiance.aoi(solarpos['elevation'][0],
-                                       surface_azimuth,
-                                       solarpos['zenith'][0],
-                                       solarpos['azimuth'][0])
+            sigmabeta = 1
+
+        beta = beta0 + 180 * sigmabeta
+
+        aoi = pvlib.irradiance.aoi(beta,
+                                   surface_azimuth,
+                                   solarpos['zenith'][0],
+                                   solarpos['azimuth'][0])
 
         return aoi
 
@@ -785,7 +811,7 @@ class PrototypeLoop(object):
         while search:
 
             for s in self.scas:
-                aoi = s.get_aoi(solarpos) 
+                aoi = s.get_aoi(solarpos)
                 for h in s.hces:
                     model.set_pr(h, self.hotfluid, aoi, solarpos, row)
                     #print("HCE", h.hce_order, h.tout)
@@ -1272,7 +1298,7 @@ class Simulation(object):
 
             # aoi = float(pvlib.irradiance.aoi(0, 0, solarpos['zenith'][0],
             #                                  solarpos['azimuth'][0]))
-            
+
             # if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
             #     surface_azimuth = 90
             # else:
@@ -1290,8 +1316,8 @@ class Simulation(object):
                     self.prototypeloop.initialize(self.solarplant)
                     l.massflow = self.prototypeloop.precalcmassflow(
                             row, solarpos, self.hotfluid, self.model)
-                    for s in l.scas:                        
-                        aoi = s.get_aoi(solarpos)                
+                    for s in l.scas:
+                        aoi = s.get_aoi(solarpos)
                         for h in s.hces:
                             self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
                     l.tout = l.scas[-1].hces[-1].tout
@@ -1320,7 +1346,7 @@ class Simulation(object):
                     self.site.altitude,
                     pressure = row[1]['Pressure'],
                     temperature=row[1]['DryBulb'])
-            
+
             # if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
             #     surface_azimuth = 90
             # else:
@@ -1357,7 +1383,7 @@ class Simulation(object):
                 for l in sf.loops:
                     l.initialize()
                     for s in l.scas:
-                        aoi = s.get_aoi(solarpos) 
+                        aoi = s.get_aoi(solarpos)
                         for h in s.hces:
                             self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
 #                            h.set_PR(hce, aoi)
@@ -1431,13 +1457,43 @@ class Simulation(object):
                 'DNI','MF', 'Powerout', 'aoi', 'iam', 'NetPower']].plot(figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
 
-        # pd.set_option('display.max_rows', None)
-        # pd.set_option('display.max_columns', None)
-        # pd.set_option('display.width', None)
-        # pd.set_option('display.max_colwidth', -1)
-#        print(self.datasource.dataframe[
-#                ['DNI', 'Tout','MF','Powerout', 'NetPower','aoi', 'iam']])
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', -1)
+        print(self.datasource.dataframe[
+                ['DNI', 'Tout','MF','Powerout', 'NetPower','aoi', 'iam']])
         print(self.datasource.dataframe)
+
+    def testgeo(self):
+
+
+        for row in self.datasource.dataframe.iterrows():
+
+            solarpos = pvlib.solarposition.get_solarposition(
+                    row[0],
+                    self.site.latitude,
+                    self.site.longitude,
+                    self.site.altitude,
+                    pressure = row[1]['Pressure'],
+                    temperature=row[1]['DryBulb'])
+
+            for s in self.prototypeloop.scas:
+                aoi = s.get_aoi(solarpos)
+                self.datasource.dataframe.at[row[0], 'sol.ze'] = round(solarpos['zenith'][0],2)
+                self.datasource.dataframe.at[row[0], 'sol.az'] = round(solarpos['azimuth'][0],2)
+                self.datasource.dataframe.at[row[0], 'aoi'] = round(aoi,2)
+
+        self.datasource.dataframe[['sol.ze', 'sol.az', 'aoi']].plot(figsize=(20,10), linewidth=5, fontsize=20)
+        plt.xlabel('Date', fontsize=20)
+
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', -1)
+
+        print(self.datasource.dataframe)
+
 
 class HeatExchanger(object):
 
@@ -1796,7 +1852,7 @@ class FieldData(object):
         '''
         fielddata
         '''
-        dateparse = lambda x: pd.datetime.strptime(x, '%Y/%m/%d %H:%M')
+        #dateparse = lambda x: pd.datetime.strptime(x, '%YYYY/%m/%d %H:%M')
 
         try:
             if path is None:
@@ -1854,7 +1910,7 @@ class FieldData(object):
             txMessageBox.showerror('Error loading FieldData File',
                                    'Unable to open file: %r', self.file)
 
-        self.dataframe.index = pd.to_datetime(self.dataframe.index)
+        self.dataframe.index = pd.to_datetime(self.dataframe.index, infer_datetime_format=True)
 
     def change_units(self):
 

@@ -1,9 +1,9 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type1"},
+    "type" : "type0"},
 "weather_data_file": {
-	"filename": "dates4.tm2",
+	"filename": "dates6.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
@@ -60,7 +60,7 @@
 		{"name": "NE", "loops": 30},
 		{"name": "SO", "loops": 30},
 		{"name": "SE", "loops": 30}],
-	"loop": {"scas": 4, "hces": 1},
+	"loop": {"scas": 4, "hces": 36},
 	"row_spacing": 16.250},
 "site": {
 	"name": "Alcázar de San Juan",
@@ -73,7 +73,7 @@
 	"tracking axis azimuth": 0},
 "hce": {
 	"name": "Luz LS-3",
-	"long": 144.432,
+	"long": 4.012,
 	"dri": 0.066,
 	"dro": 0.070,
 	"dgi": 0.109,
