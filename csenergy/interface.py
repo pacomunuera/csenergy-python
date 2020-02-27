@@ -155,7 +155,7 @@ def solarfield_save_dialog(f1, solarfield_table, ennamesolarfield, title, labelt
     cfg["solar_plant"].update(dict({"name" : ennamesolarfield.get()}))
 
     datarow = list(solarfield_table.table_data)
-    dictkeys =["name", "loops", "scas", "hces", "massflow", "row_spacing"]
+    dictkeys =["name", "loops", "scas", "hces"]
 
     solarfields = []
 
@@ -175,7 +175,7 @@ def solarfield_save_dialog(f1, solarfield_table, ennamesolarfield, title, labelt
 
 solarfield_table = table.Tk_Table(
                 f1,
-                ["NAME", "LOOPS", "SCAS", "HCES","MASSFLOW","ROWSPACING"],
+                ["NAME", "LOOPS", "SCAS", "HCES"],
                 row_numbers=True,
                 stripped_rows = ("white","#f2f2f2"),
                 select_mode = "none",

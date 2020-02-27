@@ -2,11 +2,15 @@ import csenergy as cs
 import pandas as pd
 from tkinter import *
 import json
+import copy
 
-with open("./saved_configurations/simulation1x1.json") as simulation_file:
+with open("./saved_configurations/simulation4x36.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
 simulation = cs.Simulation(simulation_settings['simulation'])
+
+#weatherdata = cs.Weather(simulation_settings['weather_data_file'])
+
 
 if simulation.type == "type0":
     datasource = cs.Weather(simulation_settings['weather_data_file'])

@@ -3,7 +3,7 @@
     "ID" : "00000",
     "type" : "type1"},
 "weather_data_file": {
-	"filename": "prueba24H.tm2",
+	"filename": "dates4.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
@@ -56,11 +56,12 @@
     "ratedpressure": 2000000,
     "ratedmassflow": 480.0,
 	"solarfields": [
-		{"name": "NO", "loops": 30, "row_spacing": 16.250},
-		{"name": "NE", "loops": 30, "row_spacing": 16.250},
-		{"name": "SO", "loops": 30, "row_spacing": 16.250},
-		{"name": "SE", "loops": 30, "row_spacing": 16.250}],
-	"loop": {"scas": 4, "hces": 1}},
+		{"name": "NO", "loops": 30},
+		{"name": "NE", "loops": 30},
+		{"name": "SO", "loops": 30},
+		{"name": "SE", "loops": 30}],
+	"loop": {"scas": 4, "hces": 1},
+	"row_spacing": 16.250},
 "site": {
 	"name": "Alcázar de San Juan",
 	"latitude": 39.10,
@@ -72,7 +73,7 @@
 	"tracking axis azimuth": 0},
 "hce": {
 	"name": "Luz LS-3",
-	"long": 48.144,
+	"long": 144.432,
 	"dri": 0.066,
 	"dro": 0.070,
 	"dgi": 0.109,
@@ -95,7 +96,8 @@
     "Cleanliness":0.97,
 	"Dust":0.98,
     "Factor":1,
-    "Availability":0.99},
+    "Availability":0.99,
+    "Tracking Type": 1},
 "hot_fluid" :
 	{
 		"name" : "THERMINOL-VP1",
@@ -120,8 +122,11 @@
 "powercycle" : {
    "name": "Rankine",
    "pr_calculation": "NBA",
-   "pin": 100e5,
-   "tin": 533.15},
+   "ratedpin": 100e5,
+   "ratedtin": 533.15,
+   "ratedpout": 100,
+   "ratedtout": 288.0,
+   "ratedmassflow": 20},
 "hce_model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,

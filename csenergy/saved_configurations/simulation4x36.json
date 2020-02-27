@@ -1,9 +1,10 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type1"},
+    "type" : "type0",
+    "fastmode": true},
 "weather_data_file": {
-	"filename": "dates4.tm2",
+	"filename": "A1A_07_2018_3.tm3",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
@@ -36,11 +37,11 @@
     	"Pressure": "1100-AXT-1883R.UNIT1@ASTE1A"}},
 "powersystem" : {
     "ratedpower": 50000000,
-    "solarfield_to_exchanger_pr" : 0.95,
-    "exchanger_pr" : 0.9,
-    "exchanger_to_turbogroup_pr" : 0.9,
-    "steam_cycle_pr" : 0.25,
-    "turbogenerator_pr" : 0.9},
+    "solarfield_to_exchanger_pr" : 0.97,
+    "exchanger_pr" : 0.8,
+    "exchanger_to_turbogroup_pr" : 0.99,
+    "steam_cycle_pr" : 0.3,
+    "turbogenerator_pr" : 0.99},
 "heatexchanger": {
     "name": "GEA",
     "pr": 0.8},
@@ -49,18 +50,18 @@
     "pr": 0.99},
 "solar_plant": {
 	"name": "My plant",
-    "ratedtin": 566.15,
+    "ratedtin": 563.15,
     "ratedtout": 663.15,
-    "tmax": 670.0,
-    "tmin": 288.0,
     "ratedpressure": 2000000,
     "ratedmassflow": 480.0,
+    "tmax": 670.0,
+    "tmin": 288.0,
 	"solarfields": [
 		{"name": "NO", "loops": 30},
 		{"name": "NE", "loops": 30},
 		{"name": "SO", "loops": 30},
 		{"name": "SE", "loops": 30}],
-	"loop": {"scas": 1, "hces": 1},
+	"loop": {"scas": 4, "hces": 36},
 	"row_spacing": 16.250},
 "site": {
 	"name": "Alcázar de San Juan",
@@ -73,7 +74,7 @@
 	"tracking axis azimuth": 0},
 "hce": {
 	"name": "Luz LS-3",
-	"long": 577.728,
+	"long": 4.012,
 	"dri": 0.066,
 	"dro": 0.070,
 	"dgi": 0.109,
@@ -108,8 +109,8 @@
 		"kt": [1.48620e-01, 1.00259e-05, -1.79349e-07, 6.71676e-12, -3.82962e-15 , 1.80339e-18],
 		"h": [244679 , -1.23735e2 , 4.97969, -7.29273e-3, 7.32737e-6, -3.08987e-9],
 		"t": [2.86196e2 ,  6.55572e-4 ,  -3.98571e-10,  4.59831e-16,  -3.90899e-22,  1.52529e-28],
-		"tmax": 673,
-		"tmin": 288},
+		"tmax": 673.15,
+		"tmin": 288.15},
 "cold_fluid": {
 	"name": "Water",
     "CoolPropID": "Water",
