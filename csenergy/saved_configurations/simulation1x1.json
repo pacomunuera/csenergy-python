@@ -1,9 +1,9 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type1"},
+    "type" : "type0"},
 "weather_data_file": {
-	"filename": "dates4.tm2",
+	"filename": "marzo3.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
