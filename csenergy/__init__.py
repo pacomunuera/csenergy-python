@@ -19,7 +19,10 @@ elif simulation.type == "type1":
     datasource = cs.FieldData(simulation_settings['field_data_file'])
     print("Benchmarking based on actual data")
 
-site = cs.Site(simulation_settings['site'])
+if datasource.site is None:
+    site = cs.Site(simulation_settings['site'])
+else:
+    site = cs.Site(datasource.site_to_dict())
 
 coolPropFluids = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 

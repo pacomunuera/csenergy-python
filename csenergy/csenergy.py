@@ -1402,12 +1402,23 @@ class Simulation(object):
 
     def runSimulation(self):
 
+<<<<<<< HEAD
 #        if self.type == "type0":
 #            self.simulateSolarPlant()
 #        elif self.type == "type1":
 #            self.benchmarkSolarPlant()
 #        else:
 #            return None
+=======
+        if self.type == "type0":
+            print("Running simulation for", self.site.name)
+            self.simulateSolarPlant()
+        elif self.type == "type1":
+            print("Running benchmark for", self.site.name)
+            self.benchmarkSolarPlant()
+        else:
+            return None
+>>>>>>> datasource
 
         # self.precalc(self.solarplant.hce_settings)
         # self.solarplant.massflow = self.solarplant.ratedmassflow
@@ -1907,10 +1918,13 @@ class Weather(object):
         self.filename = settings['filename']
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
+        self.dataframe = None
+        self.site = None
         self.weatherdata = None
         self.openWeatherDataFile(self.file)
 
         self.dataframe = self.weatherdata[0]
+        self.site = self.weatherdata[1]
 
         self.change_units()
         self.filter_columns()
@@ -1986,6 +2000,16 @@ class Weather(object):
                 columns_to_drop.append(c)
         self.dataframe.drop(columns = columns_to_drop, inplace = True)
 
+    def site_to_dict(self):
+        '''
+        pvlib.iotools realiza modificaciones en los nombres de las columnas.
+
+        Source,Location ID,City,State,Country,Latitude,Longitude,Time Zone,Elevation,Local Time Zone,Dew Point Units,DHI Units,DNI Units,GHI Units,Temperature Units,Pressure Units,Wind Direction Units,Wind Speed,Surface Albedo Units,Version'''
+
+        return {"name": self.site['City'],
+                "latitude": self.site['latitude'],
+                "longitude": self.site['longitude'],
+                "altitude": self.site['altitude']}
 
 class FieldData(object):
 
@@ -2085,4 +2109,12 @@ class FieldData(object):
             if c not in self.tags.keys():
                 columns_to_drop.append(c)
         self.dataframe.drop(columns = columns_to_drop, inplace = True)
+
+
+
+
+
+
+
+
 
