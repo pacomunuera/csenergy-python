@@ -10,7 +10,6 @@ from scipy import constants
 import math as mt
 from CoolProp.CoolProp import PropsSI
 import CoolProp.CoolProp as CP
-import time
 import copy
 import pandas as pd
 import pvlib as pvlib
@@ -29,26 +28,26 @@ import seaborn as sns
 # ASHRAE: saturated liquid (Q=0) at T=233.15 K
 _T_REF = 285.856
 
-_IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-                                    'thetamin': 0, 'thetamax': 80},
-               'Luz LS-2': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-                            'thetamin': 0, 'thetamax': 80},
-               'Luz LS-3': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-                            'thetamin': 0, 'thetamax': 80},
-               'Solargenix SGX-1': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-                                    'thetamin': 0, 'thetamax': 80},
-               'AlbiasaTrough AT150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-                                       'thetamin': 0, 'thetamax': 80},
-               'Siemens SunField 6': {'F0': 1.0, 'F1': -0.0753, 'F2': -0.03698,
-                                      'thetamin': 0, 'thetamax': 80},
-               'SkyFuel SkyTrough': {'F0': 1.0, 'F1': 0.0327, 'F2': -0.1351,
-                                     'thetamin': 0, 'thetamax': 80},
-               'FLABEG Ultimate Trough RP6 (oil)':
-                   {'F0': 1.0, 'F1': -0.005, 'F2': -0.102, 'thetamin': 0,
-                    'thetamax': 80},
-               'FLABEG Ultimate Trough RP6 (molten salt)':
-                   {'F0': 1.0, 'F1': -0.008, 'F2': -0.117, 'thetamin': 0,
-                    'thetamax': 80}}
+# _IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+#                                     'thetamin': 0, 'thetamax': 80},
+#                'Luz LS-2': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+#                             'thetamin': 0, 'thetamax': 80},
+#                'Luz LS-3': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+#                             'thetamin': 0, 'thetamax': 80},
+#                'Solargenix SGX-1': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+#                                     'thetamin': 0, 'thetamax': 80},
+#                'AlbiasaTrough AT150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
+#                                        'thetamin': 0, 'thetamax': 80},
+#                'Siemens SunField 6': {'F0': 1.0, 'F1': -0.0753, 'F2': -0.03698,
+#                                       'thetamin': 0, 'thetamax': 80},
+#                'SkyFuel SkyTrough': {'F0': 1.0, 'F1': 0.0327, 'F2': -0.1351,
+#                                      'thetamin': 0, 'thetamax': 80},
+#                'FLABEG Ultimate Trough RP6 (oil)':
+#                    {'F0': 1.0, 'F1': -0.005, 'F2': -0.102, 'thetamin': 0,
+#                     'thetamax': 80},
+#                'FLABEG Ultimate Trough RP6 (molten salt)':
+#                    {'F0': 1.0, 'F1': -0.008, 'F2': -0.117, 'thetamin': 0,
+#                     'thetamax': 80}}
 
 
 class Model(object):
@@ -74,8 +73,13 @@ class ModelBarbero4grade(Model):
     @classmethod
     def set_pr(cls, hce, hotfluid, aoi, solarpos, row):
 
+
+        flag_0 = datetime.now()
+
         pressure = hce.sca.loop.pin
+
         hce.set_tin()
+        hce.set_pin()
         hce.tout = hce.tin
         tin = hce.tin
         tf = hce.tin
@@ -103,8 +107,6 @@ class ModelBarbero4grade(Model):
         pr_geo = hce.get_pr_geo(aoi, solarpos, row)
         pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
         pr_shadows = 0.5
-
-
 
         cg = A /(np.pi*dro)
 
@@ -193,6 +195,7 @@ class ModelBarbero4grade(Model):
             while (errtro > 0.1 or errpr > 0.01):
 
                 step += 1
+                flag_1 = datetime.now()
 
                 f0 = qabs/(urec*(tin-text))
                 f1 = ((4*sigma*eext*text**3)+hext)/urec
@@ -201,15 +204,15 @@ class ModelBarbero4grade(Model):
                 f4 = (sigma*eext/urec)*((qabs/urec)**3)
 
                 fx = lambda pr0: (1 - pr0 -
-                                  f1*(pr0+(1/f0)) -
-                                  f2*((pr0+(1/f0))**2) -
-                                  f3*((pr0+(1/f0))**3) -
-                                  f4*((pr0+(1/f0))**4))
+                                  f1 * (pr0 + (1 / f0)) -
+                                  f2 * ((pr0 + (1 / f0))**2) -
+                                  f3 * ((pr0 + (1 / f0))**3) -
+                                  f4 * ((pr0 + (1 / f0))**4))
 
                 dfx = lambda pr0: (-1 - f1 -
-                                   2*f2*(pr0+(1/f0)) -
-                                   3*f3*(pr0+(1/f0))**2 -
-                                   4*f4*(pr0+(1/f0))**3)
+                                   2 * f2 * (pr0 + (1 / f0)) -
+                                   3 * f3 * (pr0 + (1 / f0))**2 -
+                                   4 * f4 * (pr0 + (1 / f0))**3)
 
                 root = sc.optimize.newton(fx,
                                           pr0,
@@ -232,6 +235,7 @@ class ModelBarbero4grade(Model):
                 hce.pr = pr1
                 hce.qabs = qabs
                 hce.set_tout(hotfluid)
+                hce.set_pout(hotfluid)
                 tf = 0.5 * (hce.tin + hce.tout)
 
                 tri = tro1
@@ -281,6 +285,19 @@ class ModelBarbero4grade(Model):
                 tro1 = tro2
                 qperd = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
 
+                flag_2 = datetime.now()
+
+                if (hce.sca.loop.loop_order == 0 and
+                    hce.sca.sca_order == (len(hce.sca.loop.scas) - 1) and
+                    hce.hce_order == (len(hce.sca.hces)-1)):
+                    delta_2 = flag_2 - flag_0
+                    #print("hce_while:", hce.get_index(), delta_2.total_seconds())
+
+            if (hce.sca.loop.loop_order == 0 and
+                hce.sca.sca_order == (len(hce.sca.loop.scas) - 1) and
+                hce.hce_order == (len(hce.sca.hces)-1)):
+                delta_1 = flag_1 - flag_0
+                #print("hce_offwhile:", hce.get_index(), delta_1.total_seconds())
         else:
             hce.pr = pr1
             hce.qperd = qperd
@@ -289,6 +306,13 @@ class ModelBarbero4grade(Model):
             h = qperd / hce.sca.loop.massflow
             #hce.tout = hotfluid.get_T(HL - h, hce.sca.loop.pin)
             hce.set_tout(hotfluid)
+            hce.set_pout(hotfluid)
+            flag_3 = datetime.now()
+            if (hce.sca.loop.loop_order == 0 and
+                hce.sca.sca_order == (len(hce.sca.loop.scas) - 1) and
+                hce.hce_order == (len(hce.sca.hces)-1)):
+                delta_3 = flag_3 - flag_0
+                #print("hce_qabs0:", hce.get_index(), delta_3.total_seconds())
 
 
     @classmethod
@@ -497,6 +521,8 @@ class HCE(object):
         self.pr = 0.0
         self.qabs = 0.0
         self.qperd = 0.0
+        self.pout = 0.0
+        self.pin = 0.0
 
     def set_tin(self):
 
@@ -506,6 +532,15 @@ class HCE(object):
             self.tin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1].tout
         else:
             self.tin = self.sca.loop.tin
+
+    def set_pin(self):
+
+        if self.hce_order > 0:
+            self.pin = self.sca.hces[self.hce_order-1].pout
+        elif self.sca.sca_order > 0:
+            self.pin = self.sca.loop.scas[self.sca.sca_order-1].hces[-1].pout
+        else:
+            self.pin = self.sca.loop.pin
 
     def set_tout(self, hotfluid):
 
@@ -521,6 +556,60 @@ class HCE(object):
 
         self.tout = hotfluid.get_T(HL + h, self.sca.loop.pin)
 
+
+    def set_pout(self, hotfluid):
+
+        # TO-DO CÁLCULLO PERDIDA DE CARGA:
+        # Ec. Colebrook-White para el cálculo del factor de fricción de Darcy
+        k = self.parameters['Inner surface roughness']
+        D = self.parameters['Absorber tube inner diameter']
+        re = hotfluid.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
+        rho = hotfluid.get_density(self.tin, self.pin)
+        # a = (k /  D) / 3.7
+        a = k / 3.7
+        b = 2.51 / re
+        x = 1
+
+        fx = lambda x: x + 2 * np.log10(a + b * x )
+
+        dfx = lambda x: 1 + (2 * b) / (np.log(10) * (a + b * x))
+
+        root = sc.optimize.newton(fx,
+                                  x,
+                                  fprime=dfx,
+                                  maxiter=10000)
+
+        darcy_factor = 1 / (root**2)
+
+        v = 4 * self.sca.loop.massflow / (rho *
+                             np.pi * D**2)
+
+        g = sc.constants.g
+
+        # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
+        deltap_mcl = darcy_factor * (self.parameters['long'] / D ) * (v**2 / (2 * g))
+
+        deltap = deltap_mcl * rho * g
+
+        # if self.hce_order == 35 and self.sca.loop.loop_order==5:
+
+        #     datos = [re, a, b, root, darcy_factor, v, self.sca.loop.massflow,
+        #            hotfluid.get_density(self.tin, self.pin),  deltap]
+
+        #     claves = ['re', 'a', 'b',
+        #               'root', 'darcy_factor', 'v', 'mf', 'rho', 'deltap']
+
+        #     dict_pd = dict(zip(claves,datos))
+
+        #     datos_deltap = pd.DataFrame(datos)
+        #     print(datos_deltap)
+
+        self.pout = self.pin - deltap
+
+        # if self.hce_order == 35 and self.sca.loop.loop_order==5:
+        #     print('Pout',self.pin, self.pout)
+
+
     def set_krec(self, t):
 
         self.parameters['krec'] = (0.0153)*(t - 273.15) + 14.77
@@ -531,10 +620,18 @@ class HCE(object):
 
     def get_index(self):
 
-        return ([self.sca.loop.solarfield.name,
+        if hasattr(self.sca.loop, 'solarfield'):
+            index = [self.sca.loop.solarfield.name,
                 self.sca.loop.loop_order,
                 self.sca.sca_order,
-                self.hce_order])
+                self.hce_order]
+        else:
+            index = ['prototype',
+                self.sca.loop.loop_order,
+                self.sca.sca_order,
+                self.hce_order]
+
+        return index
 
     def get_pr_opt_peak(self, aoi, solarpos, row):
 
@@ -543,7 +640,12 @@ class HCE(object):
         rho = self.sca.parameters['Reflectance']
         gamma = self.sca.get_solar_fraction(aoi, solarpos, row)
 
-        return alpha * tau * rho * gamma
+        pr_opt_peak = alpha * tau * rho * gamma
+
+        if pr_opt_peak > 1 or pr_opt_peak < 0:
+            print("ERROR", pr_opt_peak)
+
+        return pr_opt_peak
 
 
     def get_pr_geo(self, aoi, solarpos, row):
@@ -554,6 +656,9 @@ class HCE(object):
 
         if pr_geo > 1:
             pr_geo = 1.0
+
+        if pr_geo > 1 or pr_geo < 0:
+            print("ERROR", pr_geo)
 
         return pr_geo
 
@@ -574,6 +679,9 @@ class HCE(object):
 
         pr_shadows = 1 - shadowing
 
+        if  pr_shadows > 1 or  pr_shadows < 0:
+            print("ERROR",  pr_shadows)
+
         return pr_shadows
 
 
@@ -587,7 +695,7 @@ class HCE(object):
 
     def get_transmissivity(self):
 
-        #dependiendo si hay vídro y si hay vacío
+        #dependiendo si hay vídrio y si hay vacío
         tau = 0.963
 
         return tau
@@ -596,7 +704,6 @@ class HCE(object):
     def get_reflectance(self):
 
         return self.sca.parameters['Reflectance']
-
 
     # def get_pr_total(self, dateindex, site, data):
 
@@ -648,6 +755,9 @@ class SCA(object):
         else:
             solarfraction = 1.0
 
+        if  solarfraction > 1 or  solarfraction < 0:
+            print("ERROR",  solarfraction)
+
         return solarfraction
 
     def get_sca_shadows(self, aoi, solarpos, row):
@@ -673,11 +783,19 @@ class SCA(object):
 #                3.1859e-6 * theta**3 - 4.85509e-8 * theta** 4)
 #        return kiam
 
-        if (theta >= 0 and theta <= 80):
+
+        if (theta > 0 and theta < 80):
             theta = np.radians(theta)
             kiam = F0 + (F1*theta+F2*theta**2) / np.cos(theta)
+
+            if kiam > 1:
+                kiam = 1
+
         else:
             kiam = 0.0
+
+        if  kiam > 1 or  kiam < 0:
+            print("ERROR",  kiam, theta)
 
         return kiam
 
@@ -727,87 +845,35 @@ class Loop(object):
         self.scas = []
         self.loop_order = loop_order
         self.tin = 0.0
-        self.massflow = 0.0
         self.tout = 0.0
+        self.cut_tout = 0.0
+        self.massflow = 0.0
+        self.req_massflow = 0.0  # Required massflow (in order to achieve the setpoint tout)
+        self.act_massflow = 0.0  # Actual massflow measured by the flowmeter
         self.pin = 0.0
         self.pout = 0.0
-        self.cut_tout = 0.0
         self.wasted_power = 0.0
         self.row_spacing = self.solarfield.plant.plant_settings['row_spacing']
 
     def initialize(self):
 
-        self.tin = self.solarfield.tin
-        self.massflow = self.solarfield.massflow / len(self.solarfield.loops)
-        self.pin = self.solarfield.pin
-        self.pout = self.solarfield.pout
+        if hasattr(self, 'solarfield'):
 
-    # def get_tin(self):
+            self.tin = self.solarfield.tin
+            #self.ratedtout = self.solarplant.ratedtout
+            self.massflow = self.solarfield.massflow / len(self.solarfield.loops)
+            self.pin = self.solarfield.pin
+            #self.pout = self.solarfield.pout
 
-    #     return self.scas[0].hces[0].tin
+        else: #  Prototypeloop hasn't solarfield
 
-
-    def tempOut(self, weatherstatus, plantstatus):
-        '''
-        Calculation of the output temperature Tout of the HTF
-        according to the input temperature, mass flow, wheather
-        conditions, plant performance
-
-        Returns
-        -------
-        Output Temperature, Tout
-
-        '''
-        pass
+            self.tin = self.solarplant.tin
+            #self.ratedtout = self.solarplant.ratedtout
+            self.massflow = self.solarplant.massflow / self.solarplant.total_loops
+            self.pin = self.solarplant.pin
+            #self.pout = self.solarplant.pout
 
 
-    def precalmassflow(self):
-        '''
-
-        Calculation of the massflow necessary to obtain the output temperature
-        required by the operator
-
-        Returns
-        -------
-        required HTF mass flow, reqMassFlowLoop
-
-        '''
-        pass
-
-
-class PrototypeLoop(object):
-
-    def __init__(self, plant_settings, sca_settings, hce_settings, model_settings):
-
-        self.scas = []
-        self.loop_order = 0
-        self.plant_settings = plant_settings
-        self.sca_settings = sca_settings
-        self.hce_settings = hce_settings
-        self.row_spacing = plant_settings['row_spacing']
-        self.solarplant = None
-        self.row_spacing = plant_settings['row_spacing']
-
-        self.tin = 0.0
-        self.tout = 0.0
-        self.pin = 0.0
-        self.pout = 0.0
-        self.cut_tout = 0.0
-        self.massflow = 0.0
-        self.req_massflow = 0.0
-        self.wasted_power = 0.0
-        self.min_massflow = 0.0
-
-
-        for s in range(self.plant_settings['loop']['scas']):
-            self.scas.append(SCA(self, s, sca_settings))
-            for h in range(self.plant_settings['loop']['hces']):
-                self.scas[-1].hces.append(HCE(self.scas[-1], h ,
-                         hce_settings, model_settings))
-
-    def initialize(self, solarplant):
-
-        self.solarplant = solarplant
 
     def precalcmassflow(self, row, solarpos, hotfluid, model):
 
@@ -818,11 +884,11 @@ class PrototypeLoop(object):
         self.massflow = self.solarplant.massflow / self.solarplant.total_loops
         self.hotfluid = hotfluid
 
-        self.min_massflow = self.hotfluid.get_massflow_from_Reynolds(self.hce_settings['dri'],
+        min_massflow = self.hotfluid.get_massflow_from_Reynolds(self.hce_settings['dri'],
                                    self.tin, self.pin,
                                    self.hce_settings['min_reynolds'])
 
-        max_error = 1.0  # % desviation tolerance
+        max_error = 0.01  # % desviation tolerance
 
         search = True
 
@@ -835,23 +901,100 @@ class PrototypeLoop(object):
                     #print("HCE", h.hce_order, h.tout)
             self.tout = self.scas[-1].hces[-1].tout
 
-            err = round(100 * abs(self.tout-self.ratedtout)/self.ratedtout,2)
+            err = abs(self.tout-self.ratedtout)/self.ratedtout
 
             if err > max_error:
 
                 if self.tout >= self.ratedtout:
-                    self.massflow *= (1 + err/100)
+                    self.massflow *= (1 + err)
                     search = True
-                elif (self.massflow > self.min_massflow):
-                    self.massflow *= (1 - err/100)
+                elif (self.massflow > min_massflow):
+                    self.massflow *= (1 - err)
                     search = True
                 else:
-                    self.massflow = self.min_massflow
+                    self.massflow = min_massflow
                     search = False
             else:
                 search = False
 
         return self.massflow
+
+    def show_parameter_vs_x(self, parameters = None):
+
+        data = []
+
+
+
+        for s in self.scas:
+            for h in s.hces:
+                data.append({'num': h.hce_order,
+                             'Tin': h.tin,
+                             'Tout': h.tout,
+                             'Pin': round(h.pin/100000,3),
+                             'Pout': round(h.pout/100000,3),
+                             'pr': h.pr,
+                             'qabs': h.qabs,
+                             'qperd': h.qperd})
+
+        loop_df = pd.DataFrame(data)
+
+        if parameters:
+
+            loop_df[parameters].plot(
+                figsize=(20,10), linewidth=5, fontsize=20)
+            plt.xlabel('HCE order', fontsize=20)
+
+        else:
+
+            loop_df[['num', 'Tin', 'Tout', 'Pin', 'Pout',
+                     'pr', 'qabs', 'qperd']].plot(
+                figsize=(20,10), linewidth=5, fontsize=20)
+
+            plt.xlabel('HCE order', fontsize=20)
+
+
+
+
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        # pd.set_option('display.max_colwidth', -1)
+        print(loop_df[['num', 'Tin', 'Tout', 'Pin', 'Pout',
+                     'pr', 'qabs', 'qperd']])
+        #print(self.datasource.dataframe)
+
+
+
+
+
+class PrototypeLoop(Loop):
+
+    def __init__(self, plant_settings, sca_settings, hce_settings, model_settings):
+
+        self.scas = []
+        self.loop_order = 0
+        self.plant_settings = plant_settings
+        self.sca_settings = sca_settings
+        self.hce_settings = hce_settings
+        self.row_spacing = plant_settings['row_spacing']
+        self.solarplant = None
+
+        self.tin = 0.0
+        self.tout = 0.0
+        self.pin = 0.0
+        self.pout = 0.0
+        self.cut_tout = 0.0
+        self.massflow = 0.0
+        self.req_massflow = 0.0
+        self.act_massflow = 0.0
+        self.wasted_power = 0.0
+
+        for s in range(self.plant_settings['loop']['scas']):
+            self.scas.append(SCA(self, s, sca_settings))
+            for h in range(self.plant_settings['loop']['hces']):
+                self.scas[-1].hces.append(HCE(self.scas[-1], h ,
+                         hce_settings, model_settings))
+
 
 
 class SolarField(object):
@@ -867,6 +1010,7 @@ class SolarField(object):
         self.parameters = solarfield_settings
         self.loops = []
         self.massflow = 0.0
+        self.act_massflow = 0.0
         self.tin= 0.0
         self.pin = 0.0
         self.tout = 0.0
@@ -876,18 +1020,28 @@ class SolarField(object):
     def set_massflow(self):
 
         mf = 0.0
+        req_mf = 0.0
         for l in self.loops:
             mf += l.massflow
+            req_mf += l.req_massflow
 
         self.massflow = mf
+        self.req_massflow = req_mf
 
     def set_pout(self):
 
-        pout = 0.0
-        for l in self.loops:
-            pout += l.pout
+        pout_max = 0.0
+        pout_min = 0.0
+        pout_avg = 0.0
 
-        self.pout /= len(self.loops)
+        loops_pout = []
+
+        for l in self.loops:
+            loops_pout.append(l.scas[-1].hces[-1].pout)
+
+        self.pout = np.amin(loops_pout)
+
+        print("Solarfield POUT", self.pout)
 
 
 
@@ -953,7 +1107,8 @@ class SolarField(object):
     def initialize(self, row = None):
 
         if row is not None:
-            self.massflow = row[1][self.name+'.mf']
+            self.act_massflow = row[1][self.name+'.mf']
+            self.massflow = self.act_massflow
             self.tin = row[1][self.name+'.tin']
             self.pin = row[1][self.name+'.pin']
             self.pout = row[1][self.name+'.pout']
@@ -994,7 +1149,7 @@ class SolarPlant(object):
         self.solarfields = []
 
         self.massflow = self.ratedmassflow
-        self.min_massflow = 0.0
+        self.req_massflow = 0.0
         self.tin = self.ratedtin
         self.tout = self.ratedtout
         self.pin = self.ratedpressure
@@ -1080,24 +1235,27 @@ class SolarPlant(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-        dH = 0.0
+        H = 0.0
 
         for sf in self.solarfields:
 
-            dH += (hotfluid.get_deltaH(sf.tin, sf.pin) * sf.massflow)
+            H += (hotfluid.get_deltaH(sf.tin, sf.pin) * sf.massflow)
 
-        dH /= self.massflow
-        self.tin = 566.15
+        H /= self.massflow
+        self.tin = hotfluid.get_T(H, self.ratedpressure)
 
 
     def set_massflow(self):
 
         mf = 0.0
+        req_mf = 0.0
 
         for sf in self.solarfields:
             mf += sf.massflow
+            req_mf += sf.req_massflow
 
         self.massflow = mf
+        self.req_massflow = req_mf
 
     def get_thermalpoweroutput(self, hotfluid):
 
@@ -1126,6 +1284,8 @@ class SolarPlant(object):
                    self.operation_mode = "solarfield_heating"
                 else:
                     self.operation_mode = "solarfield_not_heating"
+
+
 
     def print(self):
 
@@ -1388,7 +1548,7 @@ class Simulation(object):
         loop_min_massflow = self.hotfluid.get_massflow_from_Reynolds(
                 dri, t, p , re)
 
-        self.solarplant.min_massflow = self.solarplant.total_loops * loop_min_massflow
+        solarplant_min_massflow = self.solarplant.total_loops * loop_min_massflow
         self.solarplant.ratedmassflow = self.powersystem.get_ratedmassflow(
                 self.powersystem.ratedpower, self.solarplant, self.hotfluid)
 
@@ -1396,32 +1556,20 @@ class Simulation(object):
 #                self.hotfluid.get_density(self.solarplant.ratedtin,
 #                                     self.solarplant.ratedpressure))
 
-        if self.solarplant.min_massflow > self.solarplant.ratedmassflow:
-            print("Too low massflow", self.solarplant.min_massflow ,">",
+        if  solarplant_min_massflow > self.solarplant.ratedmassflow:
+            print("Too low massflow", solarplant_min_massflow ,">",
                   self.solarplant.ratedmassflow)
 
     def runSimulation(self):
 
-<<<<<<< HEAD
-#        if self.type == "type0":
-#            self.simulateSolarPlant()
-#        elif self.type == "type1":
-#            self.benchmarkSolarPlant()
-#        else:
-#            return None
-=======
-        if self.type == "type0":
-            print("Running simulation for", self.site.name)
-            self.simulateSolarPlant()
-        elif self.type == "type1":
-            print("Running benchmark for", self.site.name)
-            self.benchmarkSolarPlant()
-        else:
-            return None
->>>>>>> datasource
-
         # self.precalc(self.solarplant.hce_settings)
         # self.solarplant.massflow = self.solarplant.ratedmassflow
+
+#        if self.type == "type0":
+#            print("Running simulation for", self.site.name)
+#        elif self.type == "type1":
+#            print("Running benchmark for", self.site.name)
+
 
         for row in self.datasource.dataframe.iterrows():
 
@@ -1457,12 +1605,12 @@ class Simulation(object):
                     pressure = row[1]['Pressure'],
                     temperature=row[1]['DryBulb'])
 
-            if self.type == "type0":
-                self.simulateSolarPlant(solarpos, row)
-            elif self.type == "type1":
+            print("Running simulation for", self.site.name)
+            self.simulateSolarPlant(solarpos, row)
+
+            if self.type == "type1":
+                print("Running benchmark for", self.site.name)
                 self.benchmarkSolarPlant(solarpos, row)
-            else:
-                return None
 
             self.solarplant.set_massflow()
             self.solarplant.set_pout()
@@ -1471,17 +1619,22 @@ class Simulation(object):
             self.gatherdata(row, solarpos)
 
         self.showresults()
+        self.save_results()
 
 
     def simulateSolarPlant(self, solarpos, row):
 
-
-
+        flag_0 = datetime.now()
         if  self.fastmode:
 
-            self.prototypeloop.initialize(self.solarplant)
-            self.prototypeloop.massflow = self.prototypeloop.precalcmassflow(
+            self.prototypeloop.initialize()
+            self.prototypeloop.req_massflow = self.prototypeloop.precalcmassflow(
                             row, solarpos, self.hotfluid, self.model)
+
+            self.prototypeloop.massflow = self.prototypeloop.req_massflow
+
+            self.solarplant.massflow = (self.prototypeloop.massflow *
+                                        self.solarplant.total_loops)
 
             for s in self.prototypeloop.scas:
                         aoi = s.get_aoi(solarpos)
@@ -1489,7 +1642,10 @@ class Simulation(object):
                             self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
 
             self.prototypeloop.tout = self.prototypeloop.scas[-1].hces[-1].tout
-            self.prototypeloop.pout = self.solarplant.pout
+            self.prototypeloop.pout = self.prototypeloop.scas[-1].hces[-1].pout
+
+            flag_1 = datetime.now()
+            delta_1 = flag_1 - flag_0
 
             for sf in self.solarplant.solarfields:
                 new_loops = []
@@ -1503,15 +1659,21 @@ class Simulation(object):
                 sf.set_pout()
                 sf.set_tout(self.hotfluid)
 
+            flag_2 = datetime.now()
+            delta_2 = flag_2 - flag_1
+
         else:
 
             for sf in self.solarplant.solarfields:
                 sf.initialize()
+                self.prototypeloop.initialize()
+                self.prototypeloop.req_massflow = self.prototypeloop.precalcmassflow(
+                            row, solarpos, self.hotfluid, self.model)
+                self.prototypeloop.massflow = self.prototypeloop.req_massflow
+
                 for l in sf.loops:
                     l.initialize()
-                    self.prototypeloop.initialize(self.solarplant)
-                    l.massflow = self.prototypeloop.precalcmassflow(
-                            row, solarpos, self.hotfluid, self.model)
+                    l.massflow = self.prototypeloop.req_massflow
                     for s in l.scas:
                         aoi = s.get_aoi(solarpos)
                         for h in s.hces:
@@ -1522,40 +1684,65 @@ class Simulation(object):
                 sf.set_pout()
                 sf.set_tout(self.hotfluid)
 
+            flag_3 = datetime.now()
+            delta_3 = flag_3 - flag_0
+
 
     def benchmarkSolarPlant(self, solarpos, row):
 
-        self.prototypeloop.initialize(self.solarplant)
-        self.prototypeloop.massflow = self.prototypeloop.precalcmassflow(
+        flag_0 = datetime.now()
+
+        self.prototypeloop.initialize()
+        self.prototypeloop.req_massflow = self.prototypeloop.precalcmassflow(
                             row, solarpos, self.hotfluid, self.model)
+
+        self.prototypeloop.massflow = self.prototypeloop.req_massflow
+
+        self.solarplant.massflow = (self.prototypeloop.massflow *
+                                    self.solarplant.total_loops)
+
+        flag_1 = datetime.now()
+        delta_1 = flag_1 - flag_0
 
         if self.fastmode:
 
-            for s in self.prototypeloop.scas:
-                aoi = s.get_aoi(solarpos)
-                for h in s.hces:
-                    self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
-
-            self.prototypeloop.tout = self.prototypeloop.scas[-1].hces[-1].tout
 
             for sf in self.solarplant.solarfields:
 
+                sf.initialize(row)
+
                 new_loops = []
+                self.prototypeloop.act_massflow = sf.act_massflow / len(sf.loops)
+                self.prototypeloop.massflow = self.prototypeloop.act_massflow
+
+
+                for s in self.prototypeloop.scas:
+                    aoi = s.get_aoi(solarpos)
+                    for h in s.hces:
+                        self.model.set_pr(h, self.hotfluid, aoi, solarpos, row)
+
+                self.prototypeloop.tout = self.prototypeloop.scas[-1].hces[-1].tout
+
                 for l in sf.loops:
                     new_loops.append(copy.copy(self.prototypeloop))
 
                 sf.loops = new_loops
 
                 sf.set_massflow()
+
                 sf.apply_temp_limitation(self.hotfluid)
                 sf.set_pout()
                 sf.set_tout(self.hotfluid)
 
+            flag_2 = datetime.now()
+            delta_2 = flag_2 - flag_1
 
         else:
 
             for sf in self.solarplant.solarfields:
+
                 sf.initialize(row)
+
                 for l in sf.loops:
                     l.initialize()
                     for s in l.scas:
@@ -1572,11 +1759,9 @@ class Simulation(object):
                 sf.set_pout()
                 sf.set_tout(self.hotfluid)
 
-#            self.solarplant.set_massflow()
-#            self.plantperformance(row)
-#            self.gatherdata(row, solarpos, aoi)
-#
-#        self.showresults()
+            flag_3 = datetime.now()
+            delta_3 = flag_3 - flag_0
+
 
     def plantperformance(self, row):
 
@@ -1608,6 +1793,38 @@ class Simulation(object):
 
     def gatherdata(self, row, solarpos):
 
+        #TO-DO: CALCULOS PARA AGREGAR AL DATAFRAME
+
+        if self.type == 'type1':
+            mf_df = 0.0
+            H_df = 0.0
+
+            for col in self.datasource.dataframe.columns:
+                if '.mf' in col:
+                    mf_df  += self.datasource.dataframe.at[row[0], col]
+
+                if '.tout' in col:
+                    col_pout = col.replace('.tout', '.pout')
+                    col_mf = col.replace('.tout', '.mf')
+                    H_df +=  (self.hotfluid.get_deltaH(
+                            self.datasource.dataframe.at[row[0], col],
+                            self.datasource.dataframe.at[row[0], col_pout]) *
+                            self.datasource.dataframe.at[row[0], col_mf])
+
+            solarplant_df_tout = self.hotfluid.get_T(H_df / mf_df, self.solarplant.ratedpressure)
+            self.datasource.dataframe.at[row[0], 'Massflow_df'] = mf_df
+            self.datasource.dataframe.at[row[0], 'Tout_df'] = solarplant_df_tout
+
+        for sf in self.solarplant.solarfields:
+            for l in sf.loops:
+
+                self.datasource.dataframe.at[row[0], sf.name + str(l.loop_order).format("000") + '_tin'] = l.tin
+                self.datasource.dataframe.at[row[0], sf.name + str(l.loop_order).format("000") + '_tout'] = l.tout
+                self.datasource.dataframe.at[row[0], sf.name + str(l.loop_order).format("000") + '_mf'] = l.massflow
+
+        self.datasource.dataframe.at[row[0], 'PTLoop_mf'] = self.prototypeloop.massflow
+        self.datasource.dataframe.at[row[0], 'PTLoop_tin'] = self.prototypeloop.tin
+        self.datasource.dataframe.at[row[0], 'PTLoop_tout'] = self.prototypeloop.tout
         self.datasource.dataframe.at[row[0], 'Pthermal'] = round(
                 self.solarplant.get_thermalpoweroutput(self.hotfluid)/1e6,1)
         self.datasource.dataframe.at[row[0], 'Tin'] = round(self.solarplant.tin, 0)
@@ -1645,9 +1862,38 @@ class Simulation(object):
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         # pd.set_option('display.max_colwidth', -1)
-        print(self.datasource.dataframe[
-                ['DNI', 'Tin', 'Tout','MF','Pthermal', 'Pmec', 'Pelec']])
+
+        if self.type == 'type0':
+            print(self.datasource.dataframe[
+                ['DNI', 'Tin', 'Tout','MF','Pthermal', 'Pmec',
+                 'Pelec', 'MF']])
+
+        elif self.type == 'type1':
+
+            print(self.datasource.dataframe[
+                ['DNI', 'Tin', 'Tout','MF','Pthermal', 'Pmec',
+                 'Pelec', 'Massflow_df', 'Tout_df']])
+
+
         #print(self.datasource.dataframe)
+
+    def save_results(self):
+
+
+        try:
+            initialdir = "./simulations_outputs/"
+            prefix = datetime.today().strftime("%Y%m%d %H%M%S")
+            filename = str(self.ID) + "_" + str(self.type)
+            sufix = ".csv"
+
+            path = initialdir + prefix + filename + sufix
+
+            self.datasource.dataframe.to_csv(path, sep=';', decimal = ',')
+
+        except Exception:
+            raise
+            print('Error saving results, unable to save file: %r', path)
+
 
     def testgeo(self):
 
@@ -1677,49 +1923,6 @@ class Simulation(object):
         pd.set_option('display.max_colwidth', -1)
 
         print(self.datasource.dataframe)
-
-
-class FastSimulation(Simulation):
-
-    def __init__(self, settings, simulation):
-        self.ID =  settings['ID']
-        self.type = settings['type']
-        self.simulation = simulation
-        self.solarplant = None
-        self.powersystem = simulation.powersystem
-        self.hotfluid = simulation.hotfluid
-        self.coldfluid = simulation.coldfluid
-        self.site = simulation.site
-        self.model = simulation.model
-        self.datasource = simulation.datasource
-        self.powercycle = simulation.powercycle
-
-    def precalc(self, hce_settings):
-
-        loop_min_massflow = self.hotfluid.get_massflow_from_Reynolds(
-                hce_settings['dri'],
-                self.solarplant.ratedtin,
-                self.solarplant.ratedpressure,
-                hce_settings['min_reynolds'])
-
-        print("Loop_min_mass_flow", loop_min_massflow)
-
-        self.solarplant.min_massflow = self.solarplant.total_loops * loop_min_massflow
-
-        self.solarplant.ratedmassflow = self.powersystem.get_ratedmassflow(
-                self.powersystem.ratedpower, self.solarplant, self.hotfluid)
-
-#        fluid_speed = 4 * loop_min_massflow / ( np.pi * hce_settings['dri']**2 *
-#                self.hotfluid.get_density(self.solarplant.ratedtin,
-#                                     self.solarplant.ratedpressure))
-
-        if self.solarplant.min_massflow > self.solarplant.ratedmassflow:
-            print("Too low massflow", self.solarplant.min_massflow ,">",
-                  self.solarplant.ratedmassflow)
-        else:
-            print("Rated massflow = ", self.solarplant.ratedmassflow, ">",
-                  "Min massflow=", self.solarplant.min_massflow)
-
 
 
 class Air(object):
@@ -1921,6 +2124,7 @@ class Weather(object):
         self.dataframe = None
         self.site = None
         self.weatherdata = None
+
         self.openWeatherDataFile(self.file)
 
         self.dataframe = self.weatherdata[0]

@@ -1,10 +1,10 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type0",
-    "fastmode": true},
+    "type" : "type1",
+    "fastmode": false},
 "weather_data_file": {
-	"filename": "A1A_07_2018_3.tm3",
+	"filename": "marzo1reg.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hb.csv",
@@ -80,6 +80,8 @@
 	"dgi": 0.109,
 	"dgo": 0.115,
 	"min_reynolds": 3.0e5,
+	"Inner surface roughness": 0.000045,
+	"Absorber tube inner diameter": 0.066,
 	"coating" : "CERMET",
 	"annulus" : "VACUUM"},
 "sca": {

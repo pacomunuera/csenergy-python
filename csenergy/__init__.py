@@ -3,6 +3,7 @@ import pandas as pd
 from tkinter import *
 import json
 import copy
+from datetime import datetime
 
 with open("./saved_configurations/simulation4x36.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
@@ -11,7 +12,6 @@ simulation = cs.Simulation(simulation_settings['simulation'])
 
 #weatherdata = cs.Weather(simulation_settings['weather_data_file'])
 
-
 if simulation.type == "type0":
     datasource = cs.Weather(simulation_settings['weather_data_file'])
     print("Simulation based on weather data")
@@ -19,7 +19,9 @@ elif simulation.type == "type1":
     datasource = cs.FieldData(simulation_settings['field_data_file'])
     print("Benchmarking based on actual data")
 
-if datasource.site is None:
+#simulation.type = "type0"
+
+if not hasattr(datasource, 'site'):
     site = cs.Site(simulation_settings['site'])
 else:
     site = cs.Site(datasource.site_to_dict())
@@ -31,7 +33,7 @@ if simulation_settings['hot_fluid']['CoolPropID'] in coolPropFluids:
     print("Fluid data from CoolProp: ", hotfluid.name)
 else:
     hotfluid = cs.Fluid_Tabular(simulation_settings['hot_fluid'])
-    print("Fluid data from table: ", hotfluid.name )
+    print("Fluid data from table: ", hotfluid.name)
 
 if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
     coldfluid = cs.Fluid_CoolProp(simulation_settings['cold_fluid'])
@@ -74,6 +76,8 @@ prototypeloop = cs.PrototypeLoop(simulation_settings['solar_plant'],
                                  simulation_settings['hce_model_settings']
                                  )
 
+prototypeloop.solarplant = solarplant
+
 simulation.hotfluid = hotfluid
 simulation.coldfluid = coldfluid
 simulation.site = site
@@ -86,7 +90,11 @@ simulation.heatexchanger = heatexchanger
 simulation.generator = generator
 simulation.powersystem = powersystem
 
+flag_00 = datetime.now()
 simulation.runSimulation()
+flag_01 = datetime.now()
+delta_01 = flag_01 - flag_00
+print("Total runtime: ", delta_01.total_seconds())
 
 
 
