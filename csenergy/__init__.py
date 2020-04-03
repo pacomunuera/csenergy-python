@@ -42,19 +42,19 @@ else:
     coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
     print("Cold fluid data from table: ", coldfluid.name)
 
-solarplant = cs.SolarPlant(simulation_settings['solar_plant'],
+solarfield = cs.SolarField(simulation_settings['solarfield'],
                            simulation_settings['sca'],
                            simulation_settings['hce'],
                            simulation_settings['hce_model_settings'])
 
-hcemask = cs.HCEScatterMask(simulation_settings['solar_plant'],
+hcemask = cs.HCEScatterMask(simulation_settings['solarfield'],
                             simulation_settings['hce_scattered_params'])
-scamask = cs.SCAScatterMask(simulation_settings['solar_plant'],
+scamask = cs.SCAScatterMask(simulation_settings['solarfield'],
                             simulation_settings['sca_scattered_params'])
 
 # TO-DO: MÁSCARAS PARA INTRODUCIR DISPERSIÓN EN LOS PARÁMETROS.
-#hcemask.applyMask(solarplant)
-#scamask.applyMask(solarplant)
+#hcemask.applyMask(solarfield)
+#scamask.applyMask(solarfield)
 
 powercycle = cs.PowerCycle(simulation_settings['powercycle'])
 
@@ -67,24 +67,18 @@ model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
 
 powersystem = cs.PowerSystem(simulation_settings['powersystem'])
 
-#simulation.precalc(powersystem, solarplant, hotfluid, simulation,
+#simulation.precalc(powersystem, solarfield, hotfluid, simulation,
 #                   simulation_settings['hce'])
 
-prototypeloop = cs.PrototypeLoop(simulation_settings['solar_plant'],
-                                 simulation_settings['sca'],
-                                 simulation_settings['hce'],
-                                 simulation_settings['hce_model_settings']
-                                 )
-
-prototypeloop.solarplant = solarplant
+prototype_loop = cs.PrototypeLoop(solarfield)
 
 simulation.hotfluid = hotfluid
 simulation.coldfluid = coldfluid
 simulation.site = site
-simulation.solarplant = solarplant
+simulation.solarfield = solarfield
 simulation.model = model
 simulation.datasource = datasource
-simulation.prototypeloop = prototypeloop
+simulation.prototype_loop = prototype_loop
 simulation.powercycle = powercycle
 simulation.heatexchanger = heatexchanger
 simulation.generator = generator

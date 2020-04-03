@@ -4,10 +4,10 @@
     "type" : "type1",
     "fastmode": false},
 "weather_data_file": {
-	"filename": "marzo1reg.tm2",
+	"filename": "marzo4.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
-	"filename": "fielddata_1Hb.csv",
+	"filename": "fielddata_1Hc.csv",
 	"filepath": "./fielddata_files/",
 	"tags": {
 	    "NO.mf": "1110-FX-1800.UNIT1@ASTE1A",
@@ -48,15 +48,17 @@
 "generator" : {
     "name": "SIEMENS",
     "pr": 0.99},
-"solar_plant": {
+"solarfield": {
 	"name": "My plant",
-    "ratedtin": 563.15,
-    "ratedtout": 663.15,
-    "ratedpressure": 2000000,
-    "ratedmassflow": 480.0,
+    "rated_tin": 563.15,
+    "rated_tout": 663.15,
+    "rated_pressure": 2000000,
+    "rated_pin": 2000000,
+    "rated_pout": 1600000,
+    "rated_massflow": 4.0,
     "tmax": 670.0,
     "tmin": 288.0,
-	"solarfields": [
+	"subfields": [
 		{"name": "NO", "loops": 30},
 		{"name": "NE", "loops": 30},
 		{"name": "SO", "loops": 30},
@@ -125,11 +127,11 @@
 "powercycle" : {
    "name": "Rankine",
    "pr_calculation": "NBA",
-   "ratedpin": 100e5,
-   "ratedtin": 533.15,
-   "ratedpout": 100,
-   "ratedtout": 288.0,
-   "ratedmassflow": 20},
+   "rated_pin": 100e5,
+   "rated_tin": 533.15,
+   "rated_pout": 100,
+   "rated_tout": 288.0,
+   "rated_massflow": 20},
 "hce_model_settings": {
 	"name": "Barbero 4th grade",
 	"eext": 0.1,
