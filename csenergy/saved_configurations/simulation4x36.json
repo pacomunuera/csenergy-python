@@ -4,7 +4,7 @@
     "type" : "type1",
     "fastmode": false},
 "weather_data_file": {
-	"filename": "marzo4.tm2",
+	"filename": "marzo3.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
 	"filename": "fielddata_1Hc.csv",
@@ -56,6 +56,7 @@
     "rated_pin": 2000000,
     "rated_pout": 1600000,
     "rated_massflow": 4.0,
+    "recirculation_massflow": 1.5,
     "tmax": 670.0,
     "tmin": 288.0,
 	"subfields": [
