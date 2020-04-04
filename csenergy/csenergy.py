@@ -1475,13 +1475,20 @@ class SolarField(object):
     def set_act_massflow(self):
 
         mf = 0.0
-        req_mf = 0.0
 
         for sf in self.subfields:
             mf += sf.act_massflow
 
         self.act_massflow = mf
 
+    def set_req_massflow(self):
+
+        mf = 0.0
+
+        for sf in self.subfields:
+            mf += sf.req_massflow
+
+        self.req_massflow = mf
 
     def get_thermalpoweroutput(self, hotfluid):
 
@@ -1632,9 +1639,7 @@ class Simulation(object):
             self.solarfield.set_act_pout()
             self.solarfield.set_act_tout(self.hotfluid)
 
-            self.solarfield.set_act_massflow()
-            self.solarfield.set_act_pout()
-            self.solarfield.set_act_tout(self.hotfluid)
+            self.solarfield.set_req_massflow()
 
 
             self.plantperformance(row)
@@ -1771,6 +1776,7 @@ class Simulation(object):
                 sf.loops = new_loops
 
                 sf.set_massflow()
+                sf.set_req_massflow()
 
                 sf.apply_temp_limitation(self.hotfluid)
                 sf.set_pout()
@@ -1801,6 +1807,7 @@ class Simulation(object):
                     l.pout = l.scas[-1].hces[-1].pout
 
                 sf.set_massflow()
+                sf.set_req_massflow()
                 sf.apply_temp_limitation(self.hotfluid)
                 sf.set_pout()
                 sf.set_tout(self.hotfluid)
