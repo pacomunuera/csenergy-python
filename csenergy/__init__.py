@@ -10,7 +10,6 @@ with open("./saved_configurations/simulation4x36.json") as simulation_file:
 
 simulation = cs.Simulation(simulation_settings['simulation'])
 
-#weatherdata = cs.Weather(simulation_settings['weather_data_file'])
 
 if simulation.type == "type0":
     datasource = cs.Weather(simulation_settings['weather_data_file'])
@@ -19,7 +18,6 @@ elif simulation.type == "type1":
     datasource = cs.FieldData(simulation_settings['field_data_file'])
     print("Benchmarking based on actual data")
 
-#simulation.type = "type0"
 
 if not hasattr(datasource, 'site'):
     site = cs.Site(simulation_settings['site'])

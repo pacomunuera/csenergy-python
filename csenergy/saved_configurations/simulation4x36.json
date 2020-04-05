@@ -2,12 +2,12 @@
 "simulation" : {
     "ID" : "00000",
     "type" : "type1",
-    "fastmode": false},
+    "fastmode": true},
 "weather_data_file": {
 	"filename": "marzo3.tm2",
 	"filepath": "./weather_files/"},
 "field_data_file": {
-	"filename": "fielddata_1Hc.csv",
+	"filename": "fielddata_1Hb.csv",
 	"filepath": "./fielddata_files/",
 	"tags": {
 	    "NO.mf": "1110-FX-1800.UNIT1@ASTE1A",
