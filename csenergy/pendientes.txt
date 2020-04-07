@@ -1,0 +1,13 @@
+- cálculo de pérdidas ópticas y resto de pérdidas. De momento las pérdidas son bajas y se sobrecalienta el HTF. 
+- pr_shadows está mal y parece estar repetido get_sca_shadows ( las sombras se computan sobre el SCA o sobre el HCE)
+- comprobar IAM if kiam > 1:
+                kiam = 2 -kiam
+- mecanimos de control para limitaciones de temperaturay presión fuera de rango para FLUID
+- discriminar parámetros de modelo y de hce.
+- dispersión de parámetros.
+- implementar nuevos modelos
+- recopilación de datos en dataframe
+- interfaz 
+- interfaz web
+- visualización de datos.
+

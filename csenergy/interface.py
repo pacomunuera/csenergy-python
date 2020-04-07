@@ -432,7 +432,9 @@ def hce_load_dialog(f4, hce_table, title, labeltext = '' ):
 
     hce_table.table_data = datarow
 
-
+param_name = ["Name", "Description", "Condition", "Broken", "Bellows",
+             "Transmissivity", "Absorption", "Unaccounted",
+             "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"]
 def hce_save_dialog(f4, hce_table, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -442,9 +444,9 @@ def hce_save_dialog(f4, hce_table, title, labeltext = '' ):
                            defaultextension = "json")
     cfg = []
     data = hce_table.table_data
-    param_name = ["Name", "Description", "Condition", "Broken", "Bellows",
-                 "Transmissivity", "Absorption", "Unaccounted",
-                 "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"]
+    # param_name = ["Name", "Description", "Condition", "Broken", "Bellows",
+    #              "Transmissivity", "Absorption", "Unaccounted",
+    #              "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"]
     for r in data:
         param_values = list(map(to_number, r[0:]))
         cfg.append(dict(zip(param_name, param_values)))
@@ -452,11 +454,20 @@ def hce_save_dialog(f4, hce_table, title, labeltext = '' ):
     file.write(json.dumps(cfg))
     file.close()
 
+# hce_table = table.Tk_Table(
+#                 f4,
+#                 ["Name", "Description", "Condition", "Broken", "Bellows",
+#                  "Transmissivity", "Absorption", "Unaccounted",
+#                  "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"],
+#                 row_numbers=True,
+#                 stripped_rows = ("white","#f2f2f2"),
+#                 select_mode = "none",
+#                 cell_anchor="center",
+#                 adjust_heading_to_content = True)
+
 hce_table = table.Tk_Table(
                 f4,
-                ["Name", "Description", "Condition", "Broken", "Bellows",
-                 "Transmissivity", "Absorption", "Unaccounted",
-                 "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"],
+                param_name,
                 row_numbers=True,
                 stripped_rows = ("white","#f2f2f2"),
                 select_mode = "none",

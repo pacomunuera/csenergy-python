@@ -28,56 +28,26 @@ import seaborn as sns
 # ASHRAE: saturated liquid (Q=0) at T=233.15 K
 _T_REF = 285.856
 
-# _IAM_PARAMS = {'EuroTrough ET150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-#                                     'thetamin': 0, 'thetamax': 80},
-#                'Luz LS-2': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-#                             'thetamin': 0, 'thetamax': 80},
-#                'Luz LS-3': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-#                             'thetamin': 0, 'thetamax': 80},
-#                'Solargenix SGX-1': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-#                                     'thetamin': 0, 'thetamax': 80},
-#                'AlbiasaTrough AT150': {'F0': 1.0, 'F1': 0.0506, 'F2': -0.1763,
-#                                        'thetamin': 0, 'thetamax': 80},
-#                'Siemens SunField 6': {'F0': 1.0, 'F1': -0.0753, 'F2': -0.03698,
-#                                       'thetamin': 0, 'thetamax': 80},
-#                'SkyFuel SkyTrough': {'F0': 1.0, 'F1': 0.0327, 'F2': -0.1351,
-#                                      'thetamin': 0, 'thetamax': 80},
-#                'FLABEG Ultimate Trough RP6 (oil)':
-#                    {'F0': 1.0, 'F1': -0.005, 'F2': -0.102, 'thetamin': 0,
-#                     'thetamax': 80},
-#                'FLABEG Ultimate Trough RP6 (molten salt)':
-#                    {'F0': 1.0, 'F1': -0.008, 'F2': -0.117, 'thetamin': 0,
-#                     'thetamax': 80}}
-
 
 class Model(object):
 
     def __init__(self, settings):
         self.model_settings = settings
 
-    # @classmethod
-    # def set_tin(cls, hce):
-    #     if hce.hce_order > 0:
-    #         hce.tin = hce.sca.hces[hce.hce_order-1].tout
-    #     elif hce.sca.sca_order > 0:
-    #         hce.tin = hce.sca.loop.scas[hce.sca.sca_order-1].hces[-1].tout
-    #     else:
-    #         hce.tin = hce.sca.loop.tin
-
 
 class ModelBarbero4grade(Model):
+
 
     def __ini__(self, settings):
         super(Model, self).__init__(settings)
 
+
     @classmethod
     def calc_pr(cls, hce, hotfluid, aoi, solarpos, row):
-
 
         flag_0 = datetime.now()
 
         pressure = hce.sca.loop.pin
-
         hce.set_tin()
         hce.set_pin()
         hce.tout = hce.tin
@@ -87,7 +57,7 @@ class ModelBarbero4grade(Model):
         tri = hce.tin
 
         massflow = hce.sca.loop.massflow
-#        print("Loop", hce.sca.loop.loop_order,"hce", hce.hce_order, "Massflow", massflow)
+
         dni = row[1]['DNI']
         wspd = row[1]['Wspd']
         text = row[1]['DryBulb']
@@ -145,6 +115,7 @@ class ModelBarbero4grade(Model):
 
         # Número de Nusselt alto, casi independiente inicialmente de tri
         # ya que estamos considerando tri = tf o casi igual
+
         nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
                (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
 
@@ -578,7 +549,7 @@ class HCE(object):
 
         else:
 
-            rho = hotfluid.get_density(self.tin, self.pin)
+
             # a = (k /  D) / 3.7
             a = k / 3.7
             b = 2.51 / re
@@ -596,9 +567,8 @@ class HCE(object):
             darcy_factor = 1 / (root**2)
 
 
-
-        v = 4 * self.sca.loop.massflow / (rho *
-                             np.pi * D**2)
+        rho = hotfluid.get_density(self.tin, self.pin)
+        v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
         g = sc.constants.g
 
         # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
@@ -692,6 +662,9 @@ class HCE(object):
         if shadowing < 0.0:
             shadowing = 0.0
 
+        if solarpos['elevation'][0] < 0:
+            shadowing = 1.0
+
         pr_shadows = 1 - shadowing
 
         if  pr_shadows > 1 or  pr_shadows < 0:
@@ -703,7 +676,7 @@ class HCE(object):
     def get_absorptance(self):
 
         #
-        alpha = 0.96
+        alpha = self.parameters['absorptance']
 
         return alpha
 
@@ -711,7 +684,7 @@ class HCE(object):
     def get_transmissivity(self):
 
         #dependiendo si hay vídrio y si hay vacío
-        tau = 0.963
+        tau = self.parameters['transmissivity']
 
         return tau
 
@@ -743,9 +716,6 @@ class SCA(object):
         self.parameters = dict(settings)
         self.surface_tilt = 0.0
         self.surface_azimuth = 180.0
-
-
-
 
 
     def get_solar_fraction(self, aoi, solarpos, row):
@@ -788,7 +758,6 @@ class SCA(object):
 
     def get_IAM(self, theta):
 
-
         F0 = self.parameters['IAM Coefficient F0']
         F1 = self.parameters['IAM Coefficient F1']
         F2 = self.parameters['IAM Coefficient F2']
@@ -804,7 +773,7 @@ class SCA(object):
             kiam = F0 + (F1*theta+F2*theta**2) / np.cos(theta)
 
             if kiam > 1:
-                kiam = 1
+                kiam = 2 -kiam
 
         else:
             kiam = 0.0
@@ -821,35 +790,28 @@ class SCA(object):
         beta0 = 0.0
 
         if self.parameters['Tracking Type'] == 1: # N-S single axis tracker
-
             if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
                 surface_azimuth = 90 # Surface facing east
             else:
                 surface_azimuth = 270 # Surface facing west
-
         elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
-
             surface_azimuth = 180  # Surface facing the equator
-
 
         beta0 = np.degrees(
                     np.arctan(np.tan(np.radians(solarpos['zenith'][0])) *
                               np.cos(np.radians(surface_azimuth -
                                                 solarpos['azimuth'][0]))))
+
         if beta0 >= 0:
-
             sigmabeta = 0
-
         else:
             sigmabeta = 1
 
         beta = beta0 + 180 * sigmabeta
-
         aoi = pvlib.irradiance.aoi(beta,
                                    surface_azimuth,
                                    solarpos['zenith'][0],
                                    solarpos['azimuth'][0])
-
         return aoi
 
 
@@ -925,6 +887,7 @@ class Loop(object):
         self.tout = self.rated_tout
         self.pout = self.rated_pout
 
+
     def get_loop_avg_pr(self):
 
         pr_list = []
@@ -933,7 +896,6 @@ class Loop(object):
                 pr_list.append(h.pr)
 
         return np.mean(pr_list)
-
 
 
     def load_from_prototype_loop(self, prototype_loop):
@@ -1138,11 +1100,18 @@ class PrototypeLoop(Loop):
                         self.solarfield.hce_model_settings))
 
 
-    def initialize(self):
+    def initialize(self, values = None):
 
-        self.massflow = self.solarfield.massflow / self.solarfield.total_loops
-        self.tin = self.solarfield.tin
-        self.pin = self.solarfield.pin
+        if values is not None:
+
+            self.massflow = values['massflow']
+            self.tin = values['tin']
+            self.pin = values['pin']
+
+        else:
+            self.massflow = self.solarfield.massflow / self.solarfield.total_loops
+            self.tin = self.solarfield.tin
+            self.pin = self.solarfield.pin
 
 
 class Subfield(object):
@@ -1398,10 +1367,11 @@ class SolarField(object):
         H_tout /= massflow
 
         self.act_massflow = massflow
-        self.act_tin = hotfluid.get_T(H_tin, self.act_pin)
-        self.act_tout = hotfluid.get_T(H_tout, self.act_pout)
         self.act_pin = np.mean(list_pin) / massflow
         self.act_pout = np.mean(list_pout) / massflow
+        self.act_tin = hotfluid.get_T(H_tin, self.act_pin)
+        self.act_tout = hotfluid.get_T(H_tout, self.act_pout)
+
 
     def initialize_actual(self):
 
@@ -1571,7 +1541,9 @@ class Simulation(object):
 
     def __init__(self, settings):
         self.ID =  settings['ID']
-        self.type = settings['type']
+        self.simulation = settings['simulation']
+        self.benchmark = settings['benchmark']
+        self.datatype = settings['datatype']
         self.fastmode = settings['fastmode']
         self.tracking = True
         self.solarfield = None
@@ -1590,50 +1562,23 @@ class Simulation(object):
         t = self.solarfield.tin
         p = self.solarfield.pin
         re = self.solarfield.hce_settings['min_reynolds']
-
-
         loop_min_massflow = self.hotfluid.get_massflow_from_Reynolds(
                 dri, t, p , re)
-
         solarfield_min_massflow = self.solarfield.total_loops * loop_min_massflow
         # self.solarfield.rated_massflow = self.powersystem.get_rated_massflow(
         #         self.powersystem.ratedpower, self.solarfield, self.hotfluid)
-
 #        fluid_speed = 4 * loop_min_massflow / ( np.pi * hce_settings['dri']**2 *
 #                self.hotfluid.get_density(self.solarfield.rated_tin,
 #                                     self.solarfield.rated_pressure))
-
         if  solarfield_min_massflow > self.solarfield.rated_massflow:
             print("Too low massflow", solarfield_min_massflow ,">",
                   self.solarfield.rated_massflow)
+
 
     def runSimulation(self):
 
         for row in self.datasource.dataframe.iterrows():
 
-            #self.solarfield.massflow = self.solarfield.rated_massflow
-
-            """
-            def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
-
-            Calculates the angle of incidence of the solar vector on a surface.
-            This is the angle between the solar vector and the surface normal.
-            Input all angles in degrees.
-            Parameters
-            ----------
-            surface_tilt : numeric
-                Panel tilt from horizontal.
-            surface_azimuth : numeric
-                Panel azimuth from north.
-            solar_zenith : numeric
-                Solar zenith angle.
-            solar_azimuth : numeric
-                Solar azimuth angle.
-            Returns
-            -------
-            aoi : numeric
-                Angle of incidence in degrees.
-            """
             solarpos = pvlib.solarposition.get_solarposition(
                     row[0],
                     self.site.latitude,
@@ -1642,19 +1587,18 @@ class Simulation(object):
                     pressure=row[1]['Pressure'],
                     temperature=row[1]['DryBulb'])
 
-
             if solarpos['zenith'][0] < 90:
                 print("Generation mode ON. Solar Zenith = ", solarpos['zenith'][0])
                 self.tracking = True
-
             else:
                 print("Generation mode OFF. Solar Zenith = ", solarpos['zenith'][0])
                 self.tracking = False
 
-            print("Running simulation for", self.site.name)
-            self.simulate_solarfield(solarpos, row)
+            if self.simulation:
+                print("Running simulation for", self.site.name)
+                self.simulate_solarfield(solarpos, row)
 
-            if self.type == "type1":
+            if self.benchmark and self.datatype == 'field data':
                 print("Running benchmark for", self.site.name)
                 self.benchmarksolarfield(solarpos, row)
 
@@ -1855,7 +1799,7 @@ class Simulation(object):
 
         #TO-DO: CALCULOS PARA AGREGAR AL DATAFRAME
 
-        if self.type == 'type1':
+        if self.datatype == 'field data':
             mf_df = 0.0
             H_df = 0.0
 
@@ -1929,12 +1873,12 @@ class Simulation(object):
         pd.set_option('display.width', None)
         # pd.set_option('display.max_colwidth', -1)
 
-        if self.type == 'type0':
+        if self.datatype == 'weather':
             print(self.datasource.dataframe[
                 ['DNI', 'Tin', 'Tout','MF','Pthermal', 'Pmec',
                  'Pelec', 'MF']])
 
-        elif self.type == 'type1':
+        elif self.datatype == 'field data':
 
             print(self.datasource.dataframe[
                 ['DNI', 'Tin', 'Tout','MF','Pthermal', 'Pmec',
@@ -1949,7 +1893,7 @@ class Simulation(object):
         try:
             initialdir = "./simulations_outputs/"
             prefix = datetime.today().strftime("%Y%m%d %H%M%S")
-            filename = str(self.ID) + "_" + str(self.type)
+            filename = str(self.ID) + "_" + str(self.datatype)
             sufix = ".csv"
 
             path = initialdir + prefix + filename + sufix
@@ -1960,6 +1904,18 @@ class Simulation(object):
             raise
             print('Error saving results, unable to save file: %r', path)
 
+
+    def get_solarposition(self, row):
+
+        solarpos = pvlib.solarposition.get_solarposition(
+                row[0],
+                self.site.latitude,
+                self.site.longitude,
+                self.site.altitude,
+                pressure=row[1]['Pressure'],
+                temperature=row[1]['DryBulb'])
+
+        return solarpos
 
     def testgeo(self):
 
@@ -2069,8 +2025,8 @@ class Fluid_CoolProp(Fluid):
 
     def get_T(self, h, p):
 
-        if t > self.tmax:
-            t = self.tmax
+        # if t > self.tmax:
+        #     t = self.tmax
 
         CP.set_reference_state(self.coolpropID,'ASHRAE')
         temperature = PropsSI('T', 'H', h, 'P', p, self.coolpropID)
@@ -2145,8 +2101,14 @@ class Fluid_Tabular(Fluid):
 
         kt0, kt1, kt2, kt3, kt4, kt5 = tuple(self.kt)
 
-        return (kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
+        kt =(kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
                 kt4 * t**4 + kt5 * t**5)
+
+        if kt < 0:
+            kt = 0
+
+        return kt
+
 
     def get_deltaH(self, t, p):
 
@@ -2555,6 +2517,29 @@ class Site(object):
 
 
 class HCEScatterMask(object):
+
+# %matplotlib inline
+
+# import matplotlib.pyplot as plt
+# import numpy as np
+# from scipy import stats
+# import seaborn as sns
+
+# np.random.seed(2016) # replicar random
+
+# # parametros esteticos de seaborn
+# sns.set_palette("deep", desat=.6)
+# sns.set_context(rc={"figure.figsize": (8, 4)})
+
+# mu, sigma = 0, 0.2 # media y desvio estandar
+# datos = np.random.normal(mu, sigma, 1000) #creando muestra de datos
+
+# # histograma de distribución normal.
+# cuenta, cajas, ignorar = plt.hist(datos, 20)
+# plt.ylabel('frequencia')
+# plt.xlabel('valores')
+# plt.title('Histograma')
+# plt.show()
 
 
     def __init__(self, solarfield_settings, hce_mask_settings):

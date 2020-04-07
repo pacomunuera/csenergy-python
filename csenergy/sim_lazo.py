@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import csenergy as cs
 import pandas as pd
 from tkinter import *
@@ -10,10 +11,11 @@ with open("./saved_configurations/simulation4x36.json") as simulation_file:
 
 simulation = cs.Simulation(simulation_settings['simulation'])
 
-if simulation.datatype == "weather":
+
+if simulation.type == "type0":
     datasource = cs.Weather(simulation_settings['weather_data_file'])
     print("Simulation based on weather data")
-elif simulation.datatype == "field data":
+elif simulation.type == "type1":
     datasource = cs.FieldData(simulation_settings['field_data_file'])
     print("Benchmarking based on actual data")
 
@@ -39,33 +41,17 @@ else:
     coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
     print("Cold fluid data from table: ", coldfluid.name)
 
+
+
+
 solarfield = cs.SolarField(simulation_settings['solarfield'],
                            simulation_settings['sca'],
                            simulation_settings['hce'],
                            simulation_settings['hce_model_settings'])
 
-hcemask = cs.HCEScatterMask(simulation_settings['solarfield'],
-                            simulation_settings['hce_scattered_params'])
-scamask = cs.SCAScatterMask(simulation_settings['solarfield'],
-                            simulation_settings['sca_scattered_params'])
 
-# TO-DO: MÁSCARAS PARA INTRODUCIR DISPERSIÓN EN LOS PARÁMETROS.
-#hcemask.applyMask(solarfield)
-#scamask.applyMask(solarfield)
-
-powercycle = cs.PowerCycle(simulation_settings['powercycle'])
-
-heatexchanger = cs.HeatExchanger(simulation_settings['heatexchanger'],
-                                 hotfluid, coldfluid)
-
-generator = cs.Generator(simulation_settings['generator'])
 
 model = cs.ModelBarbero4grade(simulation_settings['hce_model_settings'])
-
-powersystem = cs.PowerSystem(simulation_settings['powersystem'])
-
-#simulation.precalc(powersystem, solarfield, hotfluid, simulation,
-#                   simulation_settings['hce'])
 
 prototype_loop = cs.PrototypeLoop(solarfield)
 
@@ -76,19 +62,28 @@ simulation.solarfield = solarfield
 simulation.model = model
 simulation.datasource = datasource
 simulation.prototype_loop = prototype_loop
-simulation.powercycle = powercycle
-simulation.heatexchanger = heatexchanger
-simulation.generator = generator
-simulation.powersystem = powersystem
+
 
 flag_00 = datetime.now()
-simulation.runSimulation()
+
+for row in simulation.datasource.dataframe.iterrows():
+
+    solarpos = simulation.get_solarposition(row)
+    values = {'tin': 563,
+              'pin': 1900000,
+              'massflow': 4}
+
+    prototype_loop.initialize(values)
+
+    print(prototype_loop.tin, prototype_loop.pin, prototype_loop.massflow)
+
+    prototype_loop.calc_loop_pr_for_tout(row, solarpos, hotfluid, model)
+
+    simulation.datasource.dataframe.at[row[0], 'PTLoop_mf'] = prototype_loop.massflow
+    simulation.datasource.dataframe.at[row[0], 'PTLoop_tin'] = prototype_loop.tin
+    simulation.datasource.dataframe.at[row[0], 'PTLoop_tout'] = prototype_loop.tout
+
+
 flag_01 = datetime.now()
 delta_01 = flag_01 - flag_00
 print("Total runtime: ", delta_01.total_seconds())
-
-
-
-
-
-

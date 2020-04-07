@@ -1,7 +1,9 @@
 {
 "simulation" : {
     "ID" : "00000",
-    "type" : "type1",
+    "datatype" : "field data",
+    "simulation": false,
+    "benchmark": true,
     "fastmode": true},
 "weather_data_file": {
 	"filename": "marzo3.tm2",
@@ -85,8 +87,17 @@
 	"min_reynolds": 3.0e5,
 	"Inner surface roughness": 0.000045,
 	"Absorber tube inner diameter": 0.066,
+	"absorptance": 0.96,
+	"transmissivity": 0.963,
 	"coating" : "CERMET",
 	"annulus" : "VACUUM"},
+"hce_model_settings": {
+	"name": "Barbero 4th grade",
+	"eext": 0.1,
+    "hext": 0.0,
+    "hint": 3000.0,
+    "urec": 1000.0,
+    "krec": 19.36},
 "sca": {
     "Name":"Luz LS-3",
     "SCA Length":100.0,
@@ -133,13 +144,6 @@
    "rated_pout": 100,
    "rated_tout": 288.0,
    "rated_massflow": 20},
-"hce_model_settings": {
-	"name": "Barbero 4th grade",
-	"eext": 0.1,
-    "hext": 0.0,
-    "hint": 3000.0,
-    "urec": 1000.0,
-    "krec": 19.36},
 "hce_scattered_params": {
 	"eext": {"mu":1.0, "sigma": 0.02},
     "hext": {"mu":1.0, "sigma": 0.02},
