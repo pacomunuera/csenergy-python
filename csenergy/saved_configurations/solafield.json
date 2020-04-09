@@ -1,4 +1,4 @@
-"solarfield": {
+{"solarfield": {
 	"name": "My plant",
     	"rated_tin": 563.15,
     	"rated_tout": 663.15,
@@ -15,4 +15,5 @@
 		{"name": "SO", "loops": 30},
 		{"name": "SE", "loops": 30}],
 	"loop": {"scas": 4, "hces": 36},
-	"row_spacing": 16.250},
+	"row_spacing": 16.250
+}}

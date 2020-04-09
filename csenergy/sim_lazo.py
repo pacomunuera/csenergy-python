@@ -69,6 +69,9 @@ flag_00 = datetime.now()
 for row in simulation.datasource.dataframe.iterrows():
 
     solarpos = simulation.get_solarposition(row)
+    aoi =
+
+    (self, aoi, solarpos, row):
     values = {'tin': 563,
               'pin': 1900000,
               'massflow': 4}

@@ -426,15 +426,17 @@ def hce_load_dialog(f4, hce_table, title, labeltext = '' ):
         cfg = json.load(cfg_file, parse_float= float, parse_int= int)
 
     data = list(cfg)
+    param_names = data[0].get_values()
+    print("param_names", param_names)
     datarow = []
     for r in data:
         datarow.append(list(r.values()))
 
     hce_table.table_data = datarow
 
-param_name = ["Name", "Description", "Condition", "Broken", "Bellows",
-             "Transmissivity", "Absorption", "Unaccounted",
-             "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"]
+# param_name = ["Name", "Description", "Condition", "Broken", "Bellows",
+#              "Transmissivity", "Absorption", "Unaccounted",
+#              "A0", "A1", "A2", "A3", "A4", "A5", "A6", "Factor"]
 def hce_save_dialog(f4, hce_table, title, labeltext = '' ):
 
     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')

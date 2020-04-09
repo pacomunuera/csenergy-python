@@ -1065,33 +1065,6 @@ class PrototypeLoop(Loop):
 
         super().__init__(solarfield, 0)
 
-        # self.solarfield = solarfield
-        # self.scas = []
-        # self.loop_order = loop_order
-
-        # self.tin = 0.0
-        # self.tout = 0.0
-        # self.pin = 0.0
-        # self.pout = 0.0
-        # self.tmax = 0.0
-        # self.massflow = 0.0
-        # self.req_massflow = 0.0  # Required massflow (in order to achieve the setpoint tout)
-
-        # self.act_tin = 0.0
-        # self.act_tout = 0.0
-        # self.act_pin = 0.0
-        # self.act_pout = 0.0
-        # self.act_massflow = 0.0  # Actual massflow measured by the flowmeter
-
-        # self.rated_tin = 0.0
-        # self.rated_tout = 0.0
-        # self.rated_pin = 0.0
-        # self.rated_pout = 0.0
-        # self.rated_massflow = 0.0
-
-        # self.wasted_power = 0.0
-        # self.row_spacing = self.solarfield.solarfield_settings['row_spacing']
-
         for s in range(self.solarfield.solarfield_settings['loop']['scas']):
             self.scas.append(SCA(self, s, self.solarfield.sca_settings))
             for h in range(self.solarfield.solarfield_settings['loop']['hces']):
@@ -1141,11 +1114,6 @@ class Subfield(object):
         self.act_pout = 0.0
         self.act_massflow = 0.0
 
-        # self.rated_tin = self.solarfield.solarfield_settings['rated_tin']
-        # self.rated_tout = self.solarfield.solarfield_settings['rated_tout']
-        # self.rated_pin = self.solarfield.solarfield_settings['rated_pin']
-        # self.rated_pout = self.solarfield.solarfield_settings['rated_pout']
-        # self.rated_massflow = self.solarfield.solarfield_settings['rated_massflow']
 
     def calc_massflow(self):
 

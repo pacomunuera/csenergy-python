@@ -78,7 +78,9 @@
 	"tracking axis type": "single",
 	"tracking axis azimuth": 0},
 "hce": {
-	"name": "Luz LS-3",
+	"name": "Luz LS-3"},
+"hce_model_settings": {
+	"name": "Barbero 4th grade",
 	"long": 4.012,
 	"dri": 0.066,
 	"dro": 0.070,
@@ -90,9 +92,7 @@
 	"absorptance": 0.96,
 	"transmissivity": 0.963,
 	"coating" : "CERMET",
-	"annulus" : "VACUUM"},
-"hce_model_settings": {
-	"name": "Barbero 4th grade",
+	"annulus" : "VACUUM",
 	"eext": 0.1,
     "hext": 0.0,
     "hint": 3000.0,
