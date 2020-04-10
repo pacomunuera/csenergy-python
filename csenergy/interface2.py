@@ -7,8 +7,10 @@ Created on Wed Feb  5 12:08:03 2020
 
 import sys
 sys.path.append('./libs')
-
 import os.path
+
+import pvlib as pvlib
+from pvlib import iotools
 
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfile
@@ -23,13 +25,19 @@ import json
 from decimal import Decimal
 from json import encoder
 
+import pandas as pd
+
 class Interface(object):
+
+    _COOLPROP_FLUIDS = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
     _DIR = {'saved_configurations' : './saved_configurations/',
         'site_files' : './site_files/',
         'fluid_files' : './fluid_files',
         'hce_files' : './hce_files',
-        'sca_files' : './sca_files'}
+        'sca_files' : './sca_files',
+        'fielddata_files': './fielddata_files',
+        'weather_files': './weather_files'}
 
     cfg_settings = {"simulation" : {},
                 "solar_plant": {},
@@ -83,7 +91,7 @@ class Interface(object):
 
         self.fr_simulation = tk.Frame(self.nb)
         self.fr_solarfield = tk.Frame(self.nb)
-        self.fr_data = tk.Frame(self.nb)
+        #self.fr_data = tk.Frame(self.nb)
         self.fr_fluid = tk.Frame(self.nb)
         self.fr_hce = tk.Frame(self.nb)
         self.fr_sca = tk.Frame(self.nb)
@@ -92,8 +100,9 @@ class Interface(object):
         self.buildNotebook()
         self.buildSolarFieldFrame()
         self.buildSimulationFrame()
-        self.buildDataFrame()
-        # self.buildHCEFrame()
+        self.buildFluidFrame()
+        #self.buildDataFrame()
+        #self.buildHCEFrame()
         # self.buildSCAFrame()
 
     def simulation_new(self):
@@ -121,17 +130,7 @@ class Interface(object):
         for r in cfg['solarfield']['subfields']:
             datarow.append(list(r.values()))
 
-        self.solarfield_table = table.Tk_Table(
-                        self.fr_solarfield,
-                        ["NAME", "LOOPS"],
-                        row_numbers=True,
-                        stripped_rows=("white", "#f2f2f2"),
-                        select_mode="none",
-                        cell_anchor="center",
-                        adjust_heading_to_content=True)
-
         self.solarfield_table.table_data = datarow
-        self.solarfield_table.grid(row = 8, column = 0, columnspan =4)
         self.enname.delete(0, tk.END)
         self.varsolarfieldname.set(cfg['solarfield']['name'])
         self.vartin.set(cfg['solarfield']['rated_tin'])
@@ -211,7 +210,7 @@ class Interface(object):
 
         self.nb.add(self.fr_simulation, text='Simulation Configuration', padding=2)
         self.nb.add(self.fr_solarfield, text='  Solar Field Layout ', padding=2)
-        self.nb.add(self.fr_data, text='   Site & Weather    ', padding=2)
+        #self.nb.add(self.fr_data, text='   Site & Weather    ', padding=2)
         self.nb.add(self.fr_fluid, text='         HTF         ', padding=2)
         self.nb.add(self.fr_hce, text='HCE: Heat Collector Element', padding=2)
         self.nb.add(self.fr_sca, text='SCA: Solar Collector Assembly', padding=2)
@@ -272,22 +271,23 @@ class Interface(object):
         self.varsitelong = tk.DoubleVar(self.fr_simulation)
         self.varsitealt = tk.DoubleVar(self.fr_simulation)
 
+        self.vardatafileurl = tk.StringVar(self.fr_simulation)
         self.vardatafilename = tk.StringVar(self.fr_simulation)
         self.vardatafilepath = tk.StringVar(self.fr_simulation)
 
         self.lbsimID = ttk.Label(
             self.fr_simulation,
             text= "Simulation ID").grid(
-                row = 0, column = 0, sticky='W', padx=5, pady=5)
+                row = 0, column = 0, sticky='W', padx=2, pady=5)
         self.ensimID = ttk.Entry(
             self.fr_simulation,
             textvariable = self.varsimID ).grid(
-                row = 0, column = 1, sticky='W', padx=5, pady=5)
+                row = 0, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbdatatype = ttk.Label(
             self.fr_simulation,
             text= "Choose a Data Source Type:").grid(
-                row = 0, column = 2, sticky='W', padx=5, pady=5)
+                row = 1, column = 0, columnspan = 2,  sticky='W', padx=2, pady=5)
 
         self.rbweather = tk.Radiobutton(
             self.fr_simulation,
@@ -295,7 +295,7 @@ class Interface(object):
             text = "Weather File",
             variable=self.varsimdatatype, value=1,
             command = lambda: self.checkoptions()).grid(
-                row = 0, column = 3, sticky='W', padx=5, pady=5)
+                row = 2, column = 0, sticky='W', padx=2, pady=5)
 
         #  RadioButton for Field Data File
         self.rbfielddata = tk.Radiobutton(
@@ -304,24 +304,7 @@ class Interface(object):
             text = "Field Data File",
             variable=self.varsimdatatype, value=2,
             command = lambda: self.checkoptions()).grid(
-                row = 0, column = 4, sticky='W', padx=5, pady=5)
-
-        #  Checkbox for Simulation
-        self.lbsimulation = ttk.Label(
-            self.fr_simulation, text= "Run simulation").grid(
-                row = 1, column = 0, sticky='W', padx=5, pady=5)
-        self.cbsimulation = ttk.Checkbutton(
-            self.fr_simulation,
-            text="Simulation",
-            variable=self.varsimulation)
-        self.cbsimulation.grid(
-            row = 1, column = 1, sticky='W', padx=5, pady=5)
-
-        #  Data source path
-        self.vardatafilepath.set('Data source file path...')
-        self.lbdatasourcepath = ttk.Label(
-            self.fr_simulation, textvariable = self.vardatafilepath).grid(
-                row = 1, column= 2, columnspan=2, sticky='W', padx=5, pady=5)
+                row = 2, column = 1, sticky='W', padx=2, pady=5)
 
         self.btselectdatasource = ttk.Button(
             self.fr_simulation, text='Select File',
@@ -329,62 +312,87 @@ class Interface(object):
                 "Select File",
                 labeltext = "Select File"))
         self.btselectdatasource.grid(
-                row = 1, column = 4, sticky='W', padx=5, pady=5)
+                row = 3, column = 0, sticky='W', padx=2, pady=5)
+
+                #  Data source path
+        self.vardatafileurl.set('Data source file path...')
+        self.lbdatasourcepath = ttk.Label(
+            self.fr_simulation, textvariable = self.vardatafileurl).grid(
+                row = 3, column= 1, columnspan=4, sticky='W', padx=2, pady=5)
+
+
+
+        #  Checkbox for Simulation
+        self.lbsimulation = ttk.Label(
+            self.fr_simulation, text= "Run test type...").grid(
+                row = 4, column = 0, sticky='W', padx=2, pady=5)
+        self.cbsimulation = ttk.Checkbutton(
+            self.fr_simulation,
+            text="Simulation",
+            variable=self.varsimulation)
+        self.cbsimulation.grid(
+            row = 4, column = 1, sticky='W', padx=2, pady=5)
+
+
 
         #  Checkbox for Benchmark
-        self.lbbenckmark = ttk.Label(
-            self.fr_simulation,
-            text= "Run benchmark").grid(
-                row = 2, column = 0, sticky='W', padx=5, pady=5)
+        # self.lbbenckmark = ttk.Label(
+        #     self.fr_simulation,
+        #     text= "Benchmark").grid(
+        #         row = 4, column = 2, sticky='W', padx=5, pady=5)
         self.cbbenchmark = ttk.Checkbutton(
             self.fr_simulation,
             text="Benchmark",
             variable=self.varbenchmark)
         self.cbbenchmark.grid(
-            row = 2, column = 1, sticky='W', padx=5, pady=5)
+            row = 4, column = 2, sticky='W', padx=2, pady=5)
 
         #  Checkbox for fastmode
-        self.lbfastmode = ttk.Label(
-            self.fr_simulation,
-            text= "Fast mode (Only prototype loop)").grid(
-                row = 3, column = 0, sticky='W', padx=5, pady=5)
+        # self.lbfastmode = ttk.Label(
+        #     self.fr_simulation,
+        #     text= "Fast mode (Only prototype loop)").grid(
+        #         row = 3, column = 0, sticky='W', padx=5, pady=5)
         self.cbfastmode = ttk.Checkbutton(
             self.fr_simulation,
             text="Fast mode ON",
             variable=self.varfastmode).grid(
-                row = 3, column = 1, sticky='W', padx=5, pady=5)
+                row = 4, column = 3, sticky='W', padx=80, pady=5)
 
         #  Checkbox to load site data from weather file
-        self.lbloadsitedata = ttk.Label(
-            self.fr_simulation,
-            text= "Load site data from weather file").grid(
-                row = 4, column = 0, sticky='W', padx=5, pady=5)
+        # self.lbloadsitedata = ttk.Label(
+        #     self.fr_simulation,
+        #     text= "Copy site data from weather file").grid(
+        #         row = 4, column = 4, sticky='W', padx=2, pady=5)
 
         self.cbloadsitedata = ttk.Checkbutton(
             self.fr_simulation,
-            text="Load site data",
+            text="Load site data from weather file",
             variable=self.varloadsitedata)
         self.cbloadsitedata.grid(
-            row = 4, column = 1, sticky='W', padx=5, pady=5)
+            row = 4, column = 4, sticky='W', padx=2, pady=5)
 
 
 
         self.lbsitename = ttk.Label(
-              self.fr_simulation, text= "Name").grid(row = 5, column = 0, sticky='W', padx=5, pady=5)
+              self.fr_simulation, text= "Name").grid(row = 5, column = 0, sticky='W', padx=2, pady=5)
         self.ensitename = ttk.Entry(
-              self.fr_simulation, textvariable= self.varsitename).grid(row = 5, column = 1, sticky='W', padx=5, pady=5)
+              self.fr_simulation, textvariable= self.varsitename).grid(row = 5, column = 1, sticky='W', padx=2, pady=5)
         self.lbsitelat = ttk.Label(
-              self.fr_simulation, text= "Latitude").grid(row = 5, column = 2, sticky='W', padx=5, pady=5)
+              self.fr_simulation, text= "Latitude").grid(row = 5, column = 2, sticky='W', padx=2, pady=5)
         self.ensitelat = ttk.Entry(
-              self.fr_simulation, textvariable = self.varsitelat).grid(row = 5, column = 3, sticky='W', padx=5, pady=5)
+              self.fr_simulation, textvariable = self.varsitelat).grid(row = 5, column = 3, sticky='W', padx=2, pady=5)
         self.lbsitelong = ttk.Label(
-              self.fr_simulation, text= "Longitude").grid(row = 5, column = 4, sticky='W', padx=5, pady=5)
+              self.fr_simulation, text= "Longitude").grid(row = 5, column = 4, sticky='W', padx=2, pady=5)
         self.ensitelong = ttk.Entry(
-              self.fr_simulation, textvariable= self.varsitelong).grid(row = 5, column = 5, sticky='W', padx=5, pady=5)
+              self.fr_simulation, textvariable= self.varsitelong).grid(row = 5, column = 5, sticky='W', padx=2, pady=5)
         self.lbsitealt = ttk.Label(
-              self.fr_simulation, text= "Altitude").grid(row = 5, column = 6, sticky='W', padx=5, pady=5)
+              self.fr_simulation, text= "Altitude").grid(row = 5, column = 6, sticky='W', padx=2, pady=5)
         self.ensitealt = ttk.Entry(
-              self.fr_simulation, textvariable = self.varsitealt).grid(row = 5, column = 7, sticky='W', padx=5, pady=5)
+              self.fr_simulation, textvariable = self.varsitealt).grid(row = 5, column = 7, sticky='W', padx=2, pady=5)
+
+        self.varsimdatatype.set(1)  #  1 for Weather File, 2 for Field Data File
+        self.checkoptions()
+
 
         #  Button Load Configuration File
         # self.btloadcfgsimulation = ttk.Button(
@@ -434,7 +442,7 @@ class Interface(object):
 
         self.solarfield_table.table_data = datarow
         self.solarfield_table.grid(row = 8, column = 0, columnspan =4)
-        self.enname.delete(0, tk.END)
+
         self.varsolarfieldname.set(cfg['solarfield']['name'])
         self.vartin.set(cfg['solarfield']['rated_tin'])
         self.vartout.set(cfg['solarfield']['rated_tout'])
@@ -563,21 +571,31 @@ class Interface(object):
         self.enhces = ttk.Entry(self.fr_solarfield, textvariable = self.varhces)
         self.enhces.grid(row = 6, column = 3, sticky='W', padx=5, pady=5)
 
-        self.btloadcfgsolarfield = ttk.Button(
+        self.solarfield_table = table.Tk_Table(
             self.fr_solarfield,
-            text= "Load config",
-            command= lambda : self.solarfieldLoadDialog(
-                "Load config file",
-                labeltext = "Solar Field Config"))
-        self.btloadcfgsolarfield.grid(row = 7, column = 0, sticky='W', padx=5, pady=5)
+            ["SUBFIELD NAME", "NUMBER OF LOOPS"],
+            row_numbers=True,
+            stripped_rows=("white", "#f2f2f2"),
+            select_mode="none",
+            cell_anchor="center",
+            adjust_heading_to_content=True)
+        self.solarfield_table.grid(row = 7, column = 0, columnspan =2)
 
-        self.btsavecfgsolarfield = ttk.Button(
-            self.fr_solarfield,
-            text= "Save config",
-            command= lambda : self.solarfield_save_dialog(
-                "Save config file",
-                labeltext = "Solar Field Config"))
-        self.btsavecfgsolarfield.grid(row = 7, column = 1, sticky='W', padx=5, pady=5)
+        # self.btloadcfgsolarfield = ttk.Button(
+        #     self.fr_solarfield,
+        #     text= "Load config",
+        #     command= lambda : self.solarfieldLoadDialog(
+        #         "Load config file",
+        #         labeltext = "Solar Field Config"))
+        # self.btloadcfgsolarfield.grid(row = 7, column = 0, sticky='W', padx=5, pady=5)
+
+        # self.btsavecfgsolarfield = ttk.Button(
+        #     self.fr_solarfield,
+        #     text= "Save config",
+        #     command= lambda : self.solarfield_save_dialog(
+        #         "Save config file",
+        #         labeltext = "Solar Field Config"))
+        # self.btsavecfgsolarfield.grid(row = 7, column = 1, sticky='W', padx=5, pady=5)
 
         self.btnewrow = ttk.Button(
             self.fr_solarfield,
@@ -591,26 +609,63 @@ class Interface(object):
         self.btdelrows.grid(row = 9, column = 1, sticky='W', padx=5, pady=5)
 
 
-
     #  Site & Weather contruction Tab
 
     def dataLoadDialog(self, title, labeltext = ''):
 
-        path = askopenfilename(initialdir = self._DIR['site_files'],
-                           title = "choose your file",
-                           filetypes = (("TMY files","*.tm2"),
+        if self.varsimdatatype.get() == 1:
+            path = askopenfilename(initialdir = self._DIR['weather_files'],
+                                   title = "choose your file",
+                                   filetypes = (("TMY files","*.tm2"),
                                         ("TMY files","*.tm3"),
                                         ("csv files","*.csv"),
                                         ("all files","*.*")))
+            self.vardatafilepath.set(os.path.dirname(path)+"/")
+            self.vardatafilename.set(os.path.basename(path))
+            self.vardatafileurl.set(os.path.dirname(path)+"/" +
+                                    os.path.basename(path))
+        elif self.varsimdatatype.get() == 2:
+            path = askopenfilename(initialdir = self._DIR['fielddata_files'],
+                       title = "choose your file",
+                       filetypes = (("csv files","*.csv"),
+                                    ("all files","*.*")))
+            self.vardatafilepath.set(os.path.dirname(path)+"/")
+            self.vardatafilename.set(os.path.basename(path))
+            self.vardatafileurl.set(os.path.dirname(path)+"/" +
+                                    os.path.basename(path))
+        else:
 
-        self.vardatafilepath.set(os.path.dirname(path)+"/")
-        self.vardatafilename.set(os.path.basename(path))
+            tk.messagebox.showwarning(
+                title='Warning',
+                message='Check Data Source Selection')
 
 
-    def dataSaveDialog(fr_data, name, title, labeltext = '' ):
+        if self.varloadsitedata.get():
+
+            strfilename, strext = os.path.splitext(path)
+
+            if  strext == ".csv":
+                weatherdata = pvlib.iotools.tmy.read_tmy3(path)
+                file = path
+            elif (strext == ".tm2" or strext == ".tmy"):
+                weatherdata = pvlib.iotools.tmy.read_tmy2(path)
+                file = path
+            elif strext == ".xls":
+                pass
+            else:
+                print("unknow extension ", strext)
+                return
+
+            self.varsitename.set(weatherdata[1]['City'])
+            self.varsitelat.set(weatherdata[1]['latitude'])
+            self.varsitelong.set(weatherdata[1]['longitude'])
+            self.varsitealt.set(weatherdata[1]['altitude'])
+
+
+    def dataSaveDialog(self, title, labeltext = '' ):
 
         #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-        f = asksaveasfile(initialdir = _DIR['site_files'],
+        f = asksaveasfile(initialdir = self._DIR['site_files'],
                                title = "choose your file name",
                                filetypes = [("JSON files", "*.json")],
                                defaultextension = "json")
@@ -664,10 +719,86 @@ class Interface(object):
         #self.btsavecfgweather.grid(row = 1, column = 7)
 
 
-"""
+
     #  Fluid contruction Tab
-    def fluid_load_dialog(self, fr_fluid, fluid_table, tmaxentry, tminentry,
-                          entnamefluid, title, labeltext = '' ):
+
+    def select_fluid_from_csv(self):
+
+        # abre una ventana de seleccón de csv.
+
+        self.loadWindow= tk.Tk()
+        self.loadWindow.attributes('-fullscreen', False)
+        self.loadWindow.title("Selection Window")
+        # w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        # self.root.geometry("%dx%d+0+0" % (w, h))
+
+        # Menu
+        self.loadWindow.menubar = tk.Menu(self.loadWindow)
+        self.loadWindow.load_menu = tk.Menu(self.loadWindow.menubar,tearoff=0)
+        self.loadWindow.load_menu.add_command(label='Open', command=self.open_csv())
+        self.loadWindow.load_menu.add_separator()
+        self.loadWindow.load_menu.add_command(label='Exit', command=None)
+        self.loadWindow.menubar.add_cascade(label='Select File', menu=self.loadWindow.load_menu)
+
+        self.loadWindow.config(menu=self.loadWindow.menubar)
+
+        # carga el csv en una nueva ventana, en formato tabla
+        # el usuario selección un registro (un fluido)
+        # los datos del registo se pasan en json al programa principal
+
+
+        pass
+
+
+    def open_csv(self, path=None):
+
+        df = pd.DataFrame()
+
+
+        try:
+            if path is None:
+                root = Tk()
+                root.withdraw()
+                path = askopenfilename(initialdir = ".fielddata_files/",
+                                   title = "choose your file",
+                                   filetypes = (("csv files","*.csv"),
+                                                ("all files","*.*")))
+                root.update()
+                root.destroy()
+
+                if path is None:
+                    return
+                else:
+                    strfilename, strext = os.path.splitext(path)
+
+                    if  strext == ".csv":
+                        print("csv........")
+
+                        df = pd.read_csv(path, sep=';',
+                                                     decimal= ',')
+                        file = path
+                    else:
+                        print("unknow extension ", strext)
+                        return
+            else:
+                strfilename, strext = os.path.splitext(path)
+
+                if  strext == ".csv":
+                    print("csv...")
+                    df = pd.read_csv(path, sep=';',
+                                                 decimal= ',')
+                    file = path
+                else:
+                    print("unknow extension ", strext)
+                    return
+
+        except Exception:
+            raise
+            # txMessageBox.showerror('Error loading  File',
+            #                        'Unable to open file: %r', self.file)
+
+
+    def fluid_load_dialog(self):
 
         path = askopenfilename(initialdir = self._DIR['fluid_files'],
                                title = "choose your file",
@@ -676,7 +807,6 @@ class Interface(object):
         with open(path) as cfg_file:
             cfg = json.load(cfg_file, parse_float= float, parse_int= int)
 
-        print(cfg)
         cp_coefs = [[]]*7
         rho_coefs = [[]]*7
         mu_coefs  = [[]]*7
@@ -703,50 +833,38 @@ class Interface(object):
 
         for index in range(len(temp_cp)):
             cp_coefs[index] = temp_cp[index]
+        cp_coefs[1:] = [float(s) for s in cp_coefs[1:]]
         for index in range(len(temp_rho)):
             rho_coefs[index] = temp_rho[index]
+        rho_coefs[1:] = [float(s) for s in rho_coefs[1:]]
         for index in range(len(temp_mu)):
             mu_coefs[index] = temp_mu[index]
+        mu_coefs[1:] = [float(s) for s in mu_coefs[1:]]
         for index in range(len(temp_kt)):
             kt_coefs[index] = temp_kt[index]
+        kt_coefs[1:] = [float(s) for s in kt_coefs[1:]]
         for index in range(len(temp_h)):
             h_coefs[index] = temp_h[index]
+        h_coefs[1:] = [float(s) for s in h_coefs[1:]]
         for index in range(len(temp_t)):
             t_coefs[index] = temp_t[index]
+        t_coefs[1:] = [float(s) for s in t_coefs[1:]]
 
         datarow = []
-        #datarow.append(grades)
         datarow.append(cp_coefs)
         datarow.append(rho_coefs)
         datarow.append(mu_coefs)
         datarow.append(kt_coefs)
-
         datarow.append(h_coefs)
         datarow.append(t_coefs)
 
-        param_names = ["Parameter [x]", " A x^0", "B x^1", "C x^2","D x^3",
-             "E x^4", "F x^5"]
+        self.fluid_table.table_data = datarow
 
-        self.fluid_table = table.Tk_Table(
-            self.fr_fluid,
-            param_names,
-            row_numbers=True,
-            stripped_rows = ("white","#fr_datafr_datafr_data"),
-            select_mode = "none",
-            cell_anchor="center",
-            adjust_heading_to_content = True)
+        self.varminfluidtemp.set(cfg['hot_fluid']['tmin'])
+        self.varmaxfluidtemp.set(cfg['hot_fluid']['tmax'])
+        self.varnamefluid.set(cfg['hot_fluid']['name'])
 
-        fluid_table.table_data = datarow
-        fluid_table.grid(row = 1, column = 1, columnspan = 7)
-
-        self.entmaxfluid.delete(0, tk.END)
-        self.entmaxfluid.insert(0, cfg['hot_fluid']['tmax'])
-        self.entminfluid.delete(0, tk.END)
-        self.entminfluid.insert(0, cfg['hot_fluid']['tmin'])
-        self.entnamefluid.delete(0, tk.END)
-        self.entnamefluid.insert(0, cfg['hot_fluid']['name'])
-
-        fr_fluid.update()
+        self.fr_fluid.update()
 
     def fluid_save_dialog(self, title, labeltext = '' ):
 
@@ -772,40 +890,102 @@ class Interface(object):
         f.write(json.dumps(cfg))
         f.close()
 
-    # fluid_table = table.Tk_Table(
-    #                 self.fr_fluid,
-    #                 ["Parameter [x]", " A x^0", "B x^1", "C x^2","D x^3",
-    #                  "E x^4", "F x^5"],
-    #                 row_numbers=True,
-    #                 stripped_rows = ("white","#fr_datafr_datafr_data"),
-    #                 select_mode = "none",
-    #                 cell_anchor="center",
-    #                 adjust_heading_to_content = True)
+    def checkfluid(self):
 
+        var = self.varfluidtable.get()
 
-
+        if var == 1: #  Fluid from table
+            self.varcoolpropID.set('')
+            #self.encoolpropID['state'] ='disabled'
+            self.cmbcoolpropID['state'] = 'disabled'
+            self.ennamefluid['state'] = 'normal'
+            self.btloadcfgfluid['state'] = 'normal'
+            self.entminfluid['state'] = 'normal'
+            self.entmaxfluid['state'] = 'normal'
+        elif var == 2: #  Field Data File
+            self.varmaxfluidtemp.set('')
+            self.varminfluidtemp.set('')
+            self.varnamefluid.set('')
+            # self.encoolpropID['state'] ='normal'
+            self.cmbcoolpropID['state'] = 'readonly'
+            self.ennamefluid['state'] = 'disabled'
+            self.btloadcfgfluid['state'] = 'disabled'
+            self.entminfluid['state'] = 'disabled'
+            self.entmaxfluid['state'] = 'disabled'
+            self.fluid_table.table_data = []
+        else:
+            pass
 
     def buildFluidFrame(self):
 
-        self.lbnamefluid = ttk.Label(fr_fluid, text= "Name")
-        self.lbnamefluid.grid(row = 0, column = 0)
-        self.ennamefluid = ttk.Entry(fr_fluid, text= "Name")
-        self.ennamefluid.grid(row = 0, column = 1)
-        self.btloadcfgfluid = ttk.Button(
-            fr_fluid, text= "Load config",
-            command= lambda : fluid_load_dialog(
-                    fr_fluid, fluid_table, entmaxfluid, entminfluid, ennamefluid,
-                    "Load config file", labeltext="HTF Config"))
-        self.btloadcfgfluid.grid(row = 0, column = 2)
+        self.varfluidtable = tk.IntVar(self.fr_fluid)
+        self.varfluidtable.set(1)  # 1 for Table, 2 for CoolProp Library
+        self.varcoolpropID = tk.StringVar(self.fr_fluid)
 
-        self.lbtminfluid = ttk.Label(fr_fluid, text = "Tmin["+chr(176)+"C]")
-        self.lbtminfluid.grid(row=0,column = 3)
-        self.entminfluid = ttk.Entry(fr_fluid, text= "Tmin")
-        self.entminfluid.grid(row = 0, column = 4)
-        self.lbtmaxfluid = ttk.Label(fr_fluid, text = "Tmax ["+chr(176)+"C]")
-        self.lbtmaxfluid.grid(row=0,column = 5)
-        self.entmaxfluid = ttk.Entry(fr_fluid, text= "Tmax")
-        self.entmaxfluid.grid(row = 0, column = 6)
+        #  RadioButton for fluid from table
+        self.rbfluidtable = tk.Radiobutton(
+            self.fr_fluid,
+            padx = 2,
+            text = "Fluid Data from table",
+            variable=self.varfluidtable, value=1,
+            command = lambda: self.checkfluid()).grid(
+                row = 0, column = 0, sticky='W', padx=2, pady=5)
+
+        #  RadioButton for fluid from library
+        self.rbfluidlib = tk.Radiobutton(
+            self.fr_fluid,
+            padx = 2,
+            text = "Fluid Data from CoolProp",
+            variable=self.varfluidtable, value=2,
+            command = lambda: self.checkfluid()).grid(
+                row = 0, column = 3, sticky='W', padx=2, pady=5)
+
+        self.lbcoolpropID = tk.Label(self.fr_fluid, text= "CoolProp ID (INCOMP::xxxx)")
+        self.lbcoolpropID.grid(row = 0, column = 4, sticky='W', padx=2, pady=5)
+
+        self.cmbcoolpropID = ttk.Combobox(self.fr_fluid)
+        self.cmbcoolpropID["values"] = self._COOLPROP_FLUIDS
+        self.cmbcoolpropID['state']='readonly'
+        self.cmbcoolpropID.grid(row = 0, column = 5, sticky='W', padx=2, pady=5)
+
+        # self.encoolpropID = ttk.Entry(self.fr_fluid, textvariable=self.varcoolpropID)
+        # self.encoolpropID.grid(row = 0, column = 3)
+
+        self.varnamefluid = tk.StringVar(self.fr_fluid)
+        self.lbnamefluid = ttk.Label(self.fr_fluid, text= "Name")
+        self.lbnamefluid.grid(row = 1, column = 0, sticky='W', padx=2, pady=5)
+        self.ennamefluid = ttk.Entry(self.fr_fluid, textvariable=self.varnamefluid)
+        self.ennamefluid.grid(row = 1, column = 1, sticky='W', padx=2, pady=5)
+
+        self.btloadcfgfluid = ttk.Button(
+            self.fr_fluid, text= "Load config",
+            command= lambda : self.fluid_load_dialog())
+        self.btloadcfgfluid.grid(row = 1, column = 2, sticky='W', padx=2, pady=5)
+
+        self.varminfluidtemp = tk.DoubleVar(self.fr_fluid)
+        self.lbtminfluid = ttk.Label(self.fr_fluid, text = "Tmin[K]")
+        self.lbtminfluid.grid(row=2,column = 0, sticky='W', padx=2, pady=5)
+        self.entminfluid = ttk.Entry(self.fr_fluid, textvariable=self.varminfluidtemp)
+        self.entminfluid.grid(row = 2, column = 1, sticky='W', padx=2, pady=5)
+
+        self.varmaxfluidtemp = tk.DoubleVar(self.fr_fluid)
+        self.lbtmaxfluid = ttk.Label(self.fr_fluid, text = "Tmax [K]")
+        self.lbtmaxfluid.grid(row=3,column = 0, sticky='W', padx=2, pady=5)
+        self.entmaxfluid = ttk.Entry(self.fr_fluid, textvariable= self.varmaxfluidtemp)
+        self.entmaxfluid.grid(row = 3, column = 1, sticky='W', padx=2, pady=5)
+
+        self.fluid_table = table.Tk_Table(
+                self.fr_fluid,
+                ["Parameter [x]",
+                 "       A x^0       ", "       B x^1       ",
+                 "       C x^2       ", "       D x^3       ",
+                 "       E x^4       ", "       F x^5       "],
+                row_numbers=True,
+                stripped_rows = ("white","#f2f2f2"),
+                select_mode = "none",
+                cell_anchor="center",
+                adjust_heading_to_content = True)
+        self.fluid_table.grid(row = 4, column = 0, columnspan = 6, sticky='W', padx=2, pady=5)
 
         self.btsavecfgfluid = ttk.Button(
                 self.fr_fluid,
@@ -813,7 +993,11 @@ class Interface(object):
                 command= lambda : self.fluid_save_dialog(
                     "Save config file",
                     labeltext="HTF Config"))
-        self. btsavecfgfluid.grid(row = 0, column = 7)
+        self. btsavecfgfluid.grid(row = 5, column = 0, sticky='W', padx=2, pady=5)
+
+        self.checkfluid()
+
+"""
 
     # HCE Construction tab
 
