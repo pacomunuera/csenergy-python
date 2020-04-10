@@ -10,11 +10,11 @@ with open("./saved_configurations/simulation4x36.json") as simulation_file:
 
 simulation = cs.Simulation(simulation_settings['simulation'])
 
-if simulation.datatype == "weather":
-    datasource = cs.Weather(simulation_settings['weather_data_file'])
+if simulation.datatype == 1:
+    datasource = cs.Weather(simulation_settings['simulation'])
     print("Simulation based on weather data")
-elif simulation.datatype == "field data":
-    datasource = cs.FieldData(simulation_settings['field_data_file'])
+elif simulation.datatype == 2:
+    datasource = cs.FieldData(simulation_settings['simulation'])
     print("Benchmarking based on actual data")
 
 

@@ -931,9 +931,9 @@ class Loop(object):
     def calc_loop_pr_for_tout(self, row, solarpos, hotfluid, model):
 
         min_massflow = hotfluid.get_massflow_from_Reynolds(
-            self.solarfield.hce_settings['dri'],
+            self.solarfield.hce_model_settings['dri'],
             self.tin, self.pin,
-            self.solarfield.hce_settings['min_reynolds'])
+            self.solarfield.hce_model_settings['min_reynolds'])
 
         max_error = 0.1  # % desviation tolerance
         search = True
@@ -1526,10 +1526,10 @@ class Simulation(object):
 
     def check_min_massflow(self):
 
-        dri = self.solarfield.hce_settings['dri']
+        dri = self.solarfield.hce_model_settings['dri']
         t = self.solarfield.tin
         p = self.solarfield.pin
-        re = self.solarfield.hce_settings['min_reynolds']
+        re = self.solarfield.hce_model_settings['min_reynolds']
         loop_min_massflow = self.hotfluid.get_massflow_from_Reynolds(
                 dri, t, p , re)
         solarfield_min_massflow = self.solarfield.total_loops * loop_min_massflow
