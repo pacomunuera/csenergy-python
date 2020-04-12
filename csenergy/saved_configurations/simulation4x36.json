@@ -4,7 +4,7 @@
     "datatype" : 1,
     "simulation": true,
     "benchmark": false,
-    "fastmode": true,
+    "fastmode": false,
     "filename": "marzo3.tm2",
     "filepath": "./weather_files/"},
 "field_data_tags": {
@@ -89,12 +89,7 @@
 	"absorptance": 0.96,
 	"transmissivity": 0.963,
 	"coating" : "CERMET",
-	"annulus" : "VACUUM",
-	"eext": 0.1,
-    "hext": 0.0,
-    "hint": 3000.0,
-    "urec": 1000.0,
-    "krec": 19.36},
+	"annulus" : "VACUUM"},
 "sca": {
     "Name":"Luz LS-3",
     "SCA Length":100.0,
@@ -114,7 +109,7 @@
     "Tracking Type": 1},
 "hot_fluid" :
 	{
-    	"source": "CoolProp",
+    	"source": "Table",
     	"CoolPropID": "INCOMP::TVPx",
 		"name" : "THERMINOL-VP1",
 		"cp" : [2.88111e02, 5.87494, -6.85657e-03, 4.84416e-06, 1.34662e-14, -5.19062e-18],

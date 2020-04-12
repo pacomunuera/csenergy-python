@@ -40,18 +40,18 @@ class Row(object):
 
     def deselect(self):
         self._multicolumn_listbox.deselect_row(self._index)
-    
+
     def __str__(self):
         return str(self.data())
-        
+
     def __len__(self):
         return self._multicolumn_listbox.number_of_columns
-    
+
 class Column(object):
     def __init__(self, table, index):
         self._multicolumn_listbox = table
         self._index = index
-    
+
     def data(self):
         return self._multicolumn_listbox.column_data(self._index)
 
@@ -63,10 +63,10 @@ class Column(object):
 
     def __str__(self):
         return str(self.data())
-        
+
     def __len__(self):
         return self._multicolumn_listbox.number_of_rows
-    
+
 class Multicolumn_Listbox(object):
     _style_index = 0
 
@@ -76,7 +76,7 @@ class Multicolumn_Listbox(object):
 
         def data(self, index):
             return self._multicolumn_listbox.row_data(index)
-            
+
         def get(self, index):
             return Row(self._multicolumn_listbox, index)
 
@@ -98,22 +98,22 @@ class Multicolumn_Listbox(object):
         def set_selection(self, indices):
             self._multicolumn_listbox.set_selection(indices)
 
-        def __getitem__(self, index): 
+        def __getitem__(self, index):
             return self.get(index)
 
-        def __setitem__(self, index, value): 
+        def __setitem__(self, index, value):
             return self._multicolumn_listbox.update_row(index, value)
 
-        def __delitem__(self, index): 
+        def __delitem__(self, index):
             self._multicolumn_listbox.delete_row(index)
 
-        def __len__(self): 
+        def __len__(self):
             return self._multicolumn_listbox.number_of_rows
 
     class List_Of_Columns(object):
         def __init__(self, multicolumn_listbox):
             self._multicolumn_listbox = multicolumn_listbox
-        
+
         def data(self, index):
             return self._multicolumn_listbox.get_column(index)
 
@@ -126,16 +126,16 @@ class Multicolumn_Listbox(object):
         def update(self, index, data):
             self._multicolumn_listbox.update_column(index, data)
 
-        def __getitem__(self, index): 
+        def __getitem__(self, index):
             return self.get(index)
 
-        def __setitem__(self, index, value): 
+        def __setitem__(self, index, value):
             return self._multicolumn_listbox.update_column(index, value)
 
-        def __delitem__(self, index): 
+        def __delitem__(self, index):
             self._multicolumn_listbox.delete_column(index)
 
-        def __len__(self): 
+        def __len__(self):
             return self._multicolumn_listbox.number_of_columns
 
     def __init__(self, master, columns, data=None, command=None, sort=True, select_mode=None, heading_anchor = CENTER, cell_anchor=W, style=None, height=None, padding=None, adjust_heading_to_content=False, stripped_rows=None, selection_background=None, selection_foreground=None, field_background=None, heading_font= None, heading_background=None, heading_foreground=None, cell_pady=2, cell_background=None, cell_foreground=None, cell_font=None, headers=True):
@@ -143,13 +143,13 @@ class Multicolumn_Listbox(object):
         self._stripped_rows = stripped_rows
 
         self._columns = columns
-        
+
         self._number_of_rows = 0
         self._number_of_columns = len(columns)
-        
+
         self.row = self.List_Of_Rows(self)
         self.column = self.List_Of_Columns(self)
-        
+
         s = Style()
 
         if style is None:
@@ -157,11 +157,11 @@ class Multicolumn_Listbox(object):
             self._style_index += 1
         else:
             style_name = style
-        
+
         style_map = {}
         if selection_background is not None:
             style_map["background"] = [('selected', selection_background)]
-            
+
         if selection_foreground is not None:
             style_map["foeground"] = [('selected', selection_foreground)]
 
@@ -187,14 +187,14 @@ class Multicolumn_Listbox(object):
                         cell_font = Font(family=cell_font[0])
                     elif len(font) == 2:
                         cell_font = Font(family=cell_font[0], size=cell_font[1])
-                        
+
                     elif len(font) == 3:
                         cell_font = Font(family=cell_font[0], size=cell_font[1], weight=cell_font[2])
                     else:
                         raise ValueError("Not possible more than 3 values for font")
-        
+
             style_config["font"] = cell_font
-        
+
         self._cell_font = cell_font
 
         self._rowheight = cell_font.metrics("linespace")+cell_pady
@@ -220,20 +220,20 @@ class Multicolumn_Listbox(object):
 
         if height is not None:
             treeview_kwargs["height"] = height
-            
+
         if padding is not None:
             treeview_kwargs["padding"] = padding
-            
+
         if headers:
             treeview_kwargs["show"] = "headings"
         else:
             treeview_kwargs["show"] = ""
-        
+
         if select_mode is not None:
             treeview_kwargs["selectmode"] = select_mode
 
         self.interior = Treeview(master, columns=columns, **treeview_kwargs)
-        
+
         if command is not None:
             self._command = command
             self.interior.bind("<<TreeviewSelect>>", self._on_select)
@@ -244,12 +244,12 @@ class Multicolumn_Listbox(object):
                 self.interior.heading(i, text=columns[i], anchor=heading_anchor, command=lambda col=i: self.sort_by(col, descending=False))
             else:
                 self.interior.heading(i, text=columns[i], anchor=heading_anchor)
-                
+
             if adjust_heading_to_content:
                 self.interior.column(i, width=Font().measure(columns[i]))
 
             self.interior.column(i, anchor=cell_anchor)
-            
+
         if data is not None:
             for row in data:
                 self.insert_row(row)
@@ -257,7 +257,7 @@ class Multicolumn_Listbox(object):
     @property
     def row_height(self):
         return self._rowheight
-        
+
     @property
     def font(self):
         return self._cell_font
@@ -268,14 +268,14 @@ class Multicolumn_Listbox(object):
             config_value = locals()[config_name]
             if config_value is not None:
                 kwargs[config_name] = config_value
-            
+
         self.interior.column('#%s'%(index+1), **kwargs)
 
     def row_data(self, index):
         try:
             item_ID = self.interior.get_children()[index]
         except IndexError:
-            raise ValueError("Row index out of range: %d"%index)        
+            raise ValueError("Row index out of range: %d"%index)
 
         return self.item_ID_to_row_data(item_ID)
 
@@ -284,7 +284,7 @@ class Multicolumn_Listbox(object):
             item_ID = self.interior.get_children()[index]
         except IndexError:
             raise ValueError("Row index out of range: %d"%index)
-            
+
         if len(data) == len(self._columns):
             self.interior.item(item_ID, values=data)
         else:
@@ -300,24 +300,24 @@ class Multicolumn_Listbox(object):
 
         self.interior.delete(item_ID)
         self._number_of_rows -= 1
-        
+
         if self._stripped_rows:
             for i in range(index, self._number_of_rows):
                 self.interior.tag_configure(list_of_items[i+1], background=self._stripped_rows[i%2])
-            
+
     def insert_row(self, data, index=None):
         if len(data) != self._number_of_columns:
             raise ValueError("The multicolumn listbox has only %d columns"%self._number_of_columns)
-        
+
         if index is None:
             index = self._number_of_rows-1
 
-        item_ID = self.interior.insert('', index, values=data)        
+        item_ID = self.interior.insert('', index, values=data)
         self.interior.item(item_ID, tags=item_ID)
 
-        self._number_of_rows += 1        
+        self._number_of_rows += 1
 
-        if self._stripped_rows:            
+        if self._stripped_rows:
             list_of_items = self.interior.get_children()
 
             self.interior.tag_configure(item_ID, background=self._stripped_rows[index%2])
@@ -329,7 +329,7 @@ class Multicolumn_Listbox(object):
         return [self.interior.set(child_ID, index) for child_ID in self.interior.get_children('')]
 
     def update_column(self, index, data):
-        for i, item_ID in enumerate(self.interior.get_children()): 
+        for i, item_ID in enumerate(self.interior.get_children()):
             data_row = self.item_ID_to_row_data(item_ID)
             data_row[index] = data[i]
 
@@ -343,15 +343,15 @@ class Multicolumn_Listbox(object):
 
         for row in self.interior.get_children():
             self.interior.delete(row)
-            
+
         self._number_of_rows = 0
-            
+
     def update(self, data):
         self.clear()
 
         for row in data:
             self.insert_row(row)
-            
+
     def focus(self, index=None):
         if index is None:
             return self.interior.item(self.interior.focus())
@@ -360,7 +360,7 @@ class Multicolumn_Listbox(object):
             self.interior.focus(item)
 
     def state(self, state=None):
-        if stateSpec is None:
+        if state is None:
             return self.interior.state()
         else:
             self.interior.state(state)
@@ -368,24 +368,24 @@ class Multicolumn_Listbox(object):
     @property
     def number_of_rows(self):
         return self._number_of_rows
-        
+
     @property
     def number_of_columns(self):
         return self._number_of_columns
-        
+
     def toogle_selection(self, index):
         list_of_items = self.interior.get_children()
-        
+
         try:
             item_ID = list_of_items[index]
         except IndexError:
             raise ValueError("Row index out of range: %d"%index)
 
-        self.interior.selection_toggle(item_ID)     
+        self.interior.selection_toggle(item_ID)
 
     def select_row(self, index):
         list_of_items = self.interior.get_children()
-        
+
         try:
             item_ID = list_of_items[index]
         except IndexError:
@@ -395,14 +395,14 @@ class Multicolumn_Listbox(object):
 
     def deselect_row(self, index):
         list_of_items = self.interior.get_children()
-        
+
         try:
             item_ID = list_of_items[index]
         except IndexError:
             raise ValueError("Row index out of range: %d"%index)
 
         self.interior.selection_remove(item_ID)
-        
+
     def deselect_all(self):
         self.interior.selection_remove(self.interior.selection())
 
@@ -417,7 +417,7 @@ class Multicolumn_Listbox(object):
         for item_ID in self.interior.selection():
             data_row = self.item_ID_to_row_data(item_ID)
             data.append(data_row)
-        
+
         return data
 
     @property
@@ -428,12 +428,12 @@ class Multicolumn_Listbox(object):
                 list_of_indices.append(index)
 
         return list_of_indices
-        
+
     def delete_all_selected_rows(self):
         selected_items = self.interior.selection()
         for item_ID in selected_items:
             self.interior.delete(item_ID)
-        
+
         number_of_deleted_rows = len(selected_items)
         self._number_of_rows -= number_of_deleted_rows
 
@@ -447,7 +447,7 @@ class Multicolumn_Listbox(object):
     def item_ID_to_row_data(self, item_ID):
         item = self.interior.item(item_ID)
         return item["values"]
-    
+
     @property
     def table_data(self):
         data = []
@@ -457,37 +457,37 @@ class Multicolumn_Listbox(object):
             data.append(data_row)
 
         return data
-    
+
     @table_data.setter
     def table_data(self, data):
         self.update(data)
-    
+
     def cell_data(self, row, column):
         """Get the value of a table cell"""
         try:
             item = self.interior.get_children()[row]
         except IndexError:
             raise ValueError("Row index out of range: %d"%row)
-            
+
         return self.interior.set(item, column)
-            
+
     def update_cell(self, row, column, value):
         """Set the value of a table cell"""
 
         item_ID = self.interior.get_children()[row]
-        
+
         data = self.item_ID_to_row_data(item_ID)
-        
+
         data[column] = value
         self.interior.item(item_ID, values=data)
-    
+
     def __getitem__(self, index):
         if isinstance(index, tuple):
             row, column = index
             return self.cell_data(row, column)
         else:
             raise Exception("Row and column indices are required")
-        
+
     def __setitem__(self, index, value):
         if isinstance(index, tuple):
             row, column = index
@@ -504,7 +504,7 @@ class Multicolumn_Listbox(object):
         """
         # grab values to sort
         data = [(self.interior.set(child_ID, col), child_ID) for child_ID in self.interior.get_children('')]
-        
+
         # if the data to be sorted is numeric change to float
         try:
             data = [(float(number), child_ID) for number, child_ID in data]
@@ -518,7 +518,7 @@ class Multicolumn_Listbox(object):
 
         # switch the heading so that it will sort in the opposite direction
         self.interior.heading(col, command=lambda col=col: self.sort_by(col, not descending))
-        
+
         if self._stripped_rows:
             list_of_items = self.interior.get_children('')
             for i in range(len(list_of_items)):
@@ -526,7 +526,7 @@ class Multicolumn_Listbox(object):
 
     def destroy(self):
         self.interior.destroy()
-        
+
     def item_ID(self, index):
         return self.interior.get_children()[index]
 
@@ -542,39 +542,39 @@ def bind_function_onMouseWheel(scrolled_widget, orient, binding_widget=None, cal
         binding_widget = scrolled_widget
 
     view_command = getattr(scrolled_widget, orient+'view')
-    
+
     if OS == 'Linux':
         if callback:
             def onMouseWheel(event):
                 if event.num == 4:
                     view_command("scroll",(-1)*factor, unit)
                 elif event.num == 5:
-                    view_command("scroll",factor, unit) 
-                
+                    view_command("scroll",factor, unit)
+
                 callback()
         else:
             def onMouseWheel(event):
                 if event.num == 4:
                     view_command("scroll",(-1)*factor, unit)
                 elif event.num == 5:
-                    view_command("scroll",factor, unit) 
+                    view_command("scroll",factor, unit)
 
     elif OS == 'Windows':
         if callback:
-            def onMouseWheel(event):        
+            def onMouseWheel(event):
                 view_command("scroll",(-1)*int((event.delta/120)*factor), unit)
                 callback()
         else:
-            def onMouseWheel(event):        
+            def onMouseWheel(event):
                 view_command("scroll",(-1)*int((event.delta/120)*factor), unit)
-    
+
     elif OS == 'Darwin':
         if callback:
-            def onMouseWheel(event):        
+            def onMouseWheel(event):
                 view_command("scroll",event.delta, unit)
                 callback()
         else:
-            def onMouseWheel(event):        
+            def onMouseWheel(event):
                 view_command("scroll",event.delta, unit)
 
     if OS == "Linux" :
@@ -585,7 +585,7 @@ def bind_function_onMouseWheel(scrolled_widget, orient, binding_widget=None, cal
         binding_widget.bind("<MouseWheel>", onMouseWheel,  add='+')
 
 def unbind_function_onMouseWheel(binding_widget):
-    if OS == "Linux" :    
+    if OS == "Linux" :
         binding_widget.unbind('<4>')
         binding_widget.unbind('<5>')
     else:
@@ -594,7 +594,7 @@ def unbind_function_onMouseWheel(binding_widget):
 class Row_Header(Canvas):
     def __init__(self, master, font, row_height, row_minwidth, hover_background=None, background=None, anchor=None, onclick=None):
         Canvas.__init__(self, master, bd=0, highlightthickness=0, yscrollincrement=row_height, width=0)
-        
+
         if background is not None:
             self.configure(background=background)
 
@@ -606,7 +606,7 @@ class Row_Header(Canvas):
         self._labelrow_kwargs = labelrow_kwargs= {}
 
         labelrow_kwargs["font"] = font
-        
+
         if anchor is not None:
             labelrow_kwargs["anchor"] = anchor
 
@@ -614,7 +614,7 @@ class Row_Header(Canvas):
         self._row_height = row_height
         self._hover_background = hover_background
         self._onclick = onclick
-        
+
         self._number_of_labels = 0
 
     def pop(self, n_labels=1):
@@ -622,16 +622,16 @@ class Row_Header(Canvas):
             return
 
         list_of_slaves = self._frame_of_row_numbers.pack_slaves()
-        
+
         for i in range(n_labels):
             list_of_slaves.pop().destroy()
-        
+
         if list_of_slaves:
             width_of_row_numbers= max(list_of_slaves[-1].winfo_reqwidth(), self._row_minwidth)
-            
+
             if width_of_row_numbers < self._width_of_row_numbers:
                 self._width_of_row_numbers = width_of_row_numbers
-                
+
                 for slave in self._frame_of_row_numbers.pack_slaves():
                     slave.configure(width=width_of_row_numbers)
 
@@ -646,32 +646,32 @@ class Row_Header(Canvas):
 
         for slave in self._frame_of_row_numbers.pack_slaves():
             slave.destroy()
-        
+
         self._number_of_labels = 0
 
     def new_label(self):
         # Creating a new row header
-        
+
         self._number_of_labels += 1
 
         frame_button = Frame(self._frame_of_row_numbers, height=self._row_height)
         frame_button.pack()
         frame_button.pack_propagate(False)
-        
+
         row_label = Label(frame_button, text =self._number_of_labels, **self._labelrow_kwargs)
         row_label.bind("<1>", lambda event, index=self._number_of_labels-1: self._on_click_label(index))
-        
+
         if self._hover_background:
             row_label.bind("<Enter>", lambda event, row_label=row_label: row_label.configure(background=self._hover_background))
             row_label.bind("<Leave>", lambda event, row_label=row_label: row_label.configure(background=self.cget("background")))
 
         row_label.pack(expand=True, fill=BOTH)
-        
+
         width_of_row_numbers= max(row_label.winfo_reqwidth(), self._row_minwidth)
-        
+
         if width_of_row_numbers > self._width_of_row_numbers:
             self._width_of_row_numbers = width_of_row_numbers
-            
+
             for slave in self._frame_of_row_numbers.pack_slaves():
                 slave.configure(width=width_of_row_numbers)
         else:
@@ -682,7 +682,7 @@ class Row_Header(Canvas):
         self.config(width=self._frame_of_row_numbers.winfo_reqwidth())
         self.config(scrollregion=(0, 0, self._frame_of_row_numbers.winfo_reqwidth(), self._number_of_labels*self._row_height))
 
-    def _on_click_label(self, index):            
+    def _on_click_label(self, index):
         if self._onclick:
             self._onclick(index)
 
@@ -690,10 +690,10 @@ class Tk_Table(Frame, object):
     def __init__(self, master, columns, data=None, command=None, editable=True, sort=True, select_mode=None, autoscroll=True, vscrollbar=True, hscrollbar=False, heading_anchor = CENTER, cell_anchor=W, style=None, scrollbar_background=None, scrollbar_troughcolor=None, height=None, padding=None, adjust_heading_to_content=False, stripped_rows=None, selection_background=None, selection_foreground=None, cell_background=None, cell_foreground=None, cell_font=None, field_background=None, heading_font= None, heading_background=None, heading_foreground=None, cell_pady=2, column_header=True, row_numbers=True, entry_background="#d6d6d6", entry_foreground=None, entry_validatecommand=None, entry_selectbackground="#1BA1E2", entry_selectborderwidth=None, entry_selectforeground=None, entry_font = "TkDefaultFont", rowlabel_anchor=E, rowlabel_minwidth=0, rowlabel_hoverbackground="#FFFFFF",frame_relief=None, frame_borderwidth=None, frame_background=None):
 
         frame_kwargs = {}
-        
+
         if frame_relief is not None:
             frame_kwargs["relief"] = frame_relief
-            
+
         if frame_borderwidth is not None:
             frame_kwargs["borderwidth"] = frame_borderwidth
 
@@ -707,7 +707,7 @@ class Tk_Table(Frame, object):
 
         self._multicolumn_listbox = Multicolumn_Listbox(self, columns, data=data, command=command, sort=sort, select_mode=select_mode, heading_anchor = heading_anchor, cell_anchor=cell_anchor, style=style, height=height, padding=padding, adjust_heading_to_content=adjust_heading_to_content, stripped_rows=stripped_rows, selection_background=selection_background, selection_foreground=selection_foreground, cell_background=cell_background, cell_foreground=cell_foreground, cell_font=cell_font, field_background=field_background, heading_font=heading_font, heading_background=heading_background, heading_foreground=heading_foreground, cell_pady=cell_pady, headers=column_header)
         self._multicolumn_listbox.interior.grid(row=0, column=1, sticky= N+E+W+S)
-        
+
         self._mousewheel_detection = True
 
         if row_numbers:
@@ -723,7 +723,7 @@ class Tk_Table(Frame, object):
             self._entry_popup = None
 
             self._multicolumn_listbox.interior.bind("<1>", self._edit_cell)
-            
+
             def configure(event):
                 """
                 if self._entry_popup:
@@ -742,27 +742,27 @@ class Tk_Table(Frame, object):
 
             if entry_foreground is not None:
                 entry_kwargs["foreground"] = entry_foreground
-                
+
             if entry_validatecommand is not None:
                 entry_kwargs["validatecommand"] = entry_validatecommand
-                
+
             if entry_selectbackground is not None:
                 entry_kwargs["selectbackground"] = entry_selectbackground
-                
+
             if entry_selectforeground is not None:
                 entry_kwargs["selectforeground"] = entry_selectforeground
-                
+
             if entry_font is not None:
                 entry_kwargs["font"] = entry_font
 
         if command is not None:
             self._command = command
             self._multicolumn_listbox.interior.bind("<<TreeviewSelect>>", self._on_select)
-            
+
         scrollbar_kwargs = {}
         if scrollbar_background is not None:
             scrollbar_kwargs["background"] = scrollbar_background
-            
+
         if scrollbar_troughcolor is not None:
             scrollbar_kwargs["throughcolor"] = scrollbar_troughcolor
 
@@ -770,7 +770,7 @@ class Tk_Table(Frame, object):
             if editable:
                 if row_numbers:
                     def yview_command(*args):
-                        
+
                         self._multicolumn_listbox.interior.yview(*args)
                         self._row_numbers.yview(*args)
 
@@ -825,7 +825,7 @@ class Tk_Table(Frame, object):
 
             self._hbar=Scrollbar(self,takefocus=0, command=xview_command, **scrollbar_kwargs)
             self._hbar.grid(row=1, column=1, sticky= E+W)
-            
+
             if autoscroll:
                 if editable:
                     def xscrollcommand(f,l, self=self):
@@ -864,10 +864,10 @@ class Tk_Table(Frame, object):
         column = self._multicolumn_listbox.interior.identify_column(event.x)
 
         if column == "": return
-        
+
         # get column position info
         x,y,width,height = self._multicolumn_listbox.interior.bbox(item_ID, column)
-       
+
         # place Entry popup properly
         column_number = int(column[1:])-1
         cell_data = self._multicolumn_listbox.item_ID_to_row_data(item_ID)[column_number]
@@ -875,7 +875,7 @@ class Tk_Table(Frame, object):
 
         self._entry_popup = Entry(self._multicolumn_listbox.interior, exportselection=True, borderwidth=0,  **self._entry_kwargs)
         self._entry_popup.place(x=x, y=y, width=width, height=height)
-        
+
         self._entry_popup.insert(0, cell_data)
         self._entry_popup.focus_force()
 
@@ -884,12 +884,12 @@ class Tk_Table(Frame, object):
         self._entry_popup.bind("<FocusOut>", lambda event: self._destroy_entry())
 
         bind_function_onMouseWheel(self._multicolumn_listbox.interior, "y", binding_widget=self._entry_popup, callback=self._update_position_of_entry, unit="pages")
-        
+
         if self._row_numbers:
             bind_function_onMouseWheel(self._row_numbers, "y", binding_widget=self._entry_popup, unit="pages")
-        
+
         self._entry_popup.bind("<Return>", self._on_update_cell)
-        
+
         self._selected_cell = item_ID, column, column_number
 
     def _on_click_row_label(self, index):
@@ -917,11 +917,11 @@ class Tk_Table(Frame, object):
         data = self._entry_popup.get()
 
         row_data = self._multicolumn_listbox.item_ID_to_row_data(item_ID)
-        row_data[column_number] = data        
+        row_data[column_number] = data
         self._multicolumn_listbox.interior.item(item_ID, values=row_data)
-        
+
         self._destroy_entry()
-        
+
     def _update_position_of_entry(self):
         if self._selected_cell:
             bbox = self._multicolumn_listbox.interior.bbox(self._selected_cell[0], self._selected_cell[1])
@@ -958,14 +958,14 @@ class Tk_Table(Frame, object):
 
     def clear(self):
         self._multicolumn_listbox.clear()
-        
+
         if self._row_numbers:
             self._row_numbers.delete_labels()
 
     def update(self, data):
         current_number_of_rows = self._multicolumn_listbox.number_of_rows
         self._multicolumn_listbox.update(data)
-        
+
         if self._row_numbers:
             number_of_rows = len(data)
             if current_number_of_rows < number_of_rows:
@@ -1034,7 +1034,7 @@ class Tk_Table(Frame, object):
 
     def __getitem__(self, index):
         return self._multicolumn_listbox[index]
-        
+
     def __setitem__(self, index, value):
         self._multicolumn_listbox[index] = value
 
@@ -1053,37 +1053,37 @@ if __name__ == '__main__':
         from tkinter import messagebox
 
     root = Tk()
-    
+
     def on_select(data):
         print("called command when row is selected")
         print(data)
         print("\n")
-        
+
     def show_info(msg):
         messagebox.showinfo("Table Data", msg)
 
     mcListbox = Multicolumn_Listbox(root, ["column one","column two", "column three"], command=on_select, cell_anchor="center")
     mcListbox.interior.pack()
-    
+
     mcListbox.insert_row([1,2,3])
     show_info("mcListbox.insert_row([1,2,3])")
-    
+
     mcListbox.row.insert([4,5,7])
     show_info("mcListbox.row.insert([4,5,7])")
 
     mcListbox.update_row(0, [7,8,9])
     show_info("mcListbox.update_row(0, [4,5,6])")
-    
+
     mcListbox.update([[1,2,3], [4,5,6]])
     show_info("mcListbox.update([[1,2,3], [4,5,6]])")
-    
+
     mcListbox.select_row(0)
     show_info("mcListbox.select_row(0)")
 
     print("mcListbox.selected_rows")
     print(mcListbox.selected_rows)
     print("\n")
-    
+
     print("mcListbox.table_data")
     print(mcListbox.table_data)
     print("\n")
@@ -1091,15 +1091,15 @@ if __name__ == '__main__':
     print("mcListbox.row[0]")
     print(mcListbox.row[0])
     print("\n")
-    
+
     print("mcListbox.row_data(0)")
     print(mcListbox.row_data(0))
     print("\n")
-    
+
     print("mcListbox.column[1]")
     print(mcListbox.column[1])
     print("\n")
-    
+
     print("mcListbox[0,1]")
     print(mcListbox[0,1])
     print("\n")
@@ -1108,16 +1108,16 @@ if __name__ == '__main__':
 
     mcListbox.update_column(2, [8,9])
     show_info("mcListbox.update_column(2, [8,9])")
-    
+
     mcListbox.clear()
     show_info("mcListbox.clear()")
-    
+
     mcListbox.table_data = [[1,2,3], [4,5,6], [7,8,9]]
     show_info("mcListbox.table_data = [[1,2,3], [4,5,6], [7,8,9]]")
 
     mcListbox.delete_row(1)
     show_info("mcListbox.delete_row(1)")
-    
+
     row = mcListbox.row[0].update([2,4,5])
     show_info("mcListbox.row[0].update([2,4,5])")
 
@@ -1126,7 +1126,7 @@ if __name__ == '__main__':
     # The next table is editable: Click on the table to edit the cell
     table = Tk_Table(root, ["column one","column two", "column three"], row_numbers=True, stripped_rows = ("white","#f2f2f2"), select_mode="none")
     table.pack(expand=True, fill=BOTH)
-    
+
     table.table_data = [[0, 1, 2],
  [3, 4, 5],
  [6, 7, 8],
@@ -1137,7 +1137,7 @@ if __name__ == '__main__':
  [21, 22, 23],
  [24, 25, 26],
  [27, 28, 29]]
-    
+
     table.insert_row([1,2,3])
 
     show_info("We created an editable and zebra style table. Click on a cell to edit.")

@@ -62,8 +62,8 @@ class ModelBarbero4grade(Model):
         wspd = row[1]['Wspd']
         text = row[1]['DryBulb']
 
-        hce.set_krec(hce.tin)
-        krec = hce.parameters['krec']
+
+        krec = 0.0153 * (tin - 273.15) + 14.77
         sigma = sc.constants.sigma
         dro = hce.parameters['dro']
         dri = hce.parameters['dri']
@@ -286,7 +286,6 @@ class ModelBarbero4grade(Model):
             flag_3 = datetime.now()
 
 
-
     @classmethod
     def get_hext_eext(cls, hce, reext, tro, wind):
 
@@ -330,15 +329,6 @@ class ModelBarbero4grade(Model):
                 hext = 3.6
 
         return hext, eext
-
-
-    @classmethod
-    def get_hint(cls, hce):
-
-        hint = nbiot * krec / e
-
-        pass
-
 
 class ModelBarbero1grade(Model):
 
@@ -635,15 +625,34 @@ class HCE(object):
 
     def get_pr_geo(self, aoi, solarpos, row):
 
-        # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
-        pr_geo = 1- (self.sca.parameters["Focal Len"] * np.tan(np.radians(aoi)) /
-                     (len(self.sca.hces) * self.parameters["long"]))
+        if aoi > 90:
+            pr_geo = 0.0
 
-        if pr_geo > 1:
-            pr_geo = 1.0
+        else:
+            # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
+            sca_unused_length = (self.sca.parameters["Focal Len"] *
+                                 np.tan(np.radians(aoi)))
 
-        if pr_geo > 1 or pr_geo < 0:
-            print("ERROR", pr_geo)
+            unused_hces = sca_unused_length // self.parameters["long"]
+
+            unused_part_of_hce = ((sca_unused_length % self.parameters["long"]) /
+                                  self.parameters["long"])
+
+            if self.hce_order < unused_hces:
+                pr_geo = 0.0
+
+            elif self.hce_order == unused_hces:
+                pr_geo = ((sca_unused_length % self.parameters["long"]) /
+                                  self.parameters["long"])
+            else:
+                pr_geo = 1.0
+
+            # pr_geo = 1- (self.sca.parameters["Focal Len"] * np.tan(np.radians(aoi)) /
+            #              (len(self.sca.hces) * self.parameters["long"]))
+
+            if pr_geo > 1.0 or pr_geo < 0.0:
+                print("ERROR pr_geo out of limits", pr_geo)
+
 
         return pr_geo
 

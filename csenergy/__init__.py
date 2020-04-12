@@ -26,7 +26,7 @@ else:
 coolPropFluids = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
 if simulation_settings['hot_fluid']['source'] == "CoolProp":
-    if simulation_settings['hot_fluid']['CoolPropID'] not in coolPropFLuids:
+    if simulation_settings['hot_fluid']['CoolPropID'] not in coolPropFluids:
         print("Not CoolPropID valid")
     else:
         hotfluid = cs.Fluid_CoolProp(simulation_settings['hot_fluid'])
