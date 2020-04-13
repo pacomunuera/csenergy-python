@@ -15,6 +15,7 @@ from pvlib import iotools
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfile
 import tkinter.ttk as ttk
+from tkinter import messagebox
 
 # recipe-580746-1.py from
 # http://code.activestate.com/recipes/
@@ -164,9 +165,6 @@ class Interface(object):
     def simulation_close():
         pass
 
-    def solarfield_insert_row(solarfield_table):
-        solarfield_table.insert_row(['','','','','',''])
-
     def __insert_rows__(self, table):
 
         lst = []
@@ -231,9 +229,6 @@ class Interface(object):
             cfg = json.load(cfg_file,
                                      parse_float= float,
                                      parse_int= int)
-        # datarow = []
-        # for r in cfg['simulation']:
-        #     datarow.append(list(r.values()))
 
         self.varsimID.set(cfg['simulation']['ID'])
         self.varsimdatatype.set(cfg['simulation']['datatype'])
@@ -244,17 +239,18 @@ class Interface(object):
     def checkoptions(self):
 
         var = self.varsimdatatype.get()
-        print(self.tags_table.state())
 
         if var == 1: #  Weather File
             self.varbenchmark.set(False)
             self.cbbenchmark['state'] ='disabled'
             self.cbloadsitedata['state'] = 'normal'
+            self.bttagswizard['state']='disabled'
             # self.tags_table.state('disabled')
         elif var == 2: #  Field Data File
             self.varloadsitedata.set(False)
             self.cbbenchmark['state']='normal'
             self.cbloadsitedata['state'] = 'disabled'
+            self.bttagswizard['state']='normal'
             # self.tags_table.state(('active'))
         else:
             pass
@@ -273,6 +269,7 @@ class Interface(object):
 
         self.varsimID = tk.StringVar(self.fr_simulation)
         self.varsimdatatype = tk.IntVar(self.fr_simulation)
+        self.tagslist = []
         self.varsimulation = tk.BooleanVar(self.fr_simulation)
         self.varbenchmark = tk.BooleanVar(self.fr_simulation)
         self.varfastmode = tk.BooleanVar(self.fr_simulation)
@@ -405,46 +402,44 @@ class Interface(object):
 
     #  Solar Field Layout contruction Tab
 
-    def solarfieldLoadDialog(self, title, labeltext = '' ):
+    # def solarfieldLoadDialog(self, title, labeltext = '' ):
 
-        path = askopenfilename(initialdir = self._DIR['saved_configurations'],
-                               title = "choose your file",
-                               filetypes = [("JSON files", "*.json")])
+    #     path = askopenfilename(initialdir = self._DIR['saved_configurations'],
+    #                            title = "choose your file",
+    #                            filetypes = [("JSON files", "*.json")])
 
-        with open(path) as cfg_file:
-            cfg = json.load(cfg_file,
-                                     parse_float= float,
-                                     parse_int= int)
+    #     with open(path) as cfg_file:
+    #         cfg = json.load(cfg_file,
+    #                                  parse_float= float,
+    #                                  parse_int= int)
 
-        datarow = []
-        for r in cfg['solarfield']['subfields']:
-            datarow.append(list(r.values()))
+    #     datarow = []
+    #     for r in cfg['solarfield']['subfields']:
+    #         datarow.append(list(r.values()))
 
-        self.solarfield_table = table.Tk_Table(
-                        self.fr_solarfield,
-                        ["NAME", "LOOPS"],
-                        row_numbers=True,
-                        stripped_rows=("white", "#f2f2f2"),
-                        select_mode="none",
-                        cell_anchor="center",
-                        adjust_heading_to_content=True)
+    #     self.solarfield_table = table.Tk_Table(
+    #                     self.fr_solarfield,
+    #                     ["NAME", "LOOPS"],
+    #                     row_numbers=True,
+    #                     stripped_rows=("white", "#f2f2f2"),
+    #                     select_mode="none",
+    #                     cell_anchor="center",
+    #                     adjust_heading_to_content=True)
 
+    #     self.solarfield_table.table_data = datarow
+    #     self.solarfield_table.grid(row = 8, column = 0, columnspan =4)
 
-
-        self.solarfield_table.table_data = datarow
-        self.solarfield_table.grid(row = 8, column = 0, columnspan =4)
-
-        self.varsolarfieldname.set(cfg['solarfield']['name'])
-        self.vartin.set(cfg['solarfield']['rated_tin'])
-        self.vartout.set(cfg['solarfield']['rated_tout'])
-        self.varpin.set(cfg['solarfield']['rated_pin'])
-        self.varpout.set(cfg['solarfield']['rated_pout'])
-        self.vartmin.set(cfg['solarfield']['tmin'])
-        self.vartmax.set(cfg['solarfield']['tmax'])
-        self.varratedmassflow.set(cfg['solarfield']['rated_massflow'])
-        self.varrecirculation.set(cfg['solarfield']['recirculation_massflow'])
-        self.varscas.set(cfg['solarfield']['loop']['scas'])
-        self.varhces.set(cfg['solarfield']['loop']['hces'])
+    #     self.varsolarfieldname.set(cfg['solarfield']['name'])
+    #     self.vartin.set(cfg['solarfield']['rated_tin'])
+    #     self.vartout.set(cfg['solarfield']['rated_tout'])
+    #     self.varpin.set(cfg['solarfield']['rated_pin'])
+    #     self.varpout.set(cfg['solarfield']['rated_pout'])
+    #     self.vartmin.set(cfg['solarfield']['tmin'])
+    #     self.vartmax.set(cfg['solarfield']['tmax'])
+    #     self.varratedmassflow.set(cfg['solarfield']['rated_massflow'])
+    #     self.varrecirculation.set(cfg['solarfield']['recirculation_massflow'])
+    #     self.varscas.set(cfg['solarfield']['loop']['scas'])
+    #     self.varhces.set(cfg['solarfield']['loop']['hces'])
 
         #self.enratedtin.insert(0, cfg['solarfield']['rated_tin'])
         # self.enratedtout.delete(0, tk.END)
@@ -494,9 +489,72 @@ class Interface(object):
         f.close()
 
 
+    def showTagsTable(self):
+
+
+        self.msg = tk.Tk()
+        #self.fr_tags = tk.Frame(self.msg, )
+        self.strtags = tk.StringVar(self.msg)
+
+        for row in self.tagslist:
+            self.strtags.set(self.strtags.get() + '# ' +
+                             str(row[0]) + ' ---> ' +
+                             str(row[1]) + ' \n')
+
+        self.lbtagslist = ttk.Label(self.msg, textvariable =self.strtags).pack()
+
+        self.msg.mainloop()
+
+
+    def openTagsWizard(self):
+
+        tags_table = []
+
+        for tag in self.tagslist:
+            tags_table.append(['', tag])
+
+
+        columns_names = []
+
+        if self.varsimdatatype.get() == 2: # Data from field data file
+
+            columns_names.append(['DNI','',''])
+            columns_names.append(['Wspc','',''])
+            columns_names.append(['Wdir','',''])
+            columns_names.append(['DryBulb','',''])
+            columns_names.append(['Pressure','',''])
+
+        if self.varbenchmark.get():
+
+            for row in self.solarfield_table.table_data:
+                columns_names.append([row[0]+'.mf','',''])
+                columns_names.append([row[0]+'.tin','',''])
+                columns_names.append([row[0]+'.tout','',''])
+                columns_names.append([row[0]+'.pin','',''])
+                columns_names.append([row[0]+'.pout','',''])
+
+        self.columns_table.table_data = columns_names
+
+        self.showTagsTable()
+
+    def loadSelectedTags(self):
+
+        index = 0
+        for row in self.columns_table.table_data:
+            tag_index = self.to_number(row[1])
+            if  isinstance(tag_index, int):
+                new_row = [row[0], row[1], self.tagslist[tag_index-1][1]]
+                self.columns_table.update_row(
+                    index,new_row)
+            index += 1
+
+
+
+
+
     def buildSolarFieldFrame(self):
 
-        self.varsolarfieldname = tk.StringVar()
+        self.varsolarfieldname = tk.StringVar(self.fr_solarfield)
         self.lbname = ttk.Label(self.fr_solarfield, text ="Solar Field Name" )
         self.lbname.grid(row = 0, column = 0, sticky='W', padx=5, pady=5)
         self.enname = ttk.Entry(self.fr_solarfield, textvariable = self.varsolarfieldname)
@@ -563,6 +621,7 @@ class Interface(object):
         self.enhces.bind("<Key>", lambda event: self.updateHCEperSCA())
         self.enhces.grid(row = 6, column = 3, sticky='W', padx=5, pady=5)
 
+
         self.solarfield_table = table.Tk_Table(
             self.fr_solarfield,
             ["SUBFIELD NAME", "NUMBER OF LOOPS"],
@@ -571,18 +630,34 @@ class Interface(object):
             select_mode="none",
             cell_anchor="center",
             adjust_heading_to_content=True)
-        self.solarfield_table.grid(row = 7, column = 0, columnspan =2)
+        self.solarfield_table.grid(
+            row = 7, column = 0, columnspan =2, sticky='W', padx=5, pady=5)
 
-        self.tags_table = table.Tk_Table(
+        self.bttagswizard = ttk.Button(
             self.fr_solarfield,
-            ["DATA NAME", "TAG IN FIELD DATA FILE"],
-            row_numbers=True,
+            text= "Open TAGS wizard",
+            command = lambda : self.openTagsWizard())
+        self.bttagswizard.grid(
+            row = 7, column = 2, sticky='W', padx=5, pady=5)
+
+        self.btloadtags = ttk.Button(
+            self.fr_solarfield,
+            text= "Load TAGs",
+            command = lambda : self.loadSelectedTags())
+        self.btloadtags.grid(
+            row = 8, column = 2, sticky='W', padx=5, pady=5)
+
+        self.columns_table = table.Tk_Table(
+            self.fr_solarfield,
+            ["      COLUMN      ", "TAG #", "       TAG       "],
+            row_numbers=False,
             stripped_rows=("white", "#f2f2f2"),
             select_mode="none",
             cell_anchor="center",
             adjust_heading_to_content=True)
-        self.tags_table.grid(row = 7, column = 2, columnspan =2)
-        self.tags_table.table_data =[['','']]
+        self.columns_table.grid(
+            row = 7, column = 3, columnspan =2, sticky='W', padx=5, pady=5)
+
 
         self.btnewrow = ttk.Button(
             self.fr_solarfield,
@@ -620,6 +695,19 @@ class Interface(object):
             self.vardatafilename.set(os.path.basename(path))
             self.vardatafileurl.set(os.path.dirname(path)+"/" +
                                     os.path.basename(path))
+
+            strfilename, strext = os.path.splitext(path)
+            self.dataframe = pd.read_csv(path, sep=';',
+                                             decimal= ',',
+                                             dayfirst=True,
+                                             index_col=0)
+            count = 0
+            for r in list(self.dataframe):
+                count += 1
+                self.tagslist.append([count, r])
+
+            # self.tagslist = list(self.dataframe)
+
         else:
 
             tk.messagebox.showwarning(

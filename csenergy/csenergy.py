@@ -2251,15 +2251,11 @@ class FieldData(object):
                                                 ("all files","*.*")))
                 root.update()
                 root.destroy()
-
                 if path is None:
                     return
                 else:
                     strfilename, strext = os.path.splitext(path)
-
                     if  strext == ".csv":
-                        print("csv........")
-
                         self.dataframe = pd.read_csv(path, sep=';',
                                                      decimal= ',',
                                                      dtype= float,
@@ -2268,7 +2264,7 @@ class FieldData(object):
                                                      index_col=0)
                         self.file = path
                     elif strext == ".xls":
-                        print("xls...")
+
                         self.dataframe = pd.read_excel(path)
                         self.file = path
                     else:
@@ -2278,20 +2274,17 @@ class FieldData(object):
                 strfilename, strext = os.path.splitext(path)
 
                 if  strext == ".csv":
-                    print("csv...")
                     self.dataframe = pd.read_csv(path, sep=';',
                                                  decimal= ',',
                                                  dayfirst=True,
                                                  index_col=0)
                     self.file = path
                 elif strext == ".xls":
-                    print("xls...")
                     self.dataframe = pd.read_excel(path)
                     self.file = path
                 else:
                     print("unknow extension ", strext)
                     return
-
         except Exception:
             raise
             txMessageBox.showerror('Error loading FieldData File',
