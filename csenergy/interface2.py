@@ -124,16 +124,31 @@ class Interface(object):
 
         self.varsimID.set(cfg['simulation']['ID'])
         self.varsimdatatype.set(cfg['simulation']['datatype'])
+        self.varsimulation.set(cfg['simulation']['simulation'])
         self.varsimulation.set(cfg['simulation']['benchmark'])
         self.varfastmode.set(cfg['simulation']['fastmode'])
         self.vardatafilename.set(cfg['simulation']['filename'])
         self.vardatafilepath.set(cfg['simulation']['filepath'])
 
-        datarow = []
-        for r in cfg['solarfield']['subfields']:
-            datarow.append(list(r.values()))
+        self.varsitename.set(cfg['site']['name'])
+        self.varsitelat.set(cfg['site']['latitude'])
+        self.varsitelong.set(cfg['site']['longitude'])
+        self.varsitealt.set(cfg['site']['altitude'])
 
-        self.solarfield_table.table_data = datarow
+
+        list_subfields = []
+        for r in cfg['solarfield']['subfields']:
+            list_subfields.append(list(r.values()))
+
+        self.solarfield_table.table_data = list_subfields
+
+        list_tags = []
+        for r in cfg['tags']:
+            print(r, type(r), cfg['tags'][r])
+            list_tags.append([r, '', cfg['tags'][r]])
+
+
+        self.columns_table.table_data = list_tags
         self.enname.delete(0, tk.END)
         self.varsolarfieldname.set(cfg['solarfield']['name'])
         self.vartin.set(cfg['solarfield']['rated_tin'])
@@ -146,21 +161,21 @@ class Interface(object):
         self.varrecirculation.set(cfg['solarfield']['recirculation_massflow'])
         self.varscas.set(cfg['solarfield']['loop']['scas'])
         self.varhces.set(cfg['solarfield']['loop']['hces'])
-
-        #self.enratedtin.insert(0, cfg['solarfield']['rated_tin'])
-        # self.enratedtout.delete(0, tk.END)
-        # self.enratedtout.insert(0, cfg['solarfield']['rated_tout'])
+        self.varrowspacing.set(cfg['solarfield']['row_spacing'])
 
         self.fr_solarfield.update()
 
-    def simulation_save(text):
-        name=asksaveasfile(mode='w',defaultextension='.json')
-        text2save=str(text.get(0.0,tk.END))
-        name.write(text2save)
-        name.close
+    def simulation_save(self):
 
-    def simulation_save_as():
-        pass
+        self.saveConfigJSON
+        # name=asksaveasfile(mode='w',defaultextension='.json')
+        # text2save=str(text.get(0.0,tk.END))
+        # name.write(text2save)
+        # name.close
+
+    def simulation_save_as(self):
+
+        self.saveConfigJSON()
 
     def simulation_close():
         pass
@@ -245,12 +260,14 @@ class Interface(object):
             self.cbbenchmark['state'] ='disabled'
             self.cbloadsitedata['state'] = 'normal'
             self.bttagswizard['state']='disabled'
+            self.btloadtags['state']='disabled'
             # self.tags_table.state('disabled')
         elif var == 2: #  Field Data File
             self.varloadsitedata.set(False)
             self.cbbenchmark['state']='normal'
             self.cbloadsitedata['state'] = 'disabled'
             self.bttagswizard['state']='normal'
+            self.btloadtags['state']='normal'
             # self.tags_table.state(('active'))
         else:
             pass
@@ -447,6 +464,82 @@ class Interface(object):
 
         self.fr_solarfield.update()
 
+
+    def saveConfigJSON(self):
+
+        #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
+        f = asksaveasfile(initialdir = self._DIR['saved_configurations'],
+                               title = "choose your file name",
+                               filetypes = [("JSON files", "*.json")],
+                               defaultextension = "json")
+
+        self.tagslist = []
+
+        cfg = dict({"simulation" : {},
+                    "site": {},
+                    "solarfield": {},
+                    "hce_model": {},
+                    "SCA": {},
+                    "HTF": {},
+                    })
+
+        cfg["simulation"]["ID"] = self.varsimID.get()
+        cfg["simulation"]["datatype"] = self.varsimdatatype.get()
+        cfg["simulation"]["simulation"] = self.varsimulation.get()
+        cfg["simulation"]["benchmark"] = self.varbenchmark.get()
+        cfg["simulation"]["fastmode"] = self.varfastmode.get()
+        cfg["simulation"]["filename"] = self.vardatafilename.get()
+        cfg["simulation"]["filepath"] = self.vardatafilepath.get()
+
+        cfg["site"]["name"] = self.varsitename.get()
+        cfg["site"]["latitude"] = self.varsitelat.get()
+        cfg["site"]["longitude"] =  self.varsitelong.get()
+        cfg["site"]["altitude"] = self.varsitealt.get()
+
+        cfg['solarfield']['name'] = self.varsolarfieldname.get()
+        cfg["solarfield"]["rated_tin"] = self.vartin.get()
+        cfg["solarfield"]["rated_tout"] = self.vartout.get()
+        cfg["solarfield"]["rated_pin"] = self.varpin.get()
+        cfg["solarfield"]["rated_pout"] = self.varpout.get()
+        cfg["solarfield"]["tmin"] = self.vartmin.get()
+        cfg["solarfield"]["tmax"] = self.vartmax.get()
+        cfg["solarfield"]["rated_massflow"] = self.varratedmassflow.get()
+        cfg["solarfield"]["recirculation_massflow"] = self.varrecirculation.get()
+        cfg['solarfield']['row_spacing'] = self.varrowspacing.get()
+
+        cfg['solarfield']['loop'] = {'scas': self.varscas.get(),
+                                     'hces': self.varhces.get()}
+
+
+        if self.varsimdatatype.get() == 2:
+
+            cfg["tags"] = dict({})
+
+            for r in self.columns_table.table_data:
+                cfg["tags"][r[0]] = r[2]
+
+
+
+
+        datarow = list(self.solarfield_table.table_data)
+        dictkeys =["name", "loops"]
+
+        subfields = []
+
+        for r in datarow:
+            sf = {}
+            index = 0
+            for v in r:
+                k = dictkeys[index]
+                sf[k]= self.to_number(v)
+                index += 1
+            subfields.append(sf)
+
+        cfg['solarfield'].update({"subfields" : subfields})
+        f.write(json.dumps(cfg, indent= True))
+        f.close()
+
+
     def solarfield_save_dialog(self, title, labeltext = '' ):
 
         #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -549,9 +642,6 @@ class Interface(object):
             index += 1
 
 
-
-
-
     def buildSolarFieldFrame(self):
 
         self.varsolarfieldname = tk.StringVar(self.fr_solarfield)
@@ -597,16 +687,22 @@ class Interface(object):
         self.entmax.grid(row = 3, column = 3, sticky='W', padx=5, pady=5)
 
         self.varratedmassflow = tk.DoubleVar(self.fr_solarfield)
-        self.lbratedmassflow = ttk.Label(self.fr_solarfield, text= "Rated massflow (per loop) [Kg/s]")
+        self.lbratedmassflow = ttk.Label(self.fr_solarfield, text= "Loop Rated massflow [Kg/s]")
         self.lbratedmassflow.grid(row = 4, column = 0, sticky='W', padx=5, pady=5)
         self.enratedmassflow = ttk.Entry(self.fr_solarfield, textvariable = self.varratedmassflow)
         self.enratedmassflow.grid(row = 4, column = 1, sticky='W', padx=5, pady=5)
 
         self.varrecirculation = tk.DoubleVar(self.fr_solarfield)
-        self.lbrecirculationmassflow = ttk.Label(self.fr_solarfield, text= "Rated massflow (per loop) [Kg/s]")
-        self.lbrecirculationmassflow.grid(row = 5, column = 0, sticky='W', padx=5, pady=5)
+        self.lbrecirculationmassflow = ttk.Label(self.fr_solarfield, text= "Loop Recirculation massflow [Kg/s]")
+        self.lbrecirculationmassflow.grid(row = 4, column = 2, sticky='W', padx=5, pady=5)
         self.enrecirculationmassflow = ttk.Entry(self.fr_solarfield, textvariable = self.varrecirculation)
-        self.enrecirculationmassflow.grid(row = 5, column = 1, sticky='W', padx=5, pady=5)
+        self.enrecirculationmassflow.grid(row = 4, column = 3, sticky='W', padx=5, pady=5)
+
+        self.varrowspacing = tk.DoubleVar(self.fr_solarfield)
+        self.lbrowspacing = ttk.Label(self.fr_solarfield, text= "Row Spacing [m]")
+        self.lbrowspacing.grid(row = 5, column = 0, sticky='W', padx=5, pady=5)
+        self.enrowspacing = ttk.Entry(self.fr_solarfield, textvariable = self.varrowspacing)
+        self.enrowspacing.grid(row = 5, column = 1, sticky='W', padx=5, pady=5)
 
         self.varscas = tk.IntVar(self.fr_solarfield)
         self.lbscas = ttk.Label(self.fr_solarfield, text= "SCAs per Loop")
@@ -631,44 +727,48 @@ class Interface(object):
             cell_anchor="center",
             adjust_heading_to_content=True)
         self.solarfield_table.grid(
-            row = 7, column = 0, columnspan =2, sticky='W', padx=5, pady=5)
-
-        self.bttagswizard = ttk.Button(
-            self.fr_solarfield,
-            text= "Open TAGS wizard",
-            command = lambda : self.openTagsWizard())
-        self.bttagswizard.grid(
-            row = 7, column = 2, sticky='W', padx=5, pady=5)
-
-        self.btloadtags = ttk.Button(
-            self.fr_solarfield,
-            text= "Load TAGs",
-            command = lambda : self.loadSelectedTags())
-        self.btloadtags.grid(
-            row = 8, column = 2, sticky='W', padx=5, pady=5)
+            row = 7, column = 0, columnspan =2, padx=5, pady=5)
 
         self.columns_table = table.Tk_Table(
             self.fr_solarfield,
             ["      COLUMN      ", "TAG #", "       TAG       "],
-            row_numbers=False,
+            row_numbers=True,
             stripped_rows=("white", "#f2f2f2"),
             select_mode="none",
             cell_anchor="center",
             adjust_heading_to_content=True)
         self.columns_table.grid(
-            row = 7, column = 3, columnspan =2, sticky='W', padx=5, pady=5)
+            row = 7, column = 2, columnspan =2, padx=5, pady=5)
 
+        self.frame0= ttk.Frame(self.fr_solarfield)
+        self.frame0.grid(row=8, column=0, columnspan=2, padx=2, pady=5)
 
         self.btnewrow = ttk.Button(
-            self.fr_solarfield,
+            self.frame0,
             text= "Insert",
             command = lambda : self.__insert_rows__(self.solarfield_table))
-        self.btnewrow.grid(row = 9, column = 0, sticky='E', padx=2, pady=5)
+        self.btnewrow.pack(side = tk.LEFT)
+
         self.btdelrows = ttk.Button(
-            self.fr_solarfield,
+            self.frame0,
             text="Delete",
             command = lambda : self.__del_rows__(self.solarfield_table))
-        self.btdelrows.grid(row = 9, column = 1, sticky='W', padx=2, pady=5)
+        self.btdelrows.pack(side = tk.LEFT)
+
+        self.frame1= ttk.Frame(self.fr_solarfield)
+        self.frame1.grid(row=8, column=2, columnspan=2, padx=2, pady=5)
+
+        self.bttagswizard = ttk.Button(
+            self.frame1,
+            text= "Open TAGS wizard",
+            command = lambda : self.openTagsWizard())
+        self.bttagswizard.pack(side = tk.LEFT)
+
+        self.btloadtags = ttk.Button(
+            self.frame1,
+            text= "Load TAGs",
+            command = lambda : self.loadSelectedTags())
+        self.btloadtags.pack(side=tk.LEFT)
 
 
     #  Site & Weather contruction Tab
