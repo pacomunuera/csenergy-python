@@ -1,0 +1,132 @@
+{
+ "simulation": {
+  "ID": "00000",
+  "datatype": 1,
+  "simulation": true,
+  "benchmark": false,
+  "fastmode": false,
+  "filename": "marzo3.tm2",
+  "filepath": "./weather_files/"
+ },
+ "site": {
+  "name": "Alc\u00e1zar de San Juan",
+  "latitude": 39.1,
+  "longitude": -3.16,
+  "altitude": 645.0
+ },
+ "solarfield": {
+  "name": "My plant",
+  "rated_tin": 563.15,
+  "rated_tout": 663.15,
+  "rated_pin": 2000000.0,
+  "rated_pout": 1600000.0,
+  "tmin": 288.0,
+  "tmax": 670.0,
+  "rated_massflow": 4.0,
+  "recirculation_massflow": 1.5,
+  "row_spacing": 16.25,
+  "loop": {
+   "scas": 4,
+   "hces": 36
+  },
+  "subfields": [
+   {
+    "name": "NE",
+    "loops": 30
+   },
+   {
+    "name": "SO",
+    "loops": 30
+   },
+   {
+    "name": "SE",
+    "loops": 30
+   },
+   {
+    "name": "NO",
+    "loops": 30
+   }
+  ]
+ },
+ "hce_model": {},
+ "SCA": {
+  "Name": "EuroTrough ET150",
+  "SCA Length": 150.0,
+  "Aperture": 5.75,
+  "Focal Len": 2.1,
+  "IAM Coefficient F0": 1.0,
+  "IAM Coefficient F1": 0.0506,
+  "IAM Coefficient F2": -0.1763,
+  "Track Twist": 0.99,
+  "Geom.Accuracy": 0.98,
+  "Reflectance": 0.935,
+  "Cleanliness": 0.97,
+  "Dust": 1.0,
+  "Factor": 1.0,
+  "Availability": 0.99
+ },
+ "HCE": {
+  "Name": "Schott PTR70",
+  "Length": 4.05,
+  "Absorber tube inner diameter": 0.066,
+  "Absorber tube outer diameter": 0.07,
+  "Glass envelope inner diameter": 0.115,
+  "Glass envelope outer diameter": 0.12,
+  "Min_reynolds": 30000.0,
+  "Inner surface roughness": 4.5e-05
+ },
+ "HTF": {
+  "source": "table",
+  "name": "DOWTHERM A",
+  "cp": [
+   -2364.0,
+   39.46,
+   -0.1703,
+   0.0003904,
+   -4.422e-07,
+   1.979e-10
+  ],
+  "rho": [
+   1493.0,
+   -3.332,
+   0.01248,
+   -2.968e-05,
+   3.444e-08,
+   -1.622e-11
+  ],
+  "kt": [
+   0.1856,
+   -0.00016,
+   5.913e-12,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "h": [
+   -651100.0,
+   4121.0,
+   -12.35,
+   0.02771,
+   -2.777e-05,
+   1.106e-08
+  ],
+  "t": [
+   285.344,
+   0.000620726,
+   -1.82158e-10,
+   -1.42322e-16,
+   3.31588e-22,
+   -1.75256e-28
+  ],
+  "mu": [
+   5.135,
+   -0.08395,
+   0.0005971,
+   -2.409e-06,
+   6.029e-09,
+   -9.579e-12
+  ],
+  "tmax": 670.0,
+  "tmin": 288.0
+ }
+}

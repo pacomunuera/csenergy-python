@@ -1,0 +1,132 @@
+{
+ "simulation": {
+  "ID": "dfasdf",
+  "datatype": 2,
+  "simulation": false,
+  "benchmark": false,
+  "fastmode": true,
+  "filename": "fielddata_1Hb.csv",
+  "filepath": "D:/USB/0-SINC/0 - TFG/clon_csenergy-python/csenergy/fielddata_files/"
+ },
+ "site": {
+  "name": "madf",
+  "latitude": 67.0,
+  "longitude": 34.0,
+  "altitude": 0.0
+ },
+ "solarfield": {
+  "name": "asdte",
+  "rated_tin": 323.0,
+  "rated_tout": 787.0,
+  "rated_pin": 8766.0,
+  "rated_pout": 667.0,
+  "tmin": 6.0,
+  "tmax": 998.0,
+  "rated_massflow": 667.0,
+  "recirculation_massflow": 88.0,
+  "row_spacing": 67.0,
+  "loop": {
+   "scas": 12,
+   "hces": 34
+  },
+  "subfields": [
+   {
+    "name": "no",
+    "loops": 20
+   }
+  ]
+ },
+ "hce_model": {},
+ "SCA": {
+  "Name": "EuroTrough ET150",
+  "SCA Length": 150.0,
+  "Aperture": 5.75,
+  "Focal Len": 2.1,
+  "IAM Coefficient F0": 1.0,
+  "IAM Coefficient F1": 0.0506,
+  "IAM Coefficient F2": -0.1763,
+  "Track Twist": 0.935,
+  "Geom.Accuracy": 0.98,
+  "Reflectance": 0.99,
+  "Cleanliness": 0.97,
+  "Factor": 1.0,
+  "Dust": 1.0,
+  "Availability": 0.99
+ },
+ "HCE": {
+  "Name": "Schott PTR70",
+  "Length": 4.05,
+  "Absorber tube inner diameter": 0.066,
+  "Absorber tube outer diameter": 0.07,
+  "Glass envelope inner diameter": 0.115,
+  "Glass envelope outer diameter": 0.12,
+  "Min_reynolds": 30000.0,
+  "Inner surface roughness": 4.5e-05
+ },
+ "HTF": {
+  "source": "table",
+  "name": "DOWTHERM A",
+  "mu": [
+   5.135,
+   -0.08395,
+   0.0005971,
+   -2.409e-06,
+   6.029e-09,
+   -9.579e-12
+  ],
+  "rho": [
+   1493.0,
+   -3.332,
+   0.01248,
+   -2.968e-05,
+   3.444e-08,
+   -1.622e-11
+  ],
+  "kt": [
+   0.1856,
+   -0.00016,
+   5.913e-12,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "h": [
+   -651100.0,
+   4121.0,
+   -12.35,
+   0.02771,
+   -2.777e-05,
+   1.106e-08
+  ],
+  "t": [
+   285.344,
+   0.000620726,
+   -1.82158e-10,
+   -1.42322e-16,
+   3.31588e-22,
+   -1.75256e-28
+  ],
+  "cp": [
+   -2364.0,
+   39.46,
+   -0.1703,
+   0.0003904,
+   -4.422e-07,
+   1.979e-10
+  ],
+  "tmax": 998.0,
+  "tmin": 6.0
+ },
+ "tags": {
+  "no.tin": "1100-AXT-1879R.UNIT1@ASTE1A",
+  "no.tout": "1100-AXT-1880R.UNIT1@ASTE1A",
+  "no.pin": "1100-AXT-1883R.UNIT1@ASTE1A",
+  "no.pout": "1110-FT-1800.UNIT1@ASTE1A",
+  "DNI": "1110-FT-1801.UNIT1@ASTE1A",
+  "Wspc": "1100-AXT-1872R.UNIT1@ASTE1A",
+  "Wdir": "1100-AXT-1873R.UNIT1@ASTE1A",
+  "DryBulb": "1100-AXT-1874R.UNIT1@ASTE1A",
+  "Pressure": "1100-AXT-1876R.UNIT1@ASTE1A",
+  "no.mf": "1100-AXT-1877R.UNIT1@ASTE1A"
+ }
+}

@@ -31,19 +31,19 @@ _T_REF = 285.856
 
 class Model(object):
 
-    def __init__(self, settings):
-        self.model_settings = settings
+    def __init__(self):
+        pass
 
 
 class ModelBarbero4grade(Model):
 
 
-    def __ini__(self, settings):
-        super(Model, self).__init__(settings)
+    def __ini__(self):
+        super(Model, self).__init__()
 
 
     @classmethod
-    def calc_pr(cls, hce, hotfluid, aoi, solarpos, row):
+    def calc_pr(cls, hce, htf, aoi, solarpos, row):
 
         flag_0 = datetime.now()
 
@@ -65,11 +65,11 @@ class ModelBarbero4grade(Model):
 
         krec = 0.0153 * (tin - 273.15) + 14.77
         sigma = sc.constants.sigma
-        dro = hce.parameters['dro']
-        dri = hce.parameters['dri']
-        dgo = hce.parameters['dgo']
-        dgi = hce.parameters['dgi']
-        L = hce.parameters['long']
+        dro = hce.parameters['Absorber tube outer diameter']
+        dri = hce.parameters['Absorber tube inner diameter']
+        dgo = hce.parameters['Glass envelope outer diameter']
+        dgi = hce.parameters['Glass envelope inner diameter']
+        L = hce.parameters['Length']
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
         IAM = hce.sca.get_IAM(aoi)
@@ -89,17 +89,17 @@ class ModelBarbero4grade(Model):
         reext = dgo * wspd / nu_air
         hext, eext = cls.get_hext_eext(hce, reext, tro, wspd)
 
-        cp = hotfluid.get_cp(tf, hce.pin)
+        cp = htf.get_cp(tf, hce.pin)
         cpri = cp
 
         # Ec. 4.14
-        mu = hotfluid.get_dynamic_viscosity(tf, pressure)
+        mu = htf.get_dynamic_viscosity(tf, pressure)
         muri = mu
 
-        rho = hotfluid.get_density(tf, pressure)
+        rho = htf.get_density(tf, pressure)
         rhori = rho
 
-        kf = hotfluid.get_thermal_conductivity(tf, pressure)
+        kf = htf.get_thermal_conductivity(tf, pressure)
         kfpri = kf
 
         alpha = kf / (rho * cp)
@@ -147,7 +147,7 @@ class ModelBarbero4grade(Model):
             pr0 = 0.0
 
 
-        # if hce.tin >= hotfluid.tmax or hce.sca.status == 'defocused':
+        # if hce.tin >= htf.tmax or hce.sca.status == 'defocused':
         #     hce.sca.status = 'defocused'
         #     qabs = 0.0  #defocused
         #     pr0 = 0.0
@@ -208,25 +208,25 @@ class ModelBarbero4grade(Model):
                 pr1 = pr2
                 hce.pr = pr1
                 hce.qabs = qabs
-                hce.set_tout(hotfluid)
-                hce.set_pout(hotfluid)
+                hce.set_tout(htf)
+                hce.set_pout(htf)
                 tf = 0.5 * (hce.tin + hce.tout)
 
                 tri = tro1
 
 
-                cp = hotfluid.get_cp(tf, pressure)
-                cpri = hotfluid.get_cp(tri, pressure)
+                cp = htf.get_cp(tf, pressure)
+                cpri = htf.get_cp(tri, pressure)
 
-                mu = hotfluid.get_dynamic_viscosity(tf, pressure)
-                muri = hotfluid.get_dynamic_viscosity(tri, pressure)
+                mu = htf.get_dynamic_viscosity(tf, pressure)
+                muri = htf.get_dynamic_viscosity(tri, pressure)
 
-                rho = hotfluid.get_density(tf, pressure)
-                rhori =  hotfluid.get_density(tri, pressure)
+                rho = htf.get_density(tf, pressure)
+                rhori =  htf.get_density(tri, pressure)
 
 
-                kf = hotfluid.get_thermal_conductivity(tf, pressure)
-                kfpri = hotfluid.get_thermal_conductivity(tri, pressure)
+                kf = htf.get_thermal_conductivity(tf, pressure)
+                kfpri = htf.get_thermal_conductivity(tri, pressure)
 
                 #  alpha : difusividad térmica
                 alpha = kf / (rho * cp)
@@ -277,12 +277,12 @@ class ModelBarbero4grade(Model):
             hce.qperd = qperd
             hce.qabs = qabs
 
-            #HL = hotfluid.get_deltaH(hce.tin, hce.sca.loop.pin)
+            #HL = htf.get_deltaH(hce.tin, hce.sca.loop.pin)
             #h = qperd / hce.sca.loop.massflow
-            #hce.tout = hotfluid.get_T(HL - h, hce.sca.loop.pin)
-            hce.set_tout(hotfluid)
+            #hce.tout = htf.get_T(HL - h, hce.sca.loop.pin)
+            hce.set_tout(htf)
             #FLUJO LAMINAR
-            hce.set_pout(hotfluid)
+            hce.set_pout(htf)
             flag_3 = datetime.now()
 
 
@@ -337,23 +337,14 @@ class ModelBarbero1grade(Model):
         super(Model, self).__init__(simulation)
 
     @classmethod
-    def calc_pr(cls, hce, hot_fluid, dni):
+    def calc_pr(cls, hce, htf, dni):
 
         dni = dni
-        cp = hot_fluid.get_cp(hce.tin)
+        cp = htf.get_cp(hce.tin)
         sigma = sc.constants.sigma
-        dro = hce.parameters['dro']
-        dri = hce.parameters['din']
-        dgo = hce.parameters['dgo']
-        dgi = hce.parameters['dgi']
-        L = hce.parameters['long']
-        hint = hce.parameters['hint']
-        hext = hce.parameters['hext']
-        eext = hce.parameters['eext']
-        krec = hce.parameters['krec']
         massflow = hce.sca.loop.massflow
         x = 1
-        # cp = self.hot_fluid.get_cp(hce.tin)
+        # cp = self.htf.get_cp(hce.tin)
         Model.set_tin(hce)
 
         tin = hce.tin
@@ -400,16 +391,11 @@ class ModelBarberoSimplified(Model):
         super(Model, self).__init__(simulation)
 
     @classmethod
-    def calc_pr(cls, hce, hot_fluid, dni):
+    def calc_pr(cls, hce, htf, dni):
 
         dni = dni
-        cp = hot_fluid.get_cp(hce.tin)
+        cp = htf.get_cp(hce.tin)
         sigma = sc.constants.sigma
-        dro = hce.parameters['dro']
-        dri = hce.parameters['din']
-        dgo = hce.parameters['dgo']
-        dgi = hce.parameters['dgi']
-        L = hce.parameters['long']
         hint = hce.parameters['hint']
         hext = hce.parameters['hext']
         eext = hce.parameters['eext']
@@ -417,7 +403,7 @@ class ModelBarberoSimplified(Model):
         massflow = hce.sca.loop.massflow
         cg = hce.sca.parameters['aperture']/(np.pi*hce.parameters['Dro'])
         x = 1
-        # cp = self.hot_fluid.get_cp(hce.tin)
+        # cp = self.htf.get_cp(hce.tin)
         Model.set_tin(hce)
         tin = hce.tin
         tf = tin
@@ -473,11 +459,11 @@ class ModelASHRAE(Model):
 
 class HCE(object):
 
-    def __init__(self, sca, hce_order, settings, model_settings):
+    def __init__(self, sca, hce_order, settings):
 
         self.sca = sca
         self.hce_order = hce_order
-        self.parameters = dict(settings, **model_settings)
+        self.parameters = dict(settings)
         self.tin = 0.0
         self.tout = 0.0
         self.pr = 0.0
@@ -504,22 +490,23 @@ class HCE(object):
         else:
             self.pin = self.sca.loop.pin
 
-    def set_tout(self, hotfluid):
+    def set_tout(self, htf):
 
-        HL = hotfluid.get_deltaH(self.tin, self.sca.loop.pin)
+        HL = htf.get_deltaH(self.tin, self.sca.loop.pin)
 
         if self.qabs > 0:
 
-            h = (np.pi * self.parameters['dro'] * self.parameters['long'] *
+            h = (np.pi * self.parameters['Absorber tube outer diameter'] *
+                 self.parameters['Length'] *
                  self.qabs * self.pr / self.sca.loop.massflow)
 
         else:
             h = -self.qperd / self.sca.loop.massflow
 
-        self.tout = hotfluid.get_T(HL + h, self.sca.loop.pin)
+        self.tout = htf.get_T(HL + h, self.sca.loop.pin)
 
 
-    def set_pout(self, hotfluid):
+    def set_pout(self, htf):
 
         # TO-DO CÁLCULLO PERDIDA DE CARGA:
         # Ec. Colebrook-White para el cálculo del factor de fricción de Darcy
@@ -528,18 +515,13 @@ class HCE(object):
 
         k = self.parameters['Inner surface roughness']
         D = self.parameters['Absorber tube inner diameter']
-        re = hotfluid.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
+        re = htf.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
 
 
         if re < re_turbulent:
-
-            print("laminar", re)
-
             darcy_factor = 64 / re
 
         else:
-
-
             # a = (k /  D) / 3.7
             a = k / 3.7
             b = 2.51 / re
@@ -557,19 +539,19 @@ class HCE(object):
             darcy_factor = 1 / (root**2)
 
 
-        rho = hotfluid.get_density(self.tin, self.pin)
+        rho = htf.get_density(self.tin, self.pin)
         v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
         g = sc.constants.g
 
         # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
-        deltap_mcl = darcy_factor * (self.parameters['long'] / D ) * (v**2 / (2 * g))
+        deltap_mcl = darcy_factor * (self.parameters['Length'] / D ) * (v**2 / (2 * g))
 
         deltap = deltap_mcl * rho * g
 
         # if self.hce_order == 35 and self.sca.loop.loop_order==5:
 
         #     datos = [re, a, b, root, darcy_factor, v, self.sca.loop.massflow,
-        #            hotfluid.get_density(self.tin, self.pin),  deltap]
+        #            htf.get_density(self.tin, self.pin),  deltap]
 
         #     claves = ['re', 'a', 'b',
         #               'root', 'darcy_factor', 'v', 'mf', 'rho', 'deltap']
@@ -633,17 +615,17 @@ class HCE(object):
             sca_unused_length = (self.sca.parameters["Focal Len"] *
                                  np.tan(np.radians(aoi)))
 
-            unused_hces = sca_unused_length // self.parameters["long"]
+            unused_hces = sca_unused_length // self.parameters["Length"]
 
-            unused_part_of_hce = ((sca_unused_length % self.parameters["long"]) /
-                                  self.parameters["long"])
+            unused_part_of_hce = ((sca_unused_length % self.parameters["Length"]) /
+                                  self.parameters["Length"])
 
             if self.hce_order < unused_hces:
                 pr_geo = 0.0
 
             elif self.hce_order == unused_hces:
-                pr_geo = ((sca_unused_length % self.parameters["long"]) /
-                                  self.parameters["long"])
+                pr_geo = ((sca_unused_length % self.parameters["Length"]) /
+                                  self.parameters["Length"])
             else:
                 pr_geo = 1.0
 
@@ -924,7 +906,7 @@ class Loop(object):
         self.act_massflow = prototype_loop.act_massflow
 
 
-    def calc_loop_pr_for_massflow(self, row, solarpos, hotfluid, model):
+    def calc_loop_pr_for_massflow(self, row, solarpos, htf, model):
 
         # We work with the minimum massflow at night in order to
         # reduce thermal losses
@@ -932,24 +914,24 @@ class Loop(object):
         for s in self.scas:
             aoi = s.get_aoi(solarpos)
             for h in s.hces:
-                model.calc_pr(h, hotfluid, aoi, solarpos, row)
+                model.calc_pr(h, htf, aoi, solarpos, row)
 
             self.tout = self.scas[-1].hces[-1].tout
             self.pout = self.scas[-1].hces[-1].pout
 
-    def calc_loop_pr_for_tout(self, row, solarpos, hotfluid, model):
+    def calc_loop_pr_for_tout(self, row, solarpos, htf, model):
 
-        min_massflow = hotfluid.get_massflow_from_Reynolds(
-            self.solarfield.hce_model_settings['dri'],
+        min_massflow = htf.get_massflow_from_Reynolds(
+            self.solarfield.hce_settings['Absorber tube inner diameter'],
             self.tin, self.pin,
-            self.solarfield.hce_model_settings['min_reynolds'])
+            self.solarfield.hce_settings['Min_reynolds'])
 
         max_error = 0.1  # % desviation tolerance
         search = True
 
         while search:
 
-            self.calc_loop_pr_for_massflow(row, solarpos, hotfluid, model)
+            self.calc_loop_pr_for_massflow(row, solarpos, htf, model)
 
             err = 100 * (abs(self.tout-self.solarfield.rated_tout) /
                    self.solarfield.rated_tout)
@@ -971,7 +953,7 @@ class Loop(object):
         self.req_massflow = self.massflow
 
 
-    # def calc_loop_pr(self, row, solarpos, hotfluid, model):
+    # def calc_loop_pr(self, row, solarpos, htf, model):
 
 
     #     if solarpos['zenith'][0] > 90:
@@ -984,13 +966,13 @@ class Loop(object):
     #         for s in self.scas:
     #             aoi = s.get_aoi(solarpos)
     #             for h in s.hces:
-    #                 model.calc_pr(h, hotfluid, aoi, solarpos, row)
+    #                 model.calc_pr(h, htf, aoi, solarpos, row)
 
     #             self.tout = self.scas[-1].hces[-1].tout
 
     #     else:
 
-    #         min_massflow = hotfluid.get_massflow_from_Reynolds(
+    #         min_massflow = htf.get_massflow_from_Reynolds(
     #             self.solarfield.hce_settings['dri'],
     #             self.tin, self.pin,
     #             self.solarfield.hce_settings['min_reynolds'])
@@ -1003,7 +985,7 @@ class Loop(object):
     #             for s in self.scas:
     #                 aoi = s.get_aoi(solarpos)
     #                 for h in s.hces:
-    #                     model.calc_pr(h, hotfluid, aoi, solarpos, row)
+    #                     model.calc_pr(h, htf, aoi, solarpos, row)
 
     #             self.tout = self.scas[-1].hces[-1].tout
 
@@ -1078,8 +1060,7 @@ class PrototypeLoop(Loop):
             self.scas.append(SCA(self, s, self.solarfield.sca_settings))
             for h in range(self.solarfield.solarfield_settings['loop']['hces']):
                 self.scas[-1].hces.append(
-                    HCE(self.scas[-1], h, self.solarfield.hce_settings,
-                        self.solarfield.hce_model_settings))
+                    HCE(self.scas[-1], h, self.solarfield.hce_settings))
 
 
     def initialize(self, values = None):
@@ -1150,7 +1131,7 @@ class Subfield(object):
 
         self.pout = np.mean(loops_var) / self.massflow
 
-    def calc_tout(self, hotfluid):
+    def calc_tout(self, htf):
         '''
         Calculates HTF output temperature throughout the solar field as a
         weighted average based on the enthalpy of the mass flow in each
@@ -1163,27 +1144,27 @@ class Subfield(object):
 
         for l in self.loops:
 
-            dH += l.massflow * hotfluid.get_deltaH(l.tout, l.pout)
-            dH_tmax += l.massflow * hotfluid.get_deltaH(l.tmax, l.pout)
+            dH += l.massflow * htf.get_deltaH(l.tout, l.pout)
+            dH_tmax += l.massflow * htf.get_deltaH(l.tmax, l.pout)
 
         dH /= self.massflow
         dH_tmax /= self.massflow
-        self.tout =  hotfluid.get_T(dH, self.pout)
-        self.tmax = hotfluid.get_T(dH_tmax, self.pout)
+        self.tout =  htf.get_T(dH, self.pout)
+        self.tmax = htf.get_T(dH_tmax, self.pout)
 
 
     def set_tin(self):
 
-        self.tin = (self.solarfield.heatexchanger.hotfluid_tout *
+        self.tin = (self.solarfield.heatexchanger.htf_tout *
                     self.coolPipeLosses
                     )
 
-    def apply_temp_limitation(self, hotfluid):
+    def apply_temp_limitation(self, htf):
 
         for l in self.loops:
             if l.tout > l.solarfield.tmax:
-                HH = hotfluid.get_deltaH(l.tout, l.pout)
-                HL = hotfluid.get_deltaH(l.solarfield.tmax, l.pout)
+                HH = htf.get_deltaH(l.tout, l.pout)
+                HL = htf.get_deltaH(l.solarfield.tmax, l.pout)
                 l.tmax = l.solarfield.tmax
                 l.wasted_power = l.massflow * (HH - HL)
 
@@ -1239,13 +1220,11 @@ class SolarField(object):
 
     '''
 
-    def __init__(self, solarfield_settings, sca_settings, hce_settings,
-                 hce_model_settings):
+    def __init__(self, solarfield_settings, sca_settings, hce_settings):
 
 
         self.solarfield_settings = solarfield_settings
         self.hce_settings = hce_settings
-        self.hce_model_settings = hce_model_settings
         self.sca_settings = sca_settings
         self.name = solarfield_settings['name']
 
@@ -1300,21 +1279,20 @@ class SolarField(object):
                         self.subfields[-1].loops[-1].scas[-1].hces.append(
                             HCE(self.subfields[-1].loops[-1].scas[-1],
                             h,
-                            self.hce_settings,
-                            self.hce_model_settings))
+                            self.hce_settings))
 
         for sf in self.subfields:
             self.total_loops += len(sf.loops)
 
 
-    def load_rated(self, hotfluid):
+    def load_rated(self, htf):
 
         for sf in self.subfields:
                 sf.load_rated()
 
     def initialize_rated(self):
 
-        self.massflow = self. rated_massflow
+        self.massflow = self.rated_massflow
         self.tin = self.rated_tin
         self.tout = self.rated_tout
         self.pin = self.rated_pin
@@ -1322,7 +1300,7 @@ class SolarField(object):
 
 
 
-    def load_actual(self, hotfluid, row):
+    def load_actual(self, htf, row):
 
         massflow = 0.0
         H_tin = 0.0
@@ -1334,9 +1312,9 @@ class SolarField(object):
             sf.load_actual(row)
             massflow += sf.act_massflow
             H_tin += (sf.act_massflow *
-                      hotfluid.get_deltaH(sf.act_tin, sf.act_pin))
+                      htf.get_deltaH(sf.act_tin, sf.act_pin))
             H_tout += (sf.act_massflow *
-                       hotfluid.get_deltaH(sf.act_tout, sf.act_pout))
+                       htf.get_deltaH(sf.act_tout, sf.act_pout))
             list_pin.append(sf.act_pin * sf.act_massflow)
             list_pout.append(sf.act_pout * sf.act_massflow)
 
@@ -1346,8 +1324,8 @@ class SolarField(object):
         self.act_massflow = massflow
         self.act_pin = np.mean(list_pin) / massflow
         self.act_pout = np.mean(list_pout) / massflow
-        self.act_tin = hotfluid.get_T(H_tin, self.act_pin)
-        self.act_tout = hotfluid.get_T(H_tout, self.act_pout)
+        self.act_tin = htf.get_T(H_tin, self.act_pin)
+        self.act_tout = htf.get_T(H_tout, self.act_pout)
 
 
     def initialize_actual(self):
@@ -1390,7 +1368,7 @@ class SolarField(object):
 
         self.pout = np.mean(subfields_var) / self.massflow
 
-    def calc_tout(self, hotfluid):
+    def calc_tout(self, htf):
         '''
         Calculates HTF output temperature throughout the solar plant as a
         weighted average based on the enthalpy of the mass flow in each
@@ -1402,15 +1380,15 @@ class SolarField(object):
 
         for sf in self.subfields:
 
-            dH += sf.massflow * hotfluid.get_deltaH(sf.tout, sf.pout)
-            dH_tmax += sf.massflow * hotfluid.get_deltaH(sf.tmax, sf.pout)
+            dH += sf.massflow * htf.get_deltaH(sf.tout, sf.pout)
+            dH_tmax += sf.massflow * htf.get_deltaH(sf.tmax, sf.pout)
 
         dH /= self.massflow
         dH_tmax /= self.massflow
-        self.tout = hotfluid.get_T(dH, self.pout)
-        self.tmax = hotfluid.get_T(dH_tmax, self.pout)
+        self.tout = htf.get_T(dH, self.pout)
+        self.tmax = htf.get_T(dH_tmax, self.pout)
 
-    def set_act_tout(self, hotfluid):
+    def set_act_tout(self, htf):
         '''
         Calculates HTF output temperature throughout the solar plant as a
         weighted average based on the enthalpy of the mass flow in each
@@ -1421,14 +1399,14 @@ class SolarField(object):
 
         for sf in self.subfields:
 
-            dH_actual += sf.act_massflow * hotfluid.get_deltaH(sf.tout, sf.pout)
-            dH_actual += sf.act_massflow * hotfluid.get_deltaH(sf.act_tout, sf.act_pout)
+            dH_actual += sf.act_massflow * htf.get_deltaH(sf.tout, sf.pout)
+            dH_actual += sf.act_massflow * htf.get_deltaH(sf.act_tout, sf.act_pout)
 
         dH_actual /= self.act_massflow
-        self.act_tout = hotfluid.get_T(dH_actual, self.act_pout)
+        self.act_tout = htf.get_T(dH_actual, self.act_pout)
 
 
-    def set_tin(self, hotfluid):
+    def set_tin(self, htf):
         '''
         Calculates HTF output temperature throughout the solar plant as a
         weighted average based on the enthalpy of the mass flow in each
@@ -1438,10 +1416,10 @@ class SolarField(object):
 
         for sf in self.subfields:
 
-            H += (hotfluid.get_deltaH(sf.tin, sf.pin) * sf.massflow)
+            H += (htf.get_deltaH(sf.tin, sf.pin) * sf.massflow)
 
         H /= self.massflow
-        self.tin = hotfluid.get_T(H, self.rated_pin)
+        self.tin = htf.get_T(H, self.rated_pin)
 
 
     def set_pin(self):
@@ -1464,10 +1442,10 @@ class SolarField(object):
         self.act_pin = np.mean(subfields_var) / self.act_massflow
 
 
-    def get_thermalpoweroutput(self, hotfluid):
+    def get_thermalpoweroutput(self, htf):
 
-        HL = hotfluid.get_deltaH(self.tin, self.pin)
-        HH = hotfluid.get_deltaH(self.tout, self.pout)
+        HL = htf.get_deltaH(self.tin, self.pin)
+        HH = htf.get_deltaH(self.tout, self.pout)
 
         return (HH - HL) * self.massflow
 
@@ -1525,7 +1503,7 @@ class Simulation(object):
         self.tracking = True
         self.solarfield = None
         self.powersystem = None
-        self.hotfluid = None
+        self.htf = None
         self.coldfluid = None
         self.site = None
         self.model = None
@@ -1535,17 +1513,17 @@ class Simulation(object):
 
     def check_min_massflow(self):
 
-        dri = self.solarfield.hce_model_settings['dri']
+        dri = self.solarfield.hce_settings['Absorber tube inner diameter']
         t = self.solarfield.tin
         p = self.solarfield.pin
-        re = self.solarfield.hce_model_settings['min_reynolds']
-        loop_min_massflow = self.hotfluid.get_massflow_from_Reynolds(
+        re = self.solarfield.hce_settings['Min_reynolds']
+        loop_min_massflow = self.htf.get_massflow_from_Reynolds(
                 dri, t, p , re)
         solarfield_min_massflow = self.solarfield.total_loops * loop_min_massflow
         # self.solarfield.rated_massflow = self.powersystem.get_rated_massflow(
-        #         self.powersystem.ratedpower, self.solarfield, self.hotfluid)
+        #         self.powersystem.ratedpower, self.solarfield, self.htf)
 #        fluid_speed = 4 * loop_min_massflow / ( np.pi * hce_settings['dri']**2 *
-#                self.hotfluid.get_density(self.solarfield.rated_tin,
+#                self.htf.get_density(self.solarfield.rated_tin,
 #                                     self.solarfield.rated_pressure))
         if  solarfield_min_massflow > self.solarfield.rated_massflow:
             print("Too low massflow", solarfield_min_massflow ,">",
@@ -1589,7 +1567,7 @@ class Simulation(object):
     def simulate_solarfield(self, solarpos, row):
 
         flag_0 = datetime.now()
-        self.solarfield.load_rated(self.hotfluid)
+        self.solarfield.load_rated(self.htf)
         self.solarfield.initialize_rated()
         self.check_min_massflow()
         self.prototype_loop.initialize()
@@ -1599,13 +1577,12 @@ class Simulation(object):
         if solarpos['zenith'][0] > 90:
             self.prototype_loop.massflow =  (self.solarfield.recirculation_massflow /
                           self.solarfield.total_loops)
-
             self.prototype_loop.calc_loop_pr_for_massflow(
-                row, solarpos, self.hotfluid, self.model)
+                row, solarpos, self.htf, self.model)
 
         else:
             self.prototype_loop.calc_loop_pr_for_tout(
-                row, solarpos, self.hotfluid, self.model)
+                row, solarpos, self.htf, self.model)
 
 
         self.prototype_loop.tout = self.prototype_loop.scas[-1].hces[-1].tout
@@ -1622,9 +1599,9 @@ class Simulation(object):
 
                 s.calc_massflow()
                 s.calc_req_massflow()
-                s.apply_temp_limitation(self.hotfluid)
+                s.apply_temp_limitation(self.htf)
                 s.calc_pout()
-                s.calc_tout(self.hotfluid)
+                s.calc_tout(self.htf)
 
             flag_2 = datetime.now()
             delta_2 = flag_2 - flag_1
@@ -1640,7 +1617,7 @@ class Simulation(object):
                                       self.solarfield.total_loops)
 
                         l.calc_loop_pr_for_massflow(
-                            row, solarpos, self.hotfluid, self.model)
+                            row, solarpos, self.htf, self.model)
                         l.pr_req_massflow = l.get_loop_avg_pr()
 
                     else:
@@ -1652,13 +1629,13 @@ class Simulation(object):
                             l.massflow = self.prototype_loop.massflow
 
                         l.calc_loop_pr_for_tout(
-                            row, solarpos, self.hotfluid, self.model)
+                            row, solarpos, self.htf, self.model)
                         l.pr_req_massflow = l.get_loop_avg_pr()
 
                 s.calc_massflow()
                 s.calc_req_massflow()
-                s.apply_temp_limitation(self.hotfluid)
-                s.calc_tout(self.hotfluid)
+                s.apply_temp_limitation(self.htf)
+                s.calc_tout(self.htf)
                 s.calc_pout()
 
             flag_3 = datetime.now()
@@ -1666,7 +1643,7 @@ class Simulation(object):
 
         self.solarfield.calc_massflow()
         self.solarfield.calc_req_massflow()
-        self.solarfield.calc_tout(self.hotfluid)
+        self.solarfield.calc_tout(self.htf)
         self.solarfield.calc_pout()
 
 
@@ -1674,7 +1651,7 @@ class Simulation(object):
 
         flag_0 = datetime.now()
 
-        self.solarfield.load_actual(self.hotfluid, row)
+        self.solarfield.load_actual(self.htf, row)
         self.solarfield.initialize_actual()
         #self.prototype_loop.initialize()
 
@@ -1687,7 +1664,7 @@ class Simulation(object):
         if self.fastmode:
 
             # self.prototype_loop.calc_loop_pr(
-            #     row, solarpos, self.hotfluid, self.model)
+            #     row, solarpos, self.htf, self.model)
 
 
             for s in self.solarfield.subfields:
@@ -1705,7 +1682,7 @@ class Simulation(object):
                 self.prototype_loop.act_pout = s.act_pout
 
                 self.prototype_loop.calc_loop_pr_for_massflow(
-                    row, solarpos, self.hotfluid, self.model)
+                    row, solarpos, self.htf, self.model)
 
                 self.prototype_loop.pr_act_massflow = self.prototype_loop.get_loop_avg_pr()
 
@@ -1714,9 +1691,9 @@ class Simulation(object):
 
                 s.calc_massflow()
                 s.calc_req_massflow()
-                s.apply_temp_limitation(self.hotfluid)
+                s.apply_temp_limitation(self.htf)
                 s.calc_pout()
-                s.calc_tout(self.hotfluid)
+                s.calc_tout(self.htf)
 
             flag_2 = datetime.now()
             delta_2 = flag_2 - flag_1
@@ -1730,20 +1707,20 @@ class Simulation(object):
                     l.tin = l.act_tin
                     l.massflow = l.act_massflow
                     l.calc_loop_pr_for_massflow(
-                        row, solarpos, self.hotfluid, self.model)
+                        row, solarpos, self.htf, self.model)
                     l.pr_act_massflow = l.get_loop_avg_pr()
 
                 s.calc_massflow()
                 s.calc_req_massflow()
-                s.apply_temp_limitation(self.hotfluid)
+                s.apply_temp_limitation(self.htf)
                 s.calc_pout()
-                s.calc_tout(self.hotfluid)
+                s.calc_tout(self.htf)
 
             flag_3 = datetime.now()
             delta_3 = flag_3 - flag_0
 
         self.solarfield.calc_massflow()
-        self.solarfield.calc_tout(self.hotfluid)
+        self.solarfield.calc_tout(self.htf)
         self.solarfield.calc_pout()
 
 
@@ -1756,16 +1733,16 @@ class Simulation(object):
         else:
             massflow_to_HE = self.solarfield.massflow
 
-        self.heatexchanger.set_hotfluid_in(massflow_to_HE,
-                                         self.solarfield.tout,
-                                         self.solarfield.pout)
+        # self.heatexchanger.set_htf_in(massflow_to_HE,
+        #                                  self.solarfield.tout,
+        #                                  self.solarfield.pout)
 
-        self.heatexchanger.set_coldfluid_in(
-                self.powercycle.massflow, self.powercycle.tout, self.powercycle.pin) #PENDIENTE
+        # self.heatexchanger.set_coldfluid_in(
+        #         self.powercycle.massflow, self.powercycle.tout, self.powercycle.pin) #PENDIENTE
 
-        self.heatexchanger.set_thermalpowertransfered()
-        self.powercycle.calc_pr_NCA(self.powercycle.tout) #Provisonal temperatura agua coondensador
-        self.generator.calc_pr()
+        # self.heatexchanger.set_thermalpowertransfered()
+        # self.powercycle.calc_pr_NCA(self.powercycle.tout) #Provisonal temperatura agua coondensador
+        # self.generator.calc_pr()
         print(row[0].strftime('%y/%m/%d %H:%M'), 'DNI: ', round(row[1]['DNI']),
               "MF:", round(self.solarfield.massflow),
               "Tin:", round(self.solarfield.tin),
@@ -1787,12 +1764,12 @@ class Simulation(object):
                 if '.tout' in col:
                     col_pout = col.replace('.tout', '.pout')
                     col_mf = col.replace('.tout', '.mf')
-                    H_df +=  (self.hotfluid.get_deltaH(
+                    H_df +=  (self.htf.get_deltaH(
                             self.datasource.dataframe.at[row[0], col],
                             self.datasource.dataframe.at[row[0], col_pout]) *
                             self.datasource.dataframe.at[row[0], col_mf])
 
-            solarfield_df_tout = self.hotfluid.get_T(H_df / mf_df, self.solarfield.pout)
+            solarfield_df_tout = self.htf.get_T(H_df / mf_df, self.solarfield.pout)
             self.datasource.dataframe.at[row[0], 'Massflow_df'] = mf_df
             self.datasource.dataframe.at[row[0], 'Tout_df'] = solarfield_df_tout
 
@@ -1813,20 +1790,20 @@ class Simulation(object):
         self.datasource.dataframe.at[row[0], 'PTLoop_tin'] = self.prototype_loop.tin
         self.datasource.dataframe.at[row[0], 'PTLoop_tout'] = self.prototype_loop.tout
         self.datasource.dataframe.at[row[0], 'Pthermal'] = round(
-                self.solarfield.get_thermalpoweroutput(self.hotfluid)/1e6,1)
+                self.solarfield.get_thermalpoweroutput(self.htf)/1e6,1)
         self.datasource.dataframe.at[row[0], 'Tin'] = round(self.solarfield.tin, 0)
         self.datasource.dataframe.at[row[0], 'Tout'] = round(self.solarfield.tout, 0)
         self.datasource.dataframe.at[row[0], 'MF'] = round(self.solarfield.massflow,0)
-        self.heatexchanger.thermalpowertransfered
-        self.datasource.dataframe.at[row[0], 'Pmec']  = round(
-                self.heatexchanger.thermalpowertransfered *
-                self.powercycle.pr / 1e6, 2)
-        self.datasource.dataframe.at[row[0], 'Cycle.pr']  = round(self.powercycle.pr,2)
-        self.datasource.dataframe.at[row[0], 'HE.pr']  = round(self.heatexchanger.pr,2)
-        self.datasource.dataframe.at[row[0], 'Pelec']  = round(
-                self.heatexchanger.thermalpowertransfered *
-                self.powercycle.pr *
-                self.generator.pr / 1e6, 2)
+        # # self.heatexchanger.thermalpowertransfered
+        # self.datasource.dataframe.at[row[0], 'Pmec']  = round(
+        #         self.heatexchanger.thermalpowertransfered *
+        #         self.powercycle.pr / 1e6, 2)
+        # self.datasource.dataframe.at[row[0], 'Cycle.pr']  = round(self.powercycle.pr,2)
+        # self.datasource.dataframe.at[row[0], 'HE.pr']  = round(self.heatexchanger.pr,2)
+        # self.datasource.dataframe.at[row[0], 'Pelec']  = round(
+        #         self.heatexchanger.thermalpowertransfered *
+        #         self.powercycle.pr *
+        #         self.generator.pr / 1e6, 2)
 #        self.datasource.dataframe.at[row[0], 'iam'] = self.solarfield.subfields[3].loops[29].scas[0].get_IAM(aoi)
 #        self.datasource.dataframe.at[row[0], 'azimuth'] = solarpos['azimuth'][0]
 #        self.datasource.dataframe.at[row[0], 'zenith'] = solarpos['zenith'][0]
@@ -1842,7 +1819,7 @@ class Simulation(object):
     def showresults(self):
 
         self.datasource.dataframe[[
-                'DNI','MF', 'Pthermal', 'Pmec', 'Pelec', 'Tin', 'Tout']].plot(figsize=(20,10), linewidth=5, fontsize=20)
+                'DNI','MF', 'Pthermal', 'Tin', 'Tout']].plot(figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
 
         pd.set_option('display.max_rows', None)
@@ -2115,7 +2092,7 @@ class Fluid_Tabular(Fluid):
     def get_massflow_from_Reynolds(self, dri, t, p, re):
 
         if t > self.tmax:
-            t= self.tmax
+            t = self.tmax
 
         return re * np.pi * dri * self.get_dynamic_viscosity(t,p) / 4
 
@@ -2353,27 +2330,27 @@ class PowerSystem(object):
                                   self.steam_cycle_pr *
                                   self.turbogenerator_pr)
 
-    def get_rated_massflow(self, ratedpower, solarfield, hotfluid, coldfluid = None):
+    def get_rated_massflow(self, ratedpower, solarfield, htf, coldfluid = None):
 
-        HH = hotfluid.get_deltaH(solarfield.rated_tout, solarfield.rated_pout)
-        HL = hotfluid.get_deltaH(solarfield.rated_tin, solarfield.rated_pin)
+        HH = htf.get_deltaH(solarfield.rated_tout, solarfield.rated_pout)
+        HL = htf.get_deltaH(solarfield.rated_tin, solarfield.rated_pin)
         rated_massflow = self.get_thermalpower(self.ratedpower) / (HH - HL)
 
         return rated_massflow
 
 class HeatExchanger(object):
 
-    def __init__(self, settings, hotfluid, coldfluid):
+    def __init__(self, settings, htf, coldfluid):
 
         self.pr = settings['pr']
         self.thermalpowertransfered = 0.0
 
-        self.hotfluidmassflow = 0.0
-        self.hotfluidtin = 0.0
-        self.hotfluidtout = 393 + 273.15
-        self.hotfluidpin = 1500000
-        self.hotfluidpout = 0.0
-        self.hotfluid = hotfluid
+        self.htfmassflow = 0.0
+        self.htftin = 0.0
+        self.htftout = 393 + 273.15
+        self.htfpin = 1500000
+        self.htfpout = 0.0
+        self.htf = htf
 
         self.coldfluidmassflow = 0.0
         self.coldfluidtin = 0.0
@@ -2382,11 +2359,11 @@ class HeatExchanger(object):
         self.colfluidtout = 0.0
         self.coldfluid = coldfluid
 
-    def set_hotfluid_in(self, hotfluidmassflow, hotfluidtin, hotfluidpin):
+    def set_htf_in(self, htfmassflow, htftin, htfpin):
 
-        self.hotfluidmassflow = hotfluidmassflow
-        self.hotfluidtin = hotfluidtin
-        self.hotfluidpin = hotfluidpin
+        self.htfmassflow = htfmassflow
+        self.htftin = htftin
+        self.htfpin = htfpin
 
     def set_coldfluid_in(self, coldfluidmassflow, coldfluidtin, coldfluidpin):
 
@@ -2399,18 +2376,18 @@ class HeatExchanger(object):
         #provisional
         pinch = 10.0
 
-        HH = self.hotfluid.get_deltaH(self.hotfluidtin, self.hotfluidpin)
-        HL = self.hotfluid.get_deltaH(self.coldfluidtin + pinch, self.hotfluidpout)
+        HH = self.htf.get_deltaH(self.htftin, self.htfpin)
+        HL = self.htf.get_deltaH(self.coldfluidtin + pinch, self.htfpout)
 
-        self.thermalpowertransfered = self.pr * ((HH-HL)*self.hotfluidmassflow)
+        self.thermalpowertransfered = self.pr * ((HH-HL)*self.htfmassflow)
 #        self.thermalpowertransfered = (
 #                self.pr *
-#                self.hotfluidmassflow *
-#                self.hotfluid.get_cp(self.hotfluidtin, self.hotfluidpin) *
-#                self.hotfluidtin - hftout)
+#                self.htfmassflow *
+#                self.htf.get_cp(self.htftin, self.htfpin) *
+#                self.htftin - hftout)
 
 
-    def hot_fluid_tout():
+    def htf_tout():
         return
 
 
@@ -2423,7 +2400,7 @@ class HeatStorage(object):
     def set_fluid_tout(self):
         pass
 
-    def hot_fluid_tout():
+    def htf_tout():
         return
 
 class BOPSystem(object):
