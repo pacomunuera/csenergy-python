@@ -1,4 +1,8 @@
 - cálculo de pérdidas ópticas y resto de pérdidas. De momento las pérdidas son bajas y se sobrecalienta el HTF. 
+- rECEPTORES: uvac 2, uvac 3, ptr70 ptr70 2008, skytrough DSP.
+hems08
+- pg 248 ecuación 5.3 para el cálculo de la emisividad
+- pérdidas de calor en puentes térmicos de estructura soporte del colector (ec. 4.12), de Forristall
 - pr_shadows está mal y parece estar repetido get_sca_shadows ( las sombras se computan sobre el SCA o sobre el HCE)
 - comprobar IAM if kiam > 1:
                 kiam = 2 -kiam
@@ -10,6 +14,9 @@
 - interfaz 
 - interfaz web
 - visualización de datos.
+
+DUDAS:
+Modelo local para longitud típica de HCE y modelo integral para todo el SCA o LOOP?
 
 
 

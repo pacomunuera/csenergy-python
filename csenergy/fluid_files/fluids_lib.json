@@ -1,5 +1,5 @@
 [	{
-	"Name":"DOWTHERM A",
+	"name":"DOWTHERM A",
 	"coefficients": 
 	[
 		{"cp": {"cp0": -2.364e03 , "cp1": 3.946e01 , "cp2": -1.703e-01 , "cp3": 3.904e-04, "cp4": -4.422e-07, "cp5": 1.979e-10}},
@@ -12,7 +12,7 @@
 	"tmin": 288
 	},
 	{
-    	"Name": "SYLTHERM 800",
+    	"name": "SYLTHERM 800",
 	"coefficients":
 	[
 		{"cp": {"cp0": 1.11064e03, "cp1": 1.68759e00, "cp2": 5.05279e-05, "cp3": -4.14550e-08, "cp4": -8.43282e-15, "cp5": 3.24922e-18}}, 
@@ -25,7 +25,7 @@
 	"tmin": 233
 	},  
 	{
-	"Name": "THERMINOL VP1",
+	"name": "THERMINOL VP1",
 	"coefficients":
 	[
 		{"cp": {"cp0": 2.88111e02, "cp1": 5.87494, "cp2": -6.85657e-03, "cp3": 4.84416e-06, "cp4": 1.34662e-14, "cp5": -5.19062e-18}},

@@ -5,7 +5,7 @@ import json
 import copy
 from datetime import datetime
 
-with open("./saved_configurations/simulation4x36_4.json") as simulation_file:
+with open("./saved_configurations/simulation_SIMULATION_FASTMODE.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
 simulation = cs.Simulation(simulation_settings['simulation'])
@@ -14,7 +14,8 @@ if simulation.datatype == 1:
     datasource = cs.Weather(simulation_settings['simulation'])
     print("Simulation based on weather data")
 elif simulation.datatype == 2:
-    datasource = cs.FieldData(simulation_settings['simulation'])
+    datasource = cs.FieldData(simulation_settings['simulation'],
+                              simulation_settings['solarfield']['tags'])
     print("Benchmarking based on actual data")
 
 

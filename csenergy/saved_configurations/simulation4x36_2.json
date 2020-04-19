@@ -4,7 +4,7 @@
     "datatype" : 1,
     "simulation": true,
     "benchmark": false,
-    "fastmode": false,
+    "fastmode": true,
     "filename": "marzo3.tm2",
     "filepath": "./weather_files/"},
 "tags": {

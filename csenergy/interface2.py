@@ -143,17 +143,16 @@ class Interface(object):
 
         self.solarfield_table.table_data = list_subfields
 
-
         try:
             list_tags = []
-            for r in cfg['tags']:
-                list_tags.append([r, '', cfg['tags'][r]])
+            for r in cfg['solarfield']['tags']:
+                list_tags.append([r, '', cfg['solarfield']['tags'][r]])
+
+            self.columns_table.table_data = list_tags
 
         except:
             pass
 
-        self.columns_table.table_data = list_tags
-        self.enname.delete(0, tk.END)
         self.varsolarfieldname.set(cfg['solarfield']['name'])
         self.vartin.set(cfg['solarfield']['rated_tin'])
         self.vartout.set(cfg['solarfield']['rated_tout'])
@@ -162,7 +161,7 @@ class Interface(object):
         self.vartmin.set(cfg['solarfield']['tmin'])
         self.vartmax.set(cfg['solarfield']['tmax'])
         self.varratedmassflow.set(cfg['solarfield']['rated_massflow'])
-        self.varrecirculation.set(cfg['solarfield']['recirculation_massflow'])
+        self.varrecirculation.set(cfg['solarfield']['min_massflow'])
         self.varscas.set(cfg['solarfield']['loop']['scas'])
         self.varhces.set(cfg['solarfield']['loop']['hces'])
         self.varrowspacing.set(cfg['solarfield']['row_spacing'])
@@ -508,7 +507,7 @@ class Interface(object):
     #     self.vartmin.set(cfg['solarfield']['tmin'])
     #     self.vartmax.set(cfg['solarfield']['tmax'])
     #     self.varratedmassflow.set(cfg['solarfield']['rated_massflow'])
-    #     self.varrecirculation.set(cfg['solarfield']['recirculation_massflow'])
+    #     self.varrecirculation.set(cfg['solarfield']['min_massflow'])
     #     self.varscas.set(cfg['solarfield']['loop']['scas'])
     #     self.varhces.set(cfg['solarfield']['loop']['hces'])
 
@@ -612,21 +611,15 @@ class Interface(object):
         cfg['solarfield']['tmin'] = self.vartmin.get()
         cfg['solarfield']['tmax'] = self.vartmax.get()
         cfg['solarfield']['rated_massflow'] = self.varratedmassflow.get()
-        cfg['solarfield']['recirculation_massflow'] = self.varrecirculation.get()
+        cfg['solarfield']['min_massflow'] = self.varrecirculation.get()
         cfg['solarfield']['row_spacing'] = self.varrowspacing.get()
 
         cfg['solarfield']['loop'] = {'scas': self.varscas.get(),
                                      'hces': self.varhces.get()}
 
-        if self.varsimdatatype.get() == 2:
-
-            cfg['tags'] = dict({})
-
-            for r in self.columns_table.table_data:
-                cfg['tags'][r[0]] = r[2]
-
         datarow = list(self.solarfield_table.table_data)
         dictkeys =['name', 'loops']
+
         subfields = []
 
         for r in datarow:
@@ -639,6 +632,13 @@ class Interface(object):
             subfields.append(sf)
 
         cfg['solarfield'].update({'subfields' : subfields})
+
+        if self.varsimdatatype.get() == 2:
+
+            cfg['solarfield']['tags'] = dict({})
+
+            for r in self.columns_table.table_data:
+                cfg['solarfield']['tags'][r[0]] = r[2]
 
         f.write(json.dumps(cfg, indent= True))
         f.close()
@@ -659,7 +659,7 @@ class Interface(object):
         cfg['solarfield'].update(dict({'rated_pin' : self.enratedpin.get()}))
         cfg['solarfield'].update(dict({'rated_pout' : self.enratedpout.get()}))
         cfg['solarfield'].update(dict({'rated_masslflow' : self.enratedmassflow.get()}))
-        cfg['solarfield'].update(dict({'recirculation_massflow' : self.enrecirculationmassflow.get()}))
+        cfg['solarfield'].update(dict({'min_massflow' : self.enrecirculationmassflow.get()}))
         cfg['solarfield'].update(dict({'tmin' : self.entmin.get()}))
         cfg['solarfield'].update(dict({'tmin' : self.entmax.get()}))
         cfg['solarfield'].update(dict({'loop': dict({'scas': self.enscas.get(),
@@ -797,7 +797,7 @@ class Interface(object):
         self.enratedmassflow.grid(row = 4, column = 1, sticky='W', padx=5, pady=5)
 
         self.varrecirculation = tk.DoubleVar(self.fr_solarfield)
-        self.lbrecirculationmassflow = ttk.Label(self.fr_solarfield, text= 'Loop Recirculation massflow [Kg/s]')
+        self.lbrecirculationmassflow = ttk.Label(self.fr_solarfield, text= 'Loop minimum massflow [Kg/s]')
         self.lbrecirculationmassflow.grid(row = 4, column = 2, sticky='W', padx=5, pady=5)
         self.enrecirculationmassflow = ttk.Entry(self.fr_solarfield, textvariable = self.varrecirculation)
         self.enrecirculationmassflow.grid(row = 4, column = 3, sticky='W', padx=5, pady=5)

@@ -1,9 +1,9 @@
 {
  "simulation": {
   "ID": "LS3",
-  "datatype": 2,
+  "datatype": 1,
   "simulation": true,
-  "benchmark": true,
+  "benchmark": false,
   "fastmode": true,
   "filename": "marzo3.tm2",
   "filepath": "D:/USB/0-SINC/0 - TFG/clon_csenergy-python/csenergy/weather_files/"
@@ -31,10 +31,6 @@
   },
   "subfields": [
    {
-    "name": "SE",
-    "loops": 30
-   },
-   {
     "name": "NO",
     "loops": 30
    },
@@ -45,34 +41,39 @@
    {
     "name": "SO",
     "loops": 30
+   },
+   {
+    "name": "SE",
+    "loops": 30
    }
   ],
   "tags": {
-    "NO.mf": "1110-FX-1800.UNIT1@ASTE1A",
-        "NO.tin": "1110-TT-1800.UNIT1@ASTE1A",
-        "NO.tout": "1110-TT-1802.UNIT1@ASTE1A",
-    	"NO.pin": "1110-PT-1800.UNIT1@ASTE1A",
-    	"NO.pout": "1110-PT-1802.UNIT1@ASTE1A",
-	    "NE.mf": "1110-FX-1801.UNIT1@ASTE1A",
-        "NE.tin": "1110-TT-1801.UNIT1@ASTE1A",
-        "NE.tout": "1110-TT-1803.UNIT1@ASTE1A",
-    	"NE.pin": "1110-PT-1801.UNIT1@ASTE1A",
-    	"NE.pout": "1110-PT-1803.UNIT1@ASTE1A",
-	    "SO.mf": "1110-FX-1809.UNIT1@ASTE1A",
-        "SO.tin": "1110-TT-1809.UNIT1@ASTE1A",
-        "SO.tout": "1110-TT-1807.UNIT1@ASTE1A",
-    	"SO.pin": "1110-PT-1809.UNIT1@ASTE1A",
-    	"SO.pout": "1110-PT-1807.UNIT1@ASTE1A",
-	    "SE.mf": "1110-FX-1810.UNIT1@ASTE1A",
-        "SE.tin": "1110-TT-1810.UNIT1@ASTE1A",
-        "SE.tout": "1110-TT-1808.UNIT1@ASTE1A",
-    	"SE.pin": "1110-PT-1810.UNIT1@ASTE1A",
-    	"SE.pout": "1110-PT-1808.UNIT1@ASTE1A",
-	    "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
-        "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
-        "Wdir": "1100-AXT-1872R.UNIT1@ASTE1A",
-        "DryBulb": "1100-AXT-1873R.UNIT1@ASTE1A",
-    	"Pressure": "1100-AXT-1883R.UNIT1@ASTE1A"}
+   "NO.tin": "1110-TT-1800.UNIT1@ASTE1A",
+   "NO.tout": "1110-TT-1802.UNIT1@ASTE1A",
+   "NO.pin": "1110-PT-1800.UNIT1@ASTE1A",
+   "NO.pout": "1110-PT-1802.UNIT1@ASTE1A",
+   "NE.mf": "1110-FX-1801.UNIT1@ASTE1A",
+   "NE.tin": "1110-TT-1801.UNIT1@ASTE1A",
+   "NE.tout": "1110-TT-1803.UNIT1@ASTE1A",
+   "NE.pin": "1110-PT-1801.UNIT1@ASTE1A",
+   "NE.pout": "1110-PT-1803.UNIT1@ASTE1A",
+   "SO.mf": "1110-FX-1809.UNIT1@ASTE1A",
+   "SO.tin": "1110-TT-1809.UNIT1@ASTE1A",
+   "SO.tout": "1110-TT-1807.UNIT1@ASTE1A",
+   "SO.pin": "1110-PT-1809.UNIT1@ASTE1A",
+   "SO.pout": "1110-PT-1807.UNIT1@ASTE1A",
+   "SE.mf": "1110-FX-1810.UNIT1@ASTE1A",
+   "SE.tin": "1110-TT-1810.UNIT1@ASTE1A",
+   "SE.tout": "1110-TT-1808.UNIT1@ASTE1A",
+   "SE.pin": "1110-PT-1810.UNIT1@ASTE1A",
+   "SE.pout": "1110-PT-1808.UNIT1@ASTE1A",
+   "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
+   "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
+   "Wdir": "1100-AXT-1872R.UNIT1@ASTE1A",
+   "DryBulb": "1100-AXT-1873R.UNIT1@ASTE1A",
+   "Pressure": "1100-AXT-1883R.UNIT1@ASTE1A",
+   "NO.mf": "1110-FX-1800.UNIT1@ASTE1A"
+  }
  },
  "SCA": {
   "Name": "Luz LS-3",
@@ -82,9 +83,9 @@
   "IAM Coefficient F0": 1.0,
   "IAM Coefficient F1": 0.0506,
   "IAM Coefficient F2": -0.1763,
-  "Track Twist": 0.935,
+  "Track Twist": 0.99,
   "Geom.Accuracy": 0.98,
-  "Reflectance": 0.99,
+  "Reflectance": 0.935,
   "Cleanliness": 0.97,
   "Dust": 0.98,
   "Factor": 1.0,

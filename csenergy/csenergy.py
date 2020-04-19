@@ -76,7 +76,7 @@ class ModelBarbero4grade(Model):
         pr_opt_peak = hce.get_pr_opt_peak(aoi, solarpos, row)
         pr_geo = hce.get_pr_geo(aoi, solarpos, row)
         pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
-        pr_shadows = 0.5
+        # pr_shadows = 0.5
 
         cg = A /(np.pi*dro)
 
@@ -123,19 +123,20 @@ class ModelBarbero4grade(Model):
         #  Internal transmission coefficient.
         hint = kf * nug / dri
 
-        # Ec. 3.23
+        #  Ec. 3.23
         qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         # Ec. 3.50 Barbero
         qcrit = qperd
 
-        # Ec. 3.51 Barbero
+        #  Ec. 3.51 Barbero
         ucrit = 4 * sigma * eext * tin**3 + hext
         # Ec. 3.22
         urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
-        NTU = urec * x * L * sc.pi * dro / (massflow * cp)  # Ec. 3.30
+        #  Ec. 3.30
+        NTU = urec * x * L * sc.pi * dro / (massflow * cp)
 
-        # Ec. 3.20 Barbero
+        #  Ec. 3.20 Barbero
         qabs = (pr_opt_peak * IAM * cg * dni * pr_geo * pr_shadows)
 
         if qabs > 0:
@@ -145,18 +146,6 @@ class ModelBarbero4grade(Model):
                 pr0 = 0.0
         else:
             pr0 = 0.0
-
-
-        # if hce.tin >= htf.tmax or hce.sca.status == 'defocused':
-        #     hce.sca.status = 'defocused'
-        #     qabs = 0.0  #defocused
-        #     pr0 = 0.0
-        # else:
-        #     hce.sca.status == 'focused'
-        #     if qabs > 0.0:
-        #         pr0 = (1 - qcrit / qabs)/(1 + ucrit / urec)
-        #     else:
-        #         pr0 = 0.0
 
         pr1 = pr0
         tro1 = tf + qabs * pr1 / urec
@@ -213,7 +202,6 @@ class ModelBarbero4grade(Model):
                 tf = 0.5 * (hce.tin + hce.tout)
 
                 tri = tro1
-
 
                 cp = htf.get_cp(tf, pressure)
                 cpri = htf.get_cp(tri, pressure)
@@ -642,7 +630,6 @@ class HCE(object):
     def get_pr_shadows(self, aoi, solarpos, row):
 
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
-
         # Sombras debidas a otros lazos
 
         shadowing = (1 -
@@ -941,11 +928,16 @@ class Loop(object):
                 if self.tout >= self.solarfield.rated_tout:
                     self.massflow *= (1 + err / 100)
                     search = True
-                elif (self.massflow > min_massflow):
+                elif (self.massflow > min_massflow and
+                      self.massflow >
+                      self.solarfield.solarfield_settings['min_massflow']):
                     self.massflow *= (1 - err / 100)
                     search = True
                 else:
-                    self.massflow = min_massflow
+                    self.massflow = max(
+                        min_massflow,
+                        self.solarfield.solarfield_settings['min_massflow'])
+                    self.calc_loop_pr_for_massflow(row, solarpos, htf, model)
                     search = False
             else:
                 search = False
@@ -960,7 +952,7 @@ class Loop(object):
 
     #         # We work with the minimum massflow at night in order to
     #         # reduce thermal losses
-    #         self.massflow =  (self.solarfield.recirculation_massflow /
+    #         self.massflow =  (self.solarfield.min_massflow /
     #                           self.solarfield.total_loops)
 
     #         for s in self.scas:
@@ -1252,8 +1244,8 @@ class SolarField(object):
         self.rated_pout = solarfield_settings['rated_pout']
         self.rated_massflow = (solarfield_settings['rated_massflow'] *
                                self.total_loops)
-        self.recirculation_massflow = (
-            solarfield_settings['recirculation_massflow'] * self.total_loops)
+        self.min_massflow = (
+            solarfield_settings['min_massflow'] * self.total_loops)
 
         self.tmax = solarfield_settings['tmax']
         self.tmin = solarfield_settings['tmin']
@@ -1553,7 +1545,7 @@ class Simulation(object):
                 print("Running simulation for", self.site.name)
                 self.simulate_solarfield(solarpos, row)
 
-            if self.benchmark and self.datatype == 'field data':
+            if self.benchmark and self.datatype == 2:  # 2: Field Data File available
                 print("Running benchmark for", self.site.name)
                 self.benchmarksolarfield(solarpos, row)
 
@@ -1575,7 +1567,7 @@ class Simulation(object):
 
         # Force recirculation massflow at night
         if solarpos['zenith'][0] > 90:
-            self.prototype_loop.massflow =  (self.solarfield.recirculation_massflow /
+            self.prototype_loop.massflow =  (self.solarfield.min_massflow /
                           self.solarfield.total_loops)
             self.prototype_loop.calc_loop_pr_for_massflow(
                 row, solarpos, self.htf, self.model)
@@ -1590,6 +1582,7 @@ class Simulation(object):
         self.prototype_loop.pr_req_massflow = self.prototype_loop.get_loop_avg_pr()
 
         if  self.fastmode:
+            print('Fastmode \n')
             flag_1 = datetime.now()
             delta_1 = flag_1 - flag_0
 
@@ -1607,13 +1600,14 @@ class Simulation(object):
             delta_2 = flag_2 - flag_1
 
         else:
+            print('No fastmode \n')
             for s in self.solarfield.subfields:
                 for l in s.loops:
                     l.initialize()
 
 
                     if solarpos['zenith'][0] > 90:
-                        l.massflow =  (self.solarfield.recirculation_massflow /
+                        l.massflow =  (self.solarfield.min_massflow /
                                       self.solarfield.total_loops)
 
                         l.calc_loop_pr_for_massflow(
@@ -2199,11 +2193,11 @@ class Weather(object):
 
 class FieldData(object):
 
-    def __init__(self, settings):
+    def __init__(self, settings, tags):
         self.filename = settings['filename']
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
-        self.tags = settings['tags']
+        self.tags = tags
         self.dataframe = None
 
         self.openFieldDataFile(self.file)
