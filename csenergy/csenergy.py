@@ -87,7 +87,10 @@ class ModelBarbero4grade(Model):
 
         #  Reynols number for wind at
         reext = dgo * wspd / nu_air
-        hext, eext = cls.get_hext_eext(hce, reext, tro, wspd)
+
+        #hext, eext = cls.get_hext_eext(hce, reext, tro, wspd)
+        eext = hce.get_emittance(tro, wspd)
+        hext = hce.get_hext(wspd)
 
         cp = htf.get_cp(tf, hce.pin)
         cpri = cp
@@ -232,7 +235,9 @@ class ModelBarbero4grade(Model):
 
                 #nudb = 0.023 * redri**0.8 * prf**0.4
                 hint = kf * nug / dri
-                hext, eext = cls.get_hext_eext(hce, reext, tro1, wspd)
+                # hext, eext = cls.get_hext_eext(hce, reext, tro1, wspd)
+                eext = hce.get_emittance(tro1, wspd)
+                hext = hce.get_hext(wspd)
 
                 trec = (tro1+tri)/2
                 # Ec. 4.22
@@ -249,26 +254,12 @@ class ModelBarbero4grade(Model):
 
                 flag_2 = datetime.now()
 
-                # if (hce.sca.loop.loop_order == 0 and
-                #     hce.sca.sca_order == (len(hce.sca.loop.scas) - 1) and
-                #     hce.hce_order == (len(hce.sca.hces)-1)):
-                #     delta_2 = flag_2 - flag_0
-                #     #print("hce_while:", hce.get_index(), delta_2.total_seconds())
-
-            # if (hce.sca.loop.loop_order == 0 and
-            #     hce.sca.sca_order == (len(hce.sca.loop.scas) - 1) and
-            #     hce.hce_order == (len(hce.sca.hces)-1)):
-            #     delta_1 = flag_1 - flag_0
-                #print("hce_offwhile:", hce.get_index(), delta_1.total_seconds())
         else:
             hce.pr = pr1
             hce.qperd = qperd
             hce.qabs = qabs
-
-            #HL = htf.get_deltaH(hce.tin, hce.sca.loop.pin)
-            #h = qperd / hce.sca.loop.massflow
-            #hce.tout = htf.get_T(HL - h, hce.sca.loop.pin)
             hce.set_tout(htf)
+
             #FLUJO LAMINAR
             hce.set_pout(htf)
             flag_3 = datetime.now()
@@ -279,6 +270,15 @@ class ModelBarbero4grade(Model):
 
         eext = 0.
         hext = 0.
+
+        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
+            pass
+
+        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
+            pass
+
+        elif hce.parameters['Name'] == 'Schott PTR70':
+            pas
 
         if (hce.parameters['coating'] == 'CERMET' and
             hce.parameters['annulus'] == 'VACUUM'):
@@ -581,7 +581,7 @@ class HCE(object):
     def get_pr_opt_peak(self, aoi, solarpos, row):
 
         alpha = self.get_absorptance()
-        tau = self.get_transmissivity()
+        tau = self.get_transmittance()
         rho = self.sca.parameters['Reflectance']
         gamma = self.sca.get_solar_fraction(aoi, solarpos, row)
 
@@ -651,18 +651,45 @@ class HCE(object):
         return pr_shadows
 
 
+    def get_hext(self, wspd):
+
+        #  TO-DO:
+
+        return 0.0
+
+
+    def get_emittance(self, tro, wspd):
+
+
+        #  Eq. 5.2 Barbero
+        eext = (self.parameters['Absorber emittance factor A0'] +
+                self.parameters['Absorber emittance factor A1'] *
+                (tro - 273.15))
+        """
+        Lineal Increase if wind speed lower than 4 m/s up to 1% at 4 m/s
+        Lineal increase over 4 m/s up to 2% at 7 m/s
+        """
+        if wspd <4:
+            eext = eext * (1 + 0.01 * wspd / 4)
+
+        else:
+            eext = eext * (1 + 0.01 * (0.3333 * wspd - 0.3333))
+
+        return eext
+
+
     def get_absorptance(self):
 
         #
-        alpha = self.parameters['absorptance']
+        alpha = self.parameters['Absorber absorptance']
 
         return alpha
 
 
-    def get_transmissivity(self):
+    def get_transmittance(self):
 
         #dependiendo si hay vídrio y si hay vacío
-        tau = self.parameters['transmissivity']
+        tau = self.parameters['Envelope transmittance']
 
         return tau
 
@@ -911,7 +938,7 @@ class Loop(object):
         min_massflow = htf.get_massflow_from_Reynolds(
             self.solarfield.hce_settings['Absorber tube inner diameter'],
             self.tin, self.pin,
-            self.solarfield.hce_settings['Min_reynolds'])
+            self.solarfield.hce_settings['Min Reynolds'])
 
         max_error = 0.1  # % desviation tolerance
         search = True
@@ -967,7 +994,7 @@ class Loop(object):
     #         min_massflow = htf.get_massflow_from_Reynolds(
     #             self.solarfield.hce_settings['dri'],
     #             self.tin, self.pin,
-    #             self.solarfield.hce_settings['min_reynolds'])
+    #             self.solarfield.hce_settings['Min Reynolds'])
 
     #         max_error = 0.1  # % desviation tolerance
     #         search = True
@@ -1508,7 +1535,7 @@ class Simulation(object):
         dri = self.solarfield.hce_settings['Absorber tube inner diameter']
         t = self.solarfield.tin
         p = self.solarfield.pin
-        re = self.solarfield.hce_settings['Min_reynolds']
+        re = self.solarfield.hce_settings['Min Reynolds']
         loop_min_massflow = self.htf.get_massflow_from_Reynolds(
                 dri, t, p , re)
         solarfield_min_massflow = self.solarfield.total_loops * loop_min_massflow

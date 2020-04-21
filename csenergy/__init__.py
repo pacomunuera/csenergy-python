@@ -5,7 +5,7 @@ import json
 import copy
 from datetime import datetime
 
-with open("./saved_configurations/simulation_SIMULATION_FASTMODE.json") as simulation_file:
+with open("./saved_configurations/simulation_S_F_UVAC.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
 simulation = cs.Simulation(simulation_settings['simulation'])

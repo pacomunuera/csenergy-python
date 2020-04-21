@@ -1,12 +1,12 @@
 {
  "simulation": {
-  "ID": "LS3",
+  "ID": "UVAC3",
   "datatype": 1,
   "simulation": true,
   "benchmark": false,
   "fastmode": true,
   "filename": "marzo3.tm2",
-  "filepath": "./weather_files/"
+  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },
  "site": {
   "name": "Alc\u00e1zar de San Juan",
@@ -31,10 +31,6 @@
   },
   "subfields": [
    {
-    "name": "NO",
-    "loops": 30
-   },
-   {
     "name": "NE",
     "loops": 30
    },
@@ -45,35 +41,12 @@
    {
     "name": "SE",
     "loops": 30
+   },
+   {
+    "name": "NO",
+    "loops": 30
    }
-  ],
-  "tags": {
-   "NO.tin": "1110-TT-1800.UNIT1@ASTE1A",
-   "NO.tout": "1110-TT-1802.UNIT1@ASTE1A",
-   "NO.pin": "1110-PT-1800.UNIT1@ASTE1A",
-   "NO.pout": "1110-PT-1802.UNIT1@ASTE1A",
-   "NE.mf": "1110-FX-1801.UNIT1@ASTE1A",
-   "NE.tin": "1110-TT-1801.UNIT1@ASTE1A",
-   "NE.tout": "1110-TT-1803.UNIT1@ASTE1A",
-   "NE.pin": "1110-PT-1801.UNIT1@ASTE1A",
-   "NE.pout": "1110-PT-1803.UNIT1@ASTE1A",
-   "SO.mf": "1110-FX-1809.UNIT1@ASTE1A",
-   "SO.tin": "1110-TT-1809.UNIT1@ASTE1A",
-   "SO.tout": "1110-TT-1807.UNIT1@ASTE1A",
-   "SO.pin": "1110-PT-1809.UNIT1@ASTE1A",
-   "SO.pout": "1110-PT-1807.UNIT1@ASTE1A",
-   "SE.mf": "1110-FX-1810.UNIT1@ASTE1A",
-   "SE.tin": "1110-TT-1810.UNIT1@ASTE1A",
-   "SE.tout": "1110-TT-1808.UNIT1@ASTE1A",
-   "SE.pin": "1110-PT-1810.UNIT1@ASTE1A",
-   "SE.pout": "1110-PT-1808.UNIT1@ASTE1A",
-   "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
-   "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
-   "Wdir": "1100-AXT-1872R.UNIT1@ASTE1A",
-   "DryBulb": "1100-AXT-1873R.UNIT1@ASTE1A",
-   "Pressure": "1100-AXT-1883R.UNIT1@ASTE1A",
-   "NO.mf": "1110-FX-1800.UNIT1@ASTE1A"
-  }
+  ]
  },
  "SCA": {
   "Name": "Luz LS-3",
@@ -83,9 +56,9 @@
   "IAM Coefficient F0": 1.0,
   "IAM Coefficient F1": 0.0506,
   "IAM Coefficient F2": -0.1763,
-  "Track Twist": 0.99,
+  "Track Twist": 0.935,
   "Geom.Accuracy": 0.98,
-  "Reflectance": 0.935,
+  "Reflectance": 0.99,
   "Cleanliness": 0.97,
   "Dust": 0.98,
   "Factor": 1.0,
@@ -93,21 +66,21 @@
   "Tracking Type": 1
  },
  "HCE": {
-  "Name": "Schott PTR70",
+  "Name": "Solel UVAC 3",
   "Length": 4.05,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,
-  "Glass envelope outer diameter": 0.12,
+  "Glass envelope outer diameter": 0.121,
   "Min Reynolds": 30000.0,
   "Inner surface roughness": 4.5e-05,
-  "Absorber emittance factor A1": 0.000182,
-  "Absorber emittance factor A0": 0.0861,
-  "Absorber absorptance": 0.95,
-  "transmissivity": 0.963,
+  "Envelope transmittance": 0.96,
   "absorptance": 0.96,
-  "coating": "CERMET",
-  "annulus": "VACUUM"
+  "coating": "",
+  "annulus": "",
+  "Absorber emittance factor A0": 0.043,
+  "Absorber emittance factor A1": 0.000206,
+  "Absorber absorptance": 0.96
  },
  "HTF": {
   "source": "table",

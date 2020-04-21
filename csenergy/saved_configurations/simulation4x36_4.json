@@ -6,7 +6,7 @@
   "benchmark": true,
   "fastmode": true,
   "filename": "marzo3.tm2",
-  "filepath": "D:/USB/0-SINC/0 - TFG/clon_csenergy-python/csenergy/weather_files/"
+  "filepath": "./weather_files/"
  },
  "site": {
   "name": "Alc\u00e1zar de San Juan",
@@ -100,6 +100,9 @@
   "Glass envelope outer diameter": 0.12,
   "Min_reynolds": 30000.0,
   "Inner surface roughness": 4.5e-05,
+  "Absorber emittance factor A1": 0.000182,
+  "Absorber emittance factor A0": 0.0861,
+  "Absorber absorptance": 0.95,
   "transmissivity": 0.963,
   "absorptance": 0.96,
   "coating": "CERMET",
