@@ -20,6 +20,7 @@ from pvlib import iam
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from datetime import datetime
+import time
 import os.path
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -325,51 +326,171 @@ class ModelBarbero1grade(Model):
         super(Model, self).__init__(simulation)
 
     @classmethod
-    def calc_pr(cls, hce, htf, dni):
+    def calc_pr(cls, hce, htf, aoi, solarpos, row):
 
-        dni = dni
-        cp = htf.get_cp(hce.tin)
-        sigma = sc.constants.sigma
-        massflow = hce.sca.loop.massflow
-        x = 1
-        # cp = self.htf.get_cp(hce.tin)
-        Model.set_tin(hce)
+        flag_0 = datetime.now()
 
+        pressure = hce.sca.loop.pin
+        hce.set_tin()
+        hce.set_pin()
+        hce.tout = hce.tin
         tin = hce.tin
-        tf = tin
-        hce.tout = tin
+        tf = hce.tin
+        tro = hce.tin
+        tri = hce.tin
 
-        text = 22.0
+        massflow = hce.sca.loop.massflow
 
-        #Ec. 3.20 Barbero
-        qabs = (hce.parameters['pr_opt']*
-                hce.parameters['cg'] * dni *
-                hce.parameters['pr_shw'] *
-                hce.parameters['pr_geo'])
+        dni = row[1]['DNI']
+        wspd = row[1]['Wspd']
+        text = row[1]['DryBulb']
+
+
+        krec = 0.0153 * (tin - 273.15) + 14.77
+        sigma = sc.constants.sigma
+        dro = hce.parameters['Absorber tube outer diameter']
+        dri = hce.parameters['Absorber tube inner diameter']
+        dgo = hce.parameters['Glass envelope outer diameter']
+        dgi = hce.parameters['Glass envelope inner diameter']
+        L = hce.parameters['Length']
+        A = hce.sca.parameters['Aperture']
+        x = 1 #  Calculation grid fits hce longitude
+        IAM = hce.sca.get_IAM(aoi)
+        pr_opt_peak = hce.get_pr_opt_peak(aoi, solarpos, row)
+        pr_geo = hce.get_pr_geo(aoi, solarpos, row)
+        pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
+        # pr_shadows = 0.5
+
+        cg = A /(np.pi*dro)
+
+        #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
+        # tabla en K
+        nu_air = Air.get_cinematic_viscosity(text)
+        wspd = row[1]['Wspd']
+
+        eext = hce.get_emittance(tro, wspd)
+        hext = hce.get_hext(wspd)
+
+        cp = htf.get_cp(tf, hce.pin)
+        cpri = cp
+
+        # Ec. 4.14
+        mu = htf.get_dynamic_viscosity(tf, pressure)
+
+        rho = htf.get_density(tf, pressure)
+
+        kf = htf.get_thermal_conductivity(tf, pressure)
+
+        alpha = kf / (rho * cp)
+        alphari = alpha
+
+        prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
+        prfri = prf
+
+        #  Correlación de Gnielinski (utilizado por Forristall [1]
+        #  y verificado en [38]) según ec. 4.15
+        redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
+        cf = (1.58 * np.log(redri) - 3.28)**-2
+
+        # Número de Nusselt alto, casi independiente inicialmente de tri
+        # ya que estamos considerando tri = tf o casi igual
+
+        nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
+               (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
+
+        #  Internal transmission coefficient.
+        hint = kf * nug / dri
+
+        #  Ec. 3.23
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         # Ec. 3.50 Barbero
-        qcrit = sigma*eext*(tin**4-text**4)+hext*(tin-text)
+        qcrit = qperd
 
-        #Ec. 3.51 Barbero
-        ucrit = 4*sigma*eext*tin**3+hext
-        #krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
+        #  Ec. 3.51 Barbero
+        ucrit = 4 * sigma * eext * tin**3 + hext
         # Ec. 3.22
-        urec = 1/(
-            (1/hint) +
-            (dro*np.log(dro/dri))/(2*krec)
-            )
+        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
 
-        fcrit = 1/(1+ucrit/urec)
+        #  Ec. 3.20 Barbero
+        qabs = (pr_opt_peak * IAM * cg * dni * pr_geo * pr_shadows)
 
-        aext=0.5*sc.pi*dro
-        ntuperd = ucrit*aext/(massflow*cp)
+        #  Ec. 3.63
+        ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
+        fcrit = 1 / (1 + (ucrit / urec))
 
-        if qabs > 0.0:
-            pr = (1-qcrit/qabs)*(1/(ntuperd*x))*(1-sc.exp(-ntuperd*fcrit*x))
+        #  Ec. 3.64
+        Aext = np.pi * dro * x / 2  # Pendiente de confirmar
+        NTUperd = ucrit * Aext / (massflow * cp)
+
+
+        if qabs > 0:
+
+            hce.pr = ((1 - (qcrit / qabs)) *
+                  (1 / (NTUperd * x)) *
+                  (1 - np.exp(-NTUperd * fcrit * x)))
         else:
-            pr = 0.0
-#
-        Model.set_tout(hce, qabs, pr, cp )
+            hce.pr = 0
+
+        hce.qabs = qabs
+        hce.qperd = qperd
+        hce.set_tout(htf)
+        hce.set_pout(htf)
+
+
+
+    @classmethod
+    def get_hext_eext(cls, hce, reext, tro, wind):
+
+        eext = 0.
+        hext = 0.
+
+        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
+            pass
+
+        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
+            pass
+
+        elif hce.parameters['Name'] == 'Schott PTR70':
+            pas
+
+        if (hce.parameters['coating'] == 'CERMET' and
+            hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
+                hext = 0.
+            else:
+                eext = 2.44E-4*tro+0.0832
+                hext = 0.
+        elif (hce.parameters['coating'] == 'CERMET' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
+                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
+                hext = 2.34 * reext**0.0646
+            else:
+                eext = 1.97E-4 * tro + 0.0859
+                hext = 3.65
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = (2.53E-4 * reext**0.0614 * tro +
+                        1 / (9.92 + 1.5E-5 * reext))
+                hext = 0.
+            else:
+                eext = 4.66E-4 * tro + 0.0903
+                hext = 0.
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
+                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
+                hext = 2.77 * reext**0.043
+            else:
+                eext = 3.58E-4 * tro + 0.115
+                hext = 3.6
+
+        return hext, eext
 
 
 class ModelBarberoSimplified(Model):
