@@ -1948,7 +1948,7 @@ class Fluid(object):
         df = pd.DataFrame(data)
         print(round(df, 6))
 
-class Fluid_CoolProp(Fluid):
+class FluidCoolProp(Fluid):
 
     def __init__(self, settings = None):
 
@@ -2025,7 +2025,7 @@ class Fluid_CoolProp(Fluid):
         return re * np.pi * dri * self.get_dynamic_viscosity(t, p) / 4
 
 
-class Fluid_Tabular(Fluid):
+class FluidTabular(Fluid):
 
     def __init__(self, settings=None):
 

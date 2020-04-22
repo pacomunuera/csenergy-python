@@ -30,17 +30,17 @@ if simulation_settings['HTF']['source'] == "CoolProp":
     if simulation_settings['HTF']['CoolPropID'] not in coolPropFluids:
         print("Not CoolPropID valid")
     else:
-        htf = cs.Fluid_CoolProp(simulation_settings['HTF'])
+        htf = cs.FluidCoolProp(simulation_settings['HTF'])
         print("Fluid data from CoolProp: ", htf.name)
 else:
-    htf = cs.Fluid_Tabular(simulation_settings['HTF'])
+    htf = cs.FluidTabular(simulation_settings['HTF'])
     print("Fluid data from table: ", htf.name)
 
 # if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
-#     coldfluid = cs.Fluid_CoolProp(simulation_settings['cold_fluid'])
+#     coldfluid = cs.FluidCoolProp(simulation_settings['cold_fluid'])
 #     print("Cold fluid data from CoolProp: ", coldfluid.name)
 # else:
-#     coldfluid = cs.Fluid_Tabular(simulation_settings['cold_fluid'])
+#     coldfluid = cs.FluidTabular(simulation_settings['cold_fluid'])
 #     print("Cold fluid data from table: ", coldfluid.name)
 
 solarfield = cs.SolarField(simulation_settings['solarfield'],
