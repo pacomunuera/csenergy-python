@@ -15,6 +15,9 @@ hems08
 - interfaz web
 - visualización de datos.
 
+# Uso de __slots__ permite ahorrar memoria RAM
+#    __slots__= ['SCA_configuration']
+
 DUDAS:
 Modelo local para longitud típica de HCE y modelo integral para todo el SCA o LOOP?
         #  Friction factor for smooth pipe

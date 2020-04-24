@@ -35,7 +35,60 @@ class Model(object):
     def __init__(self):
         pass
 
-class ModelBarbero4grade(Model):
+    @classmethod
+    def get_hext_eext(cls, hce, reext, tro, wind):
+
+        eext = 0.
+        hext = 0.
+
+        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
+            pass
+
+        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
+            pass
+
+        elif hce.parameters['Name'] == 'Schott PTR70':
+            pas
+
+        if (hce.parameters['coating'] == 'CERMET' and
+            hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
+                hext = 0.
+            else:
+                eext = 2.44E-4*tro+0.0832
+                hext = 0.
+        elif (hce.parameters['coating'] == 'CERMET' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
+                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
+                hext = 2.34 * reext**0.0646
+            else:
+                eext = 1.97E-4 * tro + 0.0859
+                hext = 3.65
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = (2.53E-4 * reext**0.0614 * tro +
+                        1 / (9.92 + 1.5E-5 * reext))
+                hext = 0.
+            else:
+                eext = 4.66E-4 * tro + 0.0903
+                hext = 0.
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
+                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
+                hext = 2.77 * reext**0.043
+            else:
+                eext = 3.58E-4 * tro + 0.115
+                hext = 3.6
+
+        return hext, eext
+
+class ModelBarbero4thOrder(Model):
 
 
     def __ini__(self):
@@ -215,60 +268,9 @@ class ModelBarbero4grade(Model):
             flag_3 = datetime.now()
 
 
-    @classmethod
-    def get_hext_eext(cls, hce, reext, tro, wind):
 
-        eext = 0.
-        hext = 0.
 
-        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
-            pass
-
-        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
-            pass
-
-        elif hce.parameters['Name'] == 'Schott PTR70':
-            pas
-
-        if (hce.parameters['coating'] == 'CERMET' and
-            hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
-                hext = 0.
-            else:
-                eext = 2.44E-4*tro+0.0832
-                hext = 0.
-        elif (hce.parameters['coating'] == 'CERMET' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
-                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
-                hext = 2.34 * reext**0.0646
-            else:
-                eext = 1.97E-4 * tro + 0.0859
-                hext = 3.65
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = (2.53E-4 * reext**0.0614 * tro +
-                        1 / (9.92 + 1.5E-5 * reext))
-                hext = 0.
-            else:
-                eext = 4.66E-4 * tro + 0.0903
-                hext = 0.
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
-                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
-                hext = 2.77 * reext**0.043
-            else:
-                eext = 3.58E-4 * tro + 0.115
-                hext = 3.6
-
-        return hext, eext
-
-class ModelBarbero1grade(Model):
+class ModelBarbero1Order(Model):
 
     def __ini__(self, simulation):
 
@@ -350,58 +352,7 @@ class ModelBarbero1grade(Model):
 
 
 
-    @classmethod
-    def get_hext_eext(cls, hce, reext, tro, wind):
 
-        eext = 0.
-        hext = 0.
-
-        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
-            pass
-
-        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
-            pass
-
-        elif hce.parameters['Name'] == 'Schott PTR70':
-            pas
-
-        if (hce.parameters['coating'] == 'CERMET' and
-            hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
-                hext = 0.
-            else:
-                eext = 2.44E-4*tro+0.0832
-                hext = 0.
-        elif (hce.parameters['coating'] == 'CERMET' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
-                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
-                hext = 2.34 * reext**0.0646
-            else:
-                eext = 1.97E-4 * tro + 0.0859
-                hext = 3.65
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = (2.53E-4 * reext**0.0614 * tro +
-                        1 / (9.92 + 1.5E-5 * reext))
-                hext = 0.
-            else:
-                eext = 4.66E-4 * tro + 0.0903
-                hext = 0.
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
-                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
-                hext = 2.77 * reext**0.043
-            else:
-                eext = 3.58E-4 * tro + 0.115
-                hext = 3.6
-
-        return hext, eext
 
 
 class ModelBarberoSimplified(Model):
@@ -478,61 +429,6 @@ class ModelBarberoSimplified(Model):
         hce.qperd = qperd
         hce.set_tout(htf)
         hce.set_pout(htf)
-
-
-
-    @classmethod
-    def get_hext_eext(cls, hce, reext, tro, wind):
-
-        eext = 0.
-        hext = 0.
-
-        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
-            pass
-
-        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
-            pass
-
-        elif hce.parameters['Name'] == 'Schott PTR70':
-            pas
-
-        if (hce.parameters['coating'] == 'CERMET' and
-            hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
-                hext = 0.
-            else:
-                eext = 2.44E-4*tro+0.0832
-                hext = 0.
-        elif (hce.parameters['coating'] == 'CERMET' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
-                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
-                hext = 2.34 * reext**0.0646
-            else:
-                eext = 1.97E-4 * tro + 0.0859
-                hext = 3.65
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'VACUUM'):
-            if wind > 0:
-                eext = (2.53E-4 * reext**0.0614 * tro +
-                        1 / (9.92 + 1.5E-5 * reext))
-                hext = 0.
-            else:
-                eext = 4.66E-4 * tro + 0.0903
-                hext = 0.
-        elif (hce.parameters['coating'] == 'BLACK CHROME' and
-              hce.parameters['annulus'] == 'NOVACUUM'):
-            if wind > 0:
-                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
-                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
-                hext = 2.77 * reext**0.043
-            else:
-                eext = 3.58E-4 * tro + 0.115
-                hext = 3.6
-
-        return hext, eext
 
 
 class ModelHottelWhilier(Model):
@@ -843,8 +739,7 @@ class HCE(object):
 
 class SCA(object):
 
-# Uso de __slots__ permite ahorrar memoria RAM
-#    __slots__= ['SCA_configuration']
+
     def __init__(self, loop, sca_order, settings):
 
         self.loop = loop
@@ -2013,6 +1908,8 @@ class Air(object):
         return 8.678862e-11 * t**2 + 4.069284e-08 * t + -4.288741e-06
 
 class Fluid(object):
+
+    _T_REF = 285.856
 
     def test_fluid(self, tmax, tmin, p):
 
