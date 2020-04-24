@@ -63,7 +63,7 @@ solarfield = cs.SolarField(simulation_settings['solarfield'],
 
 # generator = cs.Generator(simulation_settings['generator'])
 
-model = cs.ModelBarbero1grade()
+model = cs.ModelBarbero4grade()
 
 # powersystem = cs.PowerSystem(simulation_settings['powersystem'])
 

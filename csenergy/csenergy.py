@@ -35,7 +35,6 @@ class Model(object):
     def __init__(self):
         pass
 
-
 class ModelBarbero4grade(Model):
 
 
@@ -44,28 +43,20 @@ class ModelBarbero4grade(Model):
 
 
     @classmethod
-    def calc_pr(cls, hce, htf, aoi, solarpos, row):
+    def calc_pr(cls, hce, htf, qabs, row):
 
         flag_0 = datetime.now()
 
-        pressure = hce.sca.loop.pin
         hce.set_tin()
         hce.set_pin()
         hce.tout = hce.tin
         tin = hce.tin
-        tf = hce.tin
-        tro = hce.tin
-        tri = hce.tin
-
+        tf = hce.tin  # HTF bulk temperature
+        tri = hce.tin  #  Absorber tube inner surface temperature
         massflow = hce.sca.loop.massflow
-
-        dni = row[1]['DNI']
-        wspd = row[1]['Wspd']
-        text = row[1]['DryBulb']
-
-
-        krec = 0.0153 * (tin - 273.15) + 14.77
-        sigma = sc.constants.sigma
+        wspd = row[1]['Wspd']  #  Wind speed
+        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
+        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
         dro = hce.parameters['Absorber tube outer diameter']
         dri = hce.parameters['Absorber tube inner diameter']
         dgo = hce.parameters['Glass envelope outer diameter']
@@ -73,88 +64,49 @@ class ModelBarbero4grade(Model):
         L = hce.parameters['Length']
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
-        IAM = hce.sca.get_IAM(aoi)
-        pr_opt_peak = hce.get_pr_opt_peak(aoi, solarpos, row)
-        pr_geo = hce.get_pr_geo(aoi, solarpos, row)
-        pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
-        # pr_shadows = 0.5
 
-        cg = A /(np.pi*dro)
+        #  HCE wall thermal conductivity
+        krec = hce.get_krec(tf)
 
-        #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
-        # tabla en K
-        nu_air = Air.get_cinematic_viscosity(text)
-        wspd = row[1]['Wspd']
-
-        #  Reynols number for wind at
-        reext = dgo * wspd / nu_air
-
-        #hext, eext = cls.get_hext_eext(hce, reext, tro, wspd)
-        eext = hce.get_emittance(tro, wspd)
-        hext = hce.get_hext(wspd)
-
+        #  Specific Capacity
         cp = htf.get_cp(tf, hce.pin)
-        cpri = cp
-
-        # Ec. 4.14
-        mu = htf.get_dynamic_viscosity(tf, pressure)
-        muri = mu
-
-        rho = htf.get_density(tf, pressure)
-        rhori = rho
-
-        kf = htf.get_thermal_conductivity(tf, pressure)
-        kfpri = kf
-
-        alpha = kf / (rho * cp)
-        alphari = alpha
-
-        prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
-        prfri = prf
-
-        #  Correlación de Gnielinski (utilizado por Forristall [1]
-        #  y verificado en [38]) según ec. 4.15
-        redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
-        cf = (1.58 * np.log(redri) - 3.28)**-2
-
-        # Número de Nusselt alto, casi independiente inicialmente de tri
-        # ya que estamos considerando tri = tf o casi igual
-
-        nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
-               (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
-
 
         #  Internal transmission coefficient.
-        hint = kf * nug / dri
+        hint = hce.get_hint(tf, hce.pin, htf)
 
-        #  Ec. 3.23
+        #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
+        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+
+        #  We suppose performance, pr = 1, at first
+        pr = 1.0
+        tro = tf + qabs * pr / urec
+
+        #  HCE emittance
+        eext = hce.get_emittance(tro, wspd)
+        #  External Convective Heat Transfer equivalent coefficient
+        hext = hce.get_hext(wspd)
+
+        #  Thermal power loss. Eq. 3.23 Barbero2016
         qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
-        # Ec. 3.50 Barbero
-        qcrit = qperd
+        #  Critical Thermal power loss. Eq. 3.50 Barbero2016
+        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
 
-        #  Ec. 3.51 Barbero
-        ucrit = 4 * sigma * eext * tin**3 + hext
-        # Ec. 3.22
-        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
-        #  Ec. 3.30
+        #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+        ucrit = 4 * sigma * eext * tf**3 + hext
+
+        #  Transmission Units Number, Ec. 3.30 Barbero2016
         NTU = urec * x * L * sc.pi * dro / (massflow * cp)
 
-        #  Ec. 3.20 Barbero
-        qabs = (pr_opt_peak * IAM * cg * dni * pr_geo * pr_shadows)
-
         if qabs > 0:
-            pr0 = (1 - qcrit / qabs)/(1 + ucrit / urec)
 
-            if pr0 <0:
-                pr0 = 0.0
-        else:
-            pr0 = 0.0
+            #  We use Barbero2016's simplified model aproximation
+            #  Eq. 3.63 Barbero2016
+            fcrit = 1 / (1 + (ucrit / urec))
 
-        pr1 = pr0
-        tro1 = tf + qabs * pr1 / urec
+            #  Eq. 3.71 Barbero2016
+            pr = fcrit * (1 - qcrit / qabs)
 
-        if qabs > qcrit:
             errtro = 1.
             errpr = 1.
             step = 0
@@ -164,12 +116,20 @@ class ModelBarbero4grade(Model):
                 step += 1
                 flag_1 = datetime.now()
 
-                f0 = qabs/(urec*(tin-text))
-                f1 = ((4*sigma*eext*text**3)+hext)/urec
-                f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
-                f3 = 4*text*(sigma*eext/urec)*((qabs/urec)**2)
-                f4 = (sigma*eext/urec)*((qabs/urec)**3)
+                #  Eq. 3.32 Barbero2016
+                f0 = qabs / (urec * (tf - text))
 
+                #  Eq. 3.34 Barbero2016
+                f1 = ((4 * sigma * eext * text**3) + hext) / urec
+                f2 = 6 * (text**2) * (sigma * eext / urec) * (qabs / urec)
+                f3 = 4 * text * (sigma * eext / urec) * ((qabs / urec)**2)
+                f4 = (sigma * eext / urec) * ((qabs / urec)**3)
+
+
+                #  We solve Eq. 3.36 Barbero2016 in order to find the performance
+                #  of the first section of the HCE (at entrance)
+
+                pr0 = pr
                 fx = lambda pr0: (1 - pr0 -
                                   f1 * (pr0 + (1 / f0)) -
                                   f2 * ((pr0 + (1 / f0))**2) -
@@ -187,81 +147,70 @@ class ModelBarbero4grade(Model):
                                           maxiter=100000)
 
                 pr0 = root
-                z = pr0 + (1/f0)
-                g1 = 1+f1+2*f2*z+3*f3*z**2+4*f4*z**3
-                g2 = 2*f2+6*f3*z+12*f4*z**2
-                g3 = 6*f3+24*f4*z
 
-                pr2 = ((pr0*g1/(1-g1))*(1/(NTU*x)) *
-                       (sc.exp((1-g1)*NTU*x/g1)-1) -
-                       (g2/(6*g1))*(pr0*NTU*x)**2 -
-                       (g3/(24*g1)*(pr0*NTU*x)**3))
+                #  Eq. 3.37 Barbero2016
+                z = pr0 + (1 / f0)
 
-                errpr = abs(pr2-pr1)
-                pr1 = pr2
-                hce.pr = pr1
+                #  Eq. 3.40, 3.41 & 3.42 Babero2016
+                g1 = 1 + f1 + 2 * f2 * z + 3 * f3 * z**2 + 4 * f4 *z**3
+                g2 = 2 * f2 + 6 * f3 * z + 12 * f4 *z**2
+                g3 = 6 * f3 + 24 * f4 * z
+
+                #  Eq. 3.39 Barbero2016
+                pr2 = ((pr0 * g1 / (1 - g1)) * (1 / (NTU * x)) *
+                       (sc.exp((1 - g1) * NTU * x / g1) - 1) -
+                       (g2 / (6 * g1)) * (pr0 * NTU * x)**2 -
+                       (g3 / (24 * g1) * (pr0 * NTU * x)**3))
+
+                errpr = abs(pr2-pr)
+                pr = pr2
+                hce.pr = pr
                 hce.qabs = qabs
                 hce.set_tout(htf)
                 hce.set_pout(htf)
                 tf = 0.5 * (hce.tin + hce.tout)
 
-                tri = tro1
+                #  HCE wall thermal conductivity
+                krec = hce.get_krec(tf)
 
-                cp = htf.get_cp(tf, pressure)
-                cpri = htf.get_cp(tri, pressure)
+                #  Specific Capacity
+                cp = htf.get_cp(tf, hce.pin)
 
-                mu = htf.get_dynamic_viscosity(tf, pressure)
-                muri = htf.get_dynamic_viscosity(tri, pressure)
+                #  Internal transmission coefficient.
+                hint = hce.get_hint(tf, hce.pin, htf)
 
-                rho = htf.get_density(tf, pressure)
-                rhori =  htf.get_density(tri, pressure)
+                #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
+                urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
 
+                #  HCE emittance
+                eext = hce.get_emittance(tro, wspd)
 
-                kf = htf.get_thermal_conductivity(tf, pressure)
-                kfpri = htf.get_thermal_conductivity(tri, pressure)
-
-                #  alpha : difusividad térmica
-                alpha = kf / (rho * cp)
-                alphari = kfpri / (rhori * cpri)
-
-                prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
-                prfri =  muri / alphari
-
-                redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
-
-                # Número de Nusselt alto, casi independiente inicialmente de tri
-                # ya que estamos considerando tri = tf o casi igual
-                nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
-                       (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
-
-                #nudb = 0.023 * redri**0.8 * prf**0.4
-                hint = kf * nug / dri
-                # hext, eext = cls.get_hext_eext(hce, reext, tro1, wspd)
-                eext = hce.get_emittance(tro1, wspd)
+                #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
 
-                trec = (tro1+tri)/2
-                # Ec. 4.22
-                hce.set_krec(trec)
-                krec = hce.parameters['krec']
-                # Ec. 3.22
-                urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
-                NTU = urec * x * L * sc.pi * dro / (massflow * cp)  # Ec. 3.30
+                #  We calculate tro again.
 
-                tro2 = tf+qabs*pr2/urec
-                errtro = abs(tro2-tro1)
-                tro1 = tro2
-                qperd = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
+                tro2 = tf + qabs * pr / urec
+                errtro = abs(tro2-tro)
+                tro = tro2
 
-                flag_2 = datetime.now()
+                #  Thermal power loss. Eq. 3.23 Barbero2016
+                qperd = sigma * eext * (tro2**4 - text**4) + hext * (tro2 - text)
+
+                #  Critical Thermal power loss. Eq. 3.50 Barbero2016
+                qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
+
+                #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+                ucrit = 4 * sigma * eext * tf**3 + hext
+
+                #  Transmission Units Number, Ec. 3.30 Barbero2016
+                NTU = urec * x * L * sc.pi * dro / (massflow * cp)
 
         else:
-            hce.pr = pr1
+            hce.pr = 0.0
             hce.qperd = qperd
             hce.qabs = qabs
             hce.set_tout(htf)
-
-            #FLUJO LAMINAR
             hce.set_pout(htf)
             flag_3 = datetime.now()
 
@@ -326,28 +275,20 @@ class ModelBarbero1grade(Model):
         super(Model, self).__init__(simulation)
 
     @classmethod
-    def calc_pr(cls, hce, htf, aoi, solarpos, row):
+    def calc_pr(cls, hce, htf, qabs,row):
 
         flag_0 = datetime.now()
 
-        pressure = hce.sca.loop.pin
         hce.set_tin()
         hce.set_pin()
         hce.tout = hce.tin
         tin = hce.tin
-        tf = hce.tin
-        tro = hce.tin
-        tri = hce.tin
-
+        tf = hce.tin  # HTF bulk temperature
+        tri = hce.tin  #  Absorber tube inner surface temperature
         massflow = hce.sca.loop.massflow
-
-        dni = row[1]['DNI']
-        wspd = row[1]['Wspd']
-        text = row[1]['DryBulb']
-
-
-        krec = 0.0153 * (tin - 273.15) + 14.77
-        sigma = sc.constants.sigma
+        wspd = row[1]['Wspd']  #  Wind speed
+        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
+        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
         dro = hce.parameters['Absorber tube outer diameter']
         dri = hce.parameters['Absorber tube inner diameter']
         dgo = hce.parameters['Glass envelope outer diameter']
@@ -355,65 +296,36 @@ class ModelBarbero1grade(Model):
         L = hce.parameters['Length']
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
-        IAM = hce.sca.get_IAM(aoi)
-        pr_opt_peak = hce.get_pr_opt_peak(aoi, solarpos, row)
-        pr_geo = hce.get_pr_geo(aoi, solarpos, row)
-        pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
-        # pr_shadows = 0.5
 
-        cg = A /(np.pi*dro)
+        #  HCE wall thermal conductivity
+        krec = hce.get_krec(tf)
 
-        #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
-        # tabla en K
-        nu_air = Air.get_cinematic_viscosity(text)
-        wspd = row[1]['Wspd']
-
-        eext = hce.get_emittance(tro, wspd)
-        hext = hce.get_hext(wspd)
-
+        #  Specific Capacity
         cp = htf.get_cp(tf, hce.pin)
-        cpri = cp
-
-        # Ec. 4.14
-        mu = htf.get_dynamic_viscosity(tf, pressure)
-
-        rho = htf.get_density(tf, pressure)
-
-        kf = htf.get_thermal_conductivity(tf, pressure)
-
-        alpha = kf / (rho * cp)
-        alphari = alpha
-
-        prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
-        prfri = prf
-
-        #  Correlación de Gnielinski (utilizado por Forristall [1]
-        #  y verificado en [38]) según ec. 4.15
-        redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
-        cf = (1.58 * np.log(redri) - 3.28)**-2
-
-        # Número de Nusselt alto, casi independiente inicialmente de tri
-        # ya que estamos considerando tri = tf o casi igual
-
-        nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
-               (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
 
         #  Internal transmission coefficient.
-        hint = kf * nug / dri
+        hint = hce.get_hint(tf, hce.pin, htf)
 
-        #  Ec. 3.23
-        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
-
-        # Ec. 3.50 Barbero
-        qcrit = qperd
-
-        #  Ec. 3.51 Barbero
-        ucrit = 4 * sigma * eext * tin**3 + hext
-        # Ec. 3.22
+        #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
         urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
 
-        #  Ec. 3.20 Barbero
-        qabs = (pr_opt_peak * IAM * cg * dni * pr_geo * pr_shadows)
+        #  We suppose performance, pr = 1, at first
+        pr = 1.0
+        tro = tf + qabs * pr / urec
+
+        #  HCE emittance
+        eext = hce.get_emittance(tro, wspd)
+        #  External Convective Heat Transfer equivalent coefficient
+        hext = hce.get_hext(wspd)
+
+        #  Thermal power loss. Eq. 3.23 Barbero2016
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+
+        #  Critical Thermal power loss. Eq. 3.50 Barbero2016
+        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
+
+        #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+        ucrit = 4 * sigma * eext * tf**3 + hext
 
         #  Ec. 3.63
         ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
@@ -422,7 +334,6 @@ class ModelBarbero1grade(Model):
         #  Ec. 3.64
         Aext = np.pi * dro * x / 2  # Pendiente de confirmar
         NTUperd = ucrit * Aext / (massflow * cp)
-
 
         if qabs > 0:
 
@@ -500,52 +411,128 @@ class ModelBarberoSimplified(Model):
         super(Model, self).__init__(simulation)
 
     @classmethod
-    def calc_pr(cls, hce, htf, dni):
+    def calc_pr(cls, hce, htf, qabs, row):
 
-        dni = dni
-        cp = htf.get_cp(hce.tin)
-        sigma = sc.constants.sigma
-        hint = hce.parameters['hint']
-        hext = hce.parameters['hext']
-        eext = hce.parameters['eext']
-        krec = hce.parameters['krec']
-        massflow = hce.sca.loop.massflow
-        cg = hce.sca.parameters['aperture']/(np.pi*hce.parameters['Dro'])
-        x = 1
-        # cp = self.htf.get_cp(hce.tin)
-        Model.set_tin(hce)
+        flag_0 = datetime.now()
+
+        hce.set_tin()
+        hce.set_pin()
+        hce.tout = hce.tin
         tin = hce.tin
-        tf = tin
-        hce.tout = tin
+        tf = hce.tin  # HTF bulk temperature
+        tri = hce.tin  #  Absorber tube inner surface temperature
+        massflow = hce.sca.loop.massflow
+        wspd = row[1]['Wspd']  #  Wind speed
+        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
+        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
+        dro = hce.parameters['Absorber tube outer diameter']
+        dri = hce.parameters['Absorber tube inner diameter']
+        dgo = hce.parameters['Glass envelope outer diameter']
+        dgi = hce.parameters['Glass envelope inner diameter']
+        L = hce.parameters['Length']
+        A = hce.sca.parameters['Aperture']
+        x = 1 #  Calculation grid fits hce longitude
 
-        text = 22.0
+        #  HCE wall thermal conductivity
+        krec = hce.get_krec(tf)
 
-        # Ec. 3.20 Barbero
-        qabs = (hce.parameters['pr_opt'] *
-                cg * dni *
-                hce.parameters['pr_shw'] *
-                hce.parameters['pr_geo'])
+        #  Specific Capacity
+        cp = htf.get_cp(tf, hce.pin)
 
-        # Ec. 3.50 Barbero
-        qcrit = sigma*eext*(tin**4-text**4)+hext*(tin-text)
+        #  Internal transmission coefficient.
+        hint = hce.get_hint(tf, hce.pin, htf)
 
-        # Ec. 3.51 Barbero
-        ucrit = 4*sigma*eext*tin**3+hext
-        # krec = (0.0153)*(trec) + 14.77 # trec ya está en ºC
-        # Ec. 3.22
-        urec = 1/(
-            (1/hint) +
-            (dro*np.log(dro/dri))/(2*krec)
-            )
+        #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
+        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
 
-        fcrit = 1/(1+ucrit/urec)
+        #  We suppose performance, pr = 1, at first
+        pr = 1.0
+        tro = tf + qabs * pr / urec
 
-        if qabs > 0.0:
-            pr = fcrit*(1-qcrit/qabs)
+        #  HCE emittance
+        eext = hce.get_emittance(tro, wspd)
+        #  External Convective Heat Transfer equivalent coefficient
+        hext = hce.get_hext(wspd)
+
+        #  Thermal power loss. Eq. 3.23 Barbero2016
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+
+        #  Critical Thermal power loss. Eq. 3.50 Barbero2016
+        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
+
+        #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+        ucrit = 4 * sigma * eext * tf**3 + hext
+
+        #  Ec. 3.63
+        ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
+        fcrit = 1 / (1 + (ucrit / urec))
+
+        if qabs > 0:
+
+            hce.pr = fcrit * (1 - (qcrit / qabs))
+
         else:
-            pr = 0.0
+            hce.pr = 0
 
-        Model.set_tout(hce, qabs, pr, cp)
+        hce.qabs = qabs
+        hce.qperd = qperd
+        hce.set_tout(htf)
+        hce.set_pout(htf)
+
+
+
+    @classmethod
+    def get_hext_eext(cls, hce, reext, tro, wind):
+
+        eext = 0.
+        hext = 0.
+
+        if hce.parameters['emi'] == 'Solel UVAC 2/2008':
+            pass
+
+        elif hce.parameters['Name'] == 'Solel UVAC 3/2010':
+            pass
+
+        elif hce.parameters['Name'] == 'Schott PTR70':
+            pas
+
+        if (hce.parameters['coating'] == 'CERMET' and
+            hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
+                hext = 0.
+            else:
+                eext = 2.44E-4*tro+0.0832
+                hext = 0.
+        elif (hce.parameters['coating'] == 'CERMET' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.88E-10 * reext**0.0395 + 2.13E-4) * tro +
+                        1 / (-36 - 1.29E-4 * reext) + 0.0962)
+                hext = 2.34 * reext**0.0646
+            else:
+                eext = 1.97E-4 * tro + 0.0859
+                hext = 3.65
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'VACUUM'):
+            if wind > 0:
+                eext = (2.53E-4 * reext**0.0614 * tro +
+                        1 / (9.92 + 1.5E-5 * reext))
+                hext = 0.
+            else:
+                eext = 4.66E-4 * tro + 0.0903
+                hext = 0.
+        elif (hce.parameters['coating'] == 'BLACK CHROME' and
+              hce.parameters['annulus'] == 'NOVACUUM'):
+            if wind > 0:
+                eext = ((4.33E-10 * reext + 3.46E-4) * tro +
+                        1 / (-20.5 - 6.32E-4 * reext) + 0.149)
+                hext = 2.77 * reext**0.043
+            else:
+                eext = 3.58E-4 * tro + 0.115
+                hext = 3.6
+
+        return hext, eext
 
 
 class ModelHottelWhilier(Model):
@@ -647,7 +634,6 @@ class HCE(object):
 
             darcy_factor = 1 / (root**2)
 
-
         rho = htf.get_density(self.tin, self.pin)
         v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
         g = sc.constants.g
@@ -657,28 +643,33 @@ class HCE(object):
 
         deltap = deltap_mcl * rho * g
 
-        # if self.hce_order == 35 and self.sca.loop.loop_order==5:
-
-        #     datos = [re, a, b, root, darcy_factor, v, self.sca.loop.massflow,
-        #            htf.get_density(self.tin, self.pin),  deltap]
-
-        #     claves = ['re', 'a', 'b',
-        #               'root', 'darcy_factor', 'v', 'mf', 'rho', 'deltap']
-
-        #     dict_pd = dict(zip(claves,datos))
-
-        #     datos_deltap = pd.DataFrame(datos)
-        #     print(datos_deltap)
-
         self.pout = self.pin - deltap
 
-        # if self.hce_order == 35 and self.sca.loop.loop_order==5:
-        #     print('Pout',self.pin, self.pout)
+
+    def get_qabs(self, aoi, solarpos, row):
+
+        dni = row[1]['DNI']
+        wspd = row[1]['Wspd']
+        text = row[1]['DryBulb']
+        cg = (self.sca.parameters['Aperture'] /
+              (np.pi*self.parameters['Absorber tube outer diameter']))
+
+        IAM = self.sca.get_IAM(aoi)
+        pr_opt_peak = self.get_pr_opt_peak(aoi, solarpos, row)
+        pr_geo = self.get_pr_geo(aoi, solarpos, row)
+        pr_shadows = self.get_pr_shadows(aoi, solarpos, row)
 
 
-    def set_krec(self, t):
 
-        self.parameters['krec'] = (0.0153)*(t - 273.15) + 14.77
+        #  Ec. 3.20 Barbero
+        qabs = (pr_opt_peak * IAM * cg * dni * pr_geo * pr_shadows)
+
+        return qabs
+
+    def get_krec(self, t):
+
+        # Ec. 4.22 Conductividad para el acero 321H, ver otras opciones.
+        return  0.0153 * (t - 273.15) + 14.77
 
     def get_previous(self):
 
@@ -778,6 +769,28 @@ class HCE(object):
 
         return 0.0
 
+    def get_hint(self, t, p, fluid):
+
+
+        #  Prandtl number
+        prf = fluid.get_prandtl(t, p)
+
+        kf = fluid.get_thermal_conductivity(t, p)
+
+        mu = fluid.get_dynamic_viscosity(t, p)
+
+        dri = self.parameters['Absorber tube inner diameter']
+
+        #  Reynolds number for absorber tube inner diameter, dri
+        redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
+
+        #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
+        nudb = 0.023 * redri**0.8 * prf** 0.4
+
+        #  Internal transmission coefficient.
+        hint = kf * nudb / dri
+
+        return hint
 
     def get_emittance(self, tro, wspd):
 
@@ -1049,10 +1062,11 @@ class Loop(object):
         for s in self.scas:
             aoi = s.get_aoi(solarpos)
             for h in s.hces:
-                model.calc_pr(h, htf, aoi, solarpos, row)
+                qabs = h.get_qabs(aoi, solarpos, row)
+                model.calc_pr(h, htf, qabs, row)
 
-            self.tout = self.scas[-1].hces[-1].tout
-            self.pout = self.scas[-1].hces[-1].pout
+        self.tout = self.scas[-1].hces[-1].tout
+        self.pout = self.scas[-1].hces[-1].pout
 
     def calc_loop_pr_for_tout(self, row, solarpos, htf, model):
 
@@ -1093,60 +1107,7 @@ class Loop(object):
         self.req_massflow = self.massflow
 
 
-    # def calc_loop_pr(self, row, solarpos, htf, model):
 
-
-    #     if solarpos['zenith'][0] > 90:
-
-    #         # We work with the minimum massflow at night in order to
-    #         # reduce thermal losses
-    #         self.massflow =  (self.solarfield.min_massflow /
-    #                           self.solarfield.total_loops)
-
-    #         for s in self.scas:
-    #             aoi = s.get_aoi(solarpos)
-    #             for h in s.hces:
-    #                 model.calc_pr(h, htf, aoi, solarpos, row)
-
-    #             self.tout = self.scas[-1].hces[-1].tout
-
-    #     else:
-
-    #         min_massflow = htf.get_massflow_from_Reynolds(
-    #             self.solarfield.hce_settings['dri'],
-    #             self.tin, self.pin,
-    #             self.solarfield.hce_settings['Min Reynolds'])
-
-    #         max_error = 0.1  # % desviation tolerance
-    #         search = True
-
-    #         while search:
-
-    #             for s in self.scas:
-    #                 aoi = s.get_aoi(solarpos)
-    #                 for h in s.hces:
-    #                     model.calc_pr(h, htf, aoi, solarpos, row)
-
-    #             self.tout = self.scas[-1].hces[-1].tout
-
-    #             err = 100 * (abs(self.tout-self.solarfield.rated_tout) /
-    #                    self.solarfield.rated_tout)
-
-    #             if err > max_error:
-
-    #                 if self.tout >= self.solarfield.rated_tout:
-    #                     self.massflow *= (1 + err / 100)
-    #                     search = True
-    #                 elif (self.massflow > min_massflow):
-    #                     self.massflow *= (1 - err / 100)
-    #                     search = True
-    #                 else:
-    #                     self.massflow = min_massflow
-    #                     search = False
-    #             else:
-    #                 search = False
-
-    #         self.req_massflow = self.massflow
 
 
     def show_parameter_vs_x(self, parameters = None):
@@ -2069,6 +2030,29 @@ class Fluid(object):
         df = pd.DataFrame(data)
         print(round(df, 6))
 
+    def get_prandtl(self, t, p):
+
+        #  Specific heat capacity
+        cp = self.get_cp(t, p)
+        #cpri = cp
+
+        #  Fluid dynamic viscosity
+        mu = self.get_dynamic_viscosity(t, p)
+
+        #  Fluid density
+        rho = self.get_density(t, p)
+
+        #  Fluid thermal conductivity
+        kf = self.get_thermal_conductivity(t, p)
+
+        #  Fluid thermal diffusivity
+        alpha = kf / (rho * cp)
+
+        #  Prandtl number
+        prf = mu / alpha
+
+        return prf
+
 class FluidCoolProp(Fluid):
 
     def __init__(self, settings = None):
@@ -2437,6 +2421,70 @@ class FieldData(object):
             if c not in self.tags.keys():
                 columns_to_drop.append(c)
         self.dataframe.drop(columns = columns_to_drop, inplace = True)
+
+class TableData(object):
+
+    def __init__(self, settings):
+        self.filename = settings['filename']
+        self.filepath = settings['filepath']
+        self.file = self.filepath + self.filename
+        self.dataframe = None
+
+        self.openDataFile(self.file)
+
+
+    def openDataFile(self, path = None):
+
+        '''
+        Table ddata
+        '''
+
+        try:
+            if path is None:
+                root = Tk()
+                root.withdraw()
+                path = askopenfilename(initialdir = ".data_files/",
+                                   title = "choose your file",
+                                   filetypes = (("csv files","*.csv"),
+                                                ("all files","*.*")))
+                root.update()
+                root.destroy()
+                if path is None:
+                    return
+                else:
+                    strfilename, strext = os.path.splitext(path)
+                    if  strext == ".csv":
+                        self.dataframe = pd.read_csv(path, sep=';',
+                                                     decimal= ',',
+                                                     dtype= float)
+                        self.file = path
+                    elif strext == ".xls":
+
+                        self.dataframe = pd.read_excel(path)
+                        self.file = path
+                    else:
+                        print("unknow extension ", strext)
+                        return
+            else:
+                strfilename, strext = os.path.splitext(path)
+
+                if  strext == ".csv":
+                    self.dataframe = pd.read_csv(path, sep=';',
+                                                 decimal= ',')
+                    self.file = path
+                elif strext == ".xls":
+                    self.dataframe = pd.read_excel(path)
+                    self.file = path
+                else:
+                    print("unknow extension ", strext)
+                    return
+        except Exception:
+            raise
+            txMessageBox.showerror('Error loading FieldData File',
+                                   'Unable to open file: %r', self.file)
+
+
+
 
 
 class PowerSystem(object):
