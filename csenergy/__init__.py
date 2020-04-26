@@ -3,21 +3,19 @@ import pandas as pd
 from tkinter import *
 import json
 import copy
+import sys
 from datetime import datetime
 
-with open("./saved_configurations/simulation_S_F_UVAC.json") as simulation_file:
+with open("./saved_configurations/simulation_B_F_UVAC.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
 simulation = cs.Simulation(simulation_settings['simulation'])
 
 if simulation.datatype == 1:
     datasource = cs.Weather(simulation_settings['simulation'])
-    print("Simulation based on weather data")
 elif simulation.datatype == 2:
     datasource = cs.FieldData(simulation_settings['simulation'],
-                              simulation_settings['solarfield']['tags'])
-    print("Benchmarking based on actual data")
-
+                              simulation_settings['tags'])
 
 if not hasattr(datasource, 'site'):
     site = cs.Site(simulation_settings['site'])
@@ -29,21 +27,15 @@ coolPropFluids = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 if simulation_settings['HTF']['source'] == "CoolProp":
     if simulation_settings['HTF']['CoolPropID'] not in coolPropFluids:
         print("Not CoolPropID valid")
+        sys.exit()
     else:
         htf = cs.FluidCoolProp(simulation_settings['HTF'])
-        print("Fluid data from CoolProp: ", htf.name)
+
 else:
     htf = cs.FluidTabular(simulation_settings['HTF'])
-    print("Fluid data from table: ", htf.name)
 
-# if simulation_settings['cold_fluid']['CoolPropID'] in coolPropFluids:
-#     coldfluid = cs.FluidCoolProp(simulation_settings['cold_fluid'])
-#     print("Cold fluid data from CoolProp: ", coldfluid.name)
-# else:
-#     coldfluid = cs.FluidTabular(simulation_settings['cold_fluid'])
-#     print("Cold fluid data from table: ", coldfluid.name)
-
-solarfield = cs.SolarField(simulation_settings['solarfield'],
+solarfield = cs.SolarField(simulation_settings['subfields'],
+                           simulation_settings['loop'],
                            simulation_settings['SCA'],
                            simulation_settings['HCE'])
 
@@ -63,14 +55,16 @@ solarfield = cs.SolarField(simulation_settings['solarfield'],
 
 # generator = cs.Generator(simulation_settings['generator'])
 
-model = cs.ModelBarbero4grade()
+model = cs.ModelBarbero4thOrder()
 
 # powersystem = cs.PowerSystem(simulation_settings['powersystem'])
 
 #simulation.precalc(powersystem, solarfield, htf, simulation,
 #                   simulation_settings['hce'])
 
-prototype_loop = cs.PrototypeLoop(solarfield)
+base_loop = cs.BaseLoop(simulation_settings['loop'],
+                        simulation_settings['SCA'],
+                        simulation_settings['HCE'])
 
 simulation.htf = htf
 # simulation.coldfluid = coldfluid
@@ -78,13 +72,30 @@ simulation.site = site
 simulation.solarfield = solarfield
 simulation.model = model
 simulation.datasource = datasource
-simulation.prototype_loop = prototype_loop
+simulation.base_loop = base_loop
 # simulation.powercycle = powercycle
 # simulation.heatexchanger = heatexchanger
 # simulation.generator = generator
 # simulation.powersystem = powersystem
 
 flag_00 = datetime.now()
+print("Running simulation for source data file: {0}".format(
+    simulation_settings['simulation']['filename']))
+print("Simulation: {0} ; Benchmark: {1} ; FastMode: {2}".format(
+    simulation_settings['simulation']['simulation'],
+    simulation_settings['simulation']['benchmark'],
+    simulation_settings['simulation']['fastmode']))
+
+print("Site: {0} @ Lat: {1:.2f}º, Long: {2:.2f}º, Alt: {3} m".format(
+    site.name, site.latitude, site.longitude, site.altitude))
+
+print("Loops:", solarfield.total_loops,
+      'SCA/loop:', simulation_settings['loop']['scas'],
+      'HCE/SCA:', simulation_settings['loop']['hces'])
+print("SCA model:", simulation_settings['SCA']['Name'])
+print("HCE model:", simulation_settings['HCE']['Name'])
+print("HTF:", simulation_settings['HTF']['name'])
+print("---------------------------------------------------")
 simulation.runSimulation()
 flag_01 = datetime.now()
 delta_01 = flag_01 - flag_00

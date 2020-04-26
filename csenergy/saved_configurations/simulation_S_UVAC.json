@@ -4,7 +4,7 @@
   "datatype": 1,
   "simulation": true,
   "benchmark": false,
-  "fastmode": true,
+  "fastmode": false,
   "filename": "marzo3.tm2",
   "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },

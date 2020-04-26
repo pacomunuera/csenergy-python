@@ -122,6 +122,8 @@ class Interface(object):
                                      parse_float= float,
                                      parse_int= int)
 
+        print(cfg)
+
         #  Simulation configuration
         self.varsimID.set(cfg['simulation']['ID'])
         self.varsimdatatype.set(cfg['simulation']['datatype'])
@@ -140,33 +142,30 @@ class Interface(object):
 
         #  Solarfield configuration
         list_subfields = []
-        for r in cfg['solarfield']['subfields']:
+        for r in cfg['subfields']:
             list_subfields.append(list(r.values()))
 
         self.solarfield_table.table_data = list_subfields
 
-        try:
+
+        if 'tags' in cfg.keys():
             list_tags = []
-            for r in cfg['solarfield']['tags']:
-                list_tags.append([r, '', cfg['solarfield']['tags'][r]])
+            for r in cfg['tags']:
+                list_tags.append([r, '', cfg['tags'][r]])
 
             self.columns_table.table_data = list_tags
 
-        except:
-            pass
-
-        self.varsolarfieldname.set(cfg['solarfield']['name'])
-        self.vartin.set(cfg['solarfield']['rated_tin'])
-        self.vartout.set(cfg['solarfield']['rated_tout'])
-        self.varpin.set(cfg['solarfield']['rated_pin'])
-        self.varpout.set(cfg['solarfield']['rated_pout'])
-        self.vartmin.set(cfg['solarfield']['tmin'])
-        self.vartmax.set(cfg['solarfield']['tmax'])
-        self.varratedmassflow.set(cfg['solarfield']['rated_massflow'])
-        self.varrecirculation.set(cfg['solarfield']['min_massflow'])
-        self.varscas.set(cfg['solarfield']['loop']['scas'])
-        self.varhces.set(cfg['solarfield']['loop']['hces'])
-        self.varrowspacing.set(cfg['solarfield']['row_spacing'])
+        self.vartin.set(cfg['loop']['rated_tin'])
+        self.vartout.set(cfg['loop']['rated_tout'])
+        self.varpin.set(cfg['loop']['rated_pin'])
+        self.varpout.set(cfg['loop']['rated_pout'])
+        self.vartmin.set(cfg['loop']['tmin'])
+        self.vartmax.set(cfg['loop']['tmax'])
+        self.varratedmassflow.set(cfg['loop']['rated_massflow'])
+        self.varrecirculation.set(cfg['loop']['min_massflow'])
+        self.varscas.set(cfg['loop']['scas'])
+        self.varhces.set(cfg['loop']['hces'])
+        self.varrowspacing.set(cfg['loop']['row_spacing'])
 
 
 
@@ -248,7 +247,7 @@ class Interface(object):
 
         cfg = dict({'simulation' : {},
                     'site': {},
-                    'solarfield': {},
+                    'loop': {},
                     'SCA': {},
                     'HCE': {},
                     'HTF': {},
@@ -322,20 +321,19 @@ class Interface(object):
         cfg['HCE']['Absorber absorptance'] = self.varhceabsorptance.get()
 
 
-        #  Solarfield Configuration
-        cfg['solarfield']['name'] = self.varsolarfieldname.get()
-        cfg['solarfield']['rated_tin'] = self.vartin.get()
-        cfg['solarfield']['rated_tout'] = self.vartout.get()
-        cfg['solarfield']['rated_pin'] = self.varpin.get()
-        cfg['solarfield']['rated_pout'] = self.varpout.get()
-        cfg['solarfield']['tmin'] = self.vartmin.get()
-        cfg['solarfield']['tmax'] = self.vartmax.get()
-        cfg['solarfield']['rated_massflow'] = self.varratedmassflow.get()
-        cfg['solarfield']['min_massflow'] = self.varrecirculation.get()
-        cfg['solarfield']['row_spacing'] = self.varrowspacing.get()
+        #  loop Configuration
+        cfg['loop']['scas'] = self.varscas.get()
+        cfg['loop']['hces'] = self.varhces.get()
+        cfg['loop']['rated_tin'] = self.vartin.get()
+        cfg['loop']['rated_tout'] = self.vartout.get()
+        cfg['loop']['rated_pin'] = self.varpin.get()
+        cfg['loop']['rated_pout'] = self.varpout.get()
+        cfg['loop']['tmin'] = self.vartmin.get()
+        cfg['loop']['tmax'] = self.vartmax.get()
+        cfg['loop']['rated_massflow'] = self.varratedmassflow.get()
+        cfg['loop']['min_massflow'] = self.varrecirculation.get()
+        cfg['loop']['row_spacing'] = self.varrowspacing.get()
 
-        cfg['solarfield']['loop'] = {'scas': self.varscas.get(),
-                                     'hces': self.varhces.get()}
 
         datarow = list(self.solarfield_table.table_data)
         dictkeys =['name', 'loops']
@@ -351,14 +349,14 @@ class Interface(object):
                 index += 1
             subfields.append(sf)
 
-        cfg['solarfield'].update({'subfields' : subfields})
+        cfg.update({'subfields': subfields})
 
         if self.varsimdatatype.get() == 2:
 
-            cfg['solarfield']['tags'] = dict({})
+            cfg['tags'] = dict({})
 
             for r in self.columns_table.table_data:
-                cfg['solarfield']['tags'][r[0]] = r[2]
+                cfg['tags'][r[0]] = r[2]
 
         f.write(json.dumps(cfg, indent= True))
         f.close()
