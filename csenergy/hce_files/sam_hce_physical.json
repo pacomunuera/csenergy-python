@@ -9,6 +9,8 @@
 	"Inner surface roughness": 0.000045,
 	"Absorber flow pattern (0=tube 1=annular)": 0,
 	"Absorber material type (0=304L 1=216L 2=321H 3=B42 Copper)": 0,
+    "Absorber emittance factor A1": 0.000182,
+    "Absorber emittance factor A2": 
 	"Var 1 Absorber absorptance": 0.96,
 	"Var 1 Absorber emittance": "[100|0.06068][150|0.07416][200|0.09033][250|0.10917][300|0.1307][350|0.15491][400|0.1818][450|0.21138][500|0.24363]",
 	"Var 1 Envelope absorptance": 0.02,
