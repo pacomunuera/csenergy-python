@@ -8,6 +8,12 @@
   "filename": "marzo3.tm2",
   "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },
+ "model": {
+  "name": "Barbero4thOrder",
+  "max_err_t": 0.1,
+  "max_err_tro": 0.1,
+  "max_err_pr": 0.01
+ },
  "site": {
   "name": "Alc\u00e1zar de San Juan",
   "latitude": 39.1,

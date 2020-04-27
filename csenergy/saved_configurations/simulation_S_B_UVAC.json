@@ -1,17 +1,17 @@
 {
  "simulation": {
   "ID": "LS3",
-  "datatype": 1,
+  "datatype": 2,
   "simulation": true,
-  "benchmark": false,
-  "fastmode": true,
-  "filename": "marzo3.tm2",
-  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
+  "benchmark": true,
+  "fastmode": false,
+  "filename": "fielddata_1Hb.csv",
+  "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/"
  },
  "model": {
   "name": "Barbero4thOrder",
-  "max_err_t": 0.1,
-  "max_err_tro": 0.1,
+  "max_err_t": 1,
+  "max_err_tro": 1,
   "max_err_pr": 0.01
  },
  "site": {
@@ -123,10 +123,6 @@
  },
  "subfields": [
   {
-   "name": "SO",
-   "loops": 30
-  },
-  {
    "name": "SE",
    "loops": 30
   },
@@ -137,6 +133,37 @@
   {
    "name": "NE",
    "loops": 30
+  },
+  {
+   "name": "SO",
+   "loops": 30
   }
- ]
+ ],
+ "tags": {
+  "SB.NO.act_pin": "1110-PT-1800.UNIT1@ASTE1A",
+  "SB.NO.act_pout": "1110-PT-1802.UNIT1@ASTE1A",
+  "SB.NE.act_mf": "1110-FX-1801.UNIT1@ASTE1A",
+  "SB.NE.act_tin": "1110-TT-1801.UNIT1@ASTE1A",
+  "SB.NE.act_tout": "1110-TT-1803.UNIT1@ASTE1A",
+  "SB.NE.act_pin": "1110-PT-1801.UNIT1@ASTE1A",
+  "SB.NE.act_pout": "1110-PT-1803.UNIT1@ASTE1A",
+  "SB.SO.act_mf": "1110-FX-1809.UNIT1@ASTE1A",
+  "SB.SO.act_tin": "1110-TT-1809.UNIT1@ASTE1A",
+  "SB.SO.act_tout": "1110-TT-1807.UNIT1@ASTE1A",
+  "SB.SO.act_pin": "1110-PT-1809.UNIT1@ASTE1A",
+  "SB.SO.act_pout": "1110-PT-1807.UNIT1@ASTE1A",
+  "SB.SE.act_mf": "1110-FX-1810.UNIT1@ASTE1A",
+  "SB.SE.act_tin": "1110-TT-1810.UNIT1@ASTE1A",
+  "SB.SE.act_tout": "1110-TT-1808.UNIT1@ASTE1A",
+  "SB.SE.act_pin": "1110-PT-1810.UNIT1@ASTE1A",
+  "SB.SE.act_pout": "1110-PT-1808.UNIT1@ASTE1A",
+  "DNI": "1100-AXT-1877R.UNIT1@ASTE1A",
+  "Wspd": "1100-AXT-1871R.UNIT1@ASTE1A",
+  "Wdir": "1100-AXT-1872R.UNIT1@ASTE1A",
+  "DryBulb": "1100-AXT-1873R.UNIT1@ASTE1A",
+  "Pressure": "1100-AXT-1883R.UNIT1@ASTE1A",
+  "SB.NO.act_mf": "1110-FX-1800.UNIT1@ASTE1A",
+  "SB.NO.act_tin": "1110-TT-1800.UNIT1@ASTE1A",
+  "SB.NO.act_tout": "1110-TT-1802.UNIT1@ASTE1A"
+ }
 }

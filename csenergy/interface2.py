@@ -32,6 +32,8 @@ class Interface(object):
 
     _COOLPROP_FLUIDS = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
+    _MODELS = ['Babero4thOrder', 'Barbero1stOrder', 'BarberoSimplified']
+
     _DIR = {'saved_configurations' : './saved_configurations/',
         'site_files' : './site_files/',
         'fluid_files' : './fluid_files',
@@ -122,7 +124,6 @@ class Interface(object):
                                      parse_float= float,
                                      parse_int= int)
 
-        print(cfg)
 
         #  Simulation configuration
         self.varsimID.set(cfg['simulation']['ID'])
@@ -135,10 +136,16 @@ class Interface(object):
         self.vardatafileurl.set(cfg['simulation']['filepath'] +
                                 cfg['simulation']['filename'])
 
+        self.cmbmodelname.set(cfg['model']['name'])
+        self.varmodelmaxerrt.set(cfg['model']['max_err_t'])
+        self.varmodelmaxerrtro.set(cfg['model']['max_err_tro'])
+        self.varmodelmaxerrpr.set(cfg['model']['max_err_pr'])
+
         self.varsitename.set(cfg['site']['name'])
         self.varsitelat.set(cfg['site']['latitude'])
         self.varsitelong.set(cfg['site']['longitude'])
         self.varsitealt.set(cfg['site']['altitude'])
+        self.checkoptions()
 
         #  Solarfield configuration
         list_subfields = []
@@ -188,7 +195,9 @@ class Interface(object):
 
         elif cfg['HTF']['source'] == 'CoolProp':
             self.varfluidtable.set(2)
-            self.varcoolpropID.set(cfg['HTF']['CoolPropID'])
+            self.cmbcoolpropID.set(cfg['HTF']['CoolPropID'])
+
+        self.checkfluid()
 
         #  SCA configuration
         self.varscaname.set(cfg['SCA']['Name'])
@@ -246,6 +255,7 @@ class Interface(object):
         self.tagslist = []
 
         cfg = dict({'simulation' : {},
+                    'model' : {},
                     'site': {},
                     'loop': {},
                     'SCA': {},
@@ -260,6 +270,11 @@ class Interface(object):
         cfg['simulation']['fastmode'] = self.varfastmode.get()
         cfg['simulation']['filename'] = self.vardatafilename.get()
         cfg['simulation']['filepath'] = self.vardatafilepath.get()
+
+        cfg['model']['name'] =  self.cmbmodelname.get()
+        cfg['model']['max_err_t'] = self.varmodelmaxerrt.get()
+        cfg['model']['max_err_tro'] = self.varmodelmaxerrtro.get()
+        cfg['model']['max_err_pr'] = self.varmodelmaxerrpr.get()
 
         #  Site configuration
         cfg['site']['name'] = self.varsitename.get()
@@ -475,6 +490,11 @@ class Interface(object):
         self.varbenchmark = tk.BooleanVar(self.fr_simulation)
         self.varfastmode = tk.BooleanVar(self.fr_simulation)
         self.varfastmodetext = tk.StringVar(self.fr_simulation)
+
+        self.varmodelmaxerrtro = tk.DoubleVar(self.fr_simulation)
+        self.varmodelmaxerrt = tk.DoubleVar(self.fr_simulation)
+        self.varmodelmaxerrpr = tk.DoubleVar(self.fr_simulation)
+
         self.varfastmode.set(False)
         self.checkFastmode()
 
@@ -496,13 +516,54 @@ class Interface(object):
                 row = 0, column = 0, sticky='W', padx=2, pady=5)
         self.ensimID = ttk.Entry(
             self.fr_simulation,
-            textvariable = self.varsimID ).grid(
+            textvariable = self.varsimID).grid(
                 row = 0, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbmodelname = ttk.Label(
+            self.fr_simulation,
+            text= 'Model name').grid(
+                row = 0, column = 2, sticky='E', padx=2, pady=5)
+
+        self.cmbmodelname = ttk.Combobox(self.fr_simulation)
+        self.cmbmodelname['values'] = self._MODELS
+        self.cmbmodelname['state']='readonly'
+        self.cmbmodelname.current(0)
+        self.cmbmodelname.grid(row = 0, column = 3, sticky='W', padx=2, pady=5)
+
+        self.frame2= ttk.Frame(self.fr_simulation)
+        self.frame2.grid(row=1, column=0, columnspan=6, padx=2, pady=5)
+
+        self.lbmodelmaxerrtro = ttk.Label(
+            self.frame2,
+            text= 'Max. Err Tro').grid(
+                row = 1, column = 0, sticky='W', padx=2, pady=5)
+
+        self.enmodelmaxerrtro = ttk.Entry(
+              self.frame2, textvariable= self.varmodelmaxerrtro).grid(
+                  row = 1, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbmodelmaxerrt = ttk.Label(
+            self.frame2,
+            text= 'Max. Err Tout').grid(
+                row = 1, column = 2, sticky='W', padx=2, pady=5)
+
+        self.enmodelmaxerrt = ttk.Entry(
+              self.frame2, textvariable= self.varmodelmaxerrt).grid(
+                  row = 1, column = 3, sticky='W', padx=2, pady=5)
+
+        self.lbmodelmaxerrpr = ttk.Label(
+            self.frame2,
+            text= 'Max. Err PR').grid(
+                row = 1, column = 4, sticky='W', padx=2, pady=5)
+
+        self.enmodelmaxerrpr = ttk.Entry(
+              self.frame2, textvariable= self.varmodelmaxerrpr).grid(
+                  row = 1, column = 5, sticky='W', padx=2, pady=5)
 
         self.lbdatatype = ttk.Label(
             self.fr_simulation,
             text= 'Choose a Data Source Type:').grid(
-                row = 1, column = 0, columnspan = 2,  sticky='W', padx=2, pady=5)
+                row = 2, column = 0, columnspan = 2,  sticky='W', padx=2, pady=5)
 
         self.rbweather = tk.Radiobutton(
             self.fr_simulation,
@@ -510,7 +571,7 @@ class Interface(object):
             text = 'Weather File',
             variable=self.varsimdatatype, value=1,
             command = lambda: self.checkoptions()).grid(
-                row = 2, column = 0, sticky='W', padx=2, pady=5)
+                row = 3, column = 0, sticky='W', padx=2, pady=5)
 
         #  RadioButton for Field Data File
         self.rbfielddata = tk.Radiobutton(
@@ -519,7 +580,7 @@ class Interface(object):
             text = 'Field Data File',
             variable=self.varsimdatatype, value=2,
             command = lambda: self.checkoptions()).grid(
-                row = 2, column = 1, sticky='W', padx=2, pady=5)
+                row = 3, column = 1, sticky='W', padx=2, pady=5)
 
         self.btselectdatasource = ttk.Button(
             self.fr_simulation, text='Select File',
@@ -527,74 +588,74 @@ class Interface(object):
                 'Select File',
                 labeltext = 'Select File'))
         self.btselectdatasource.grid(
-                row = 3, column = 0, sticky='W', padx=2, pady=5)
+                row = 4, column = 0, sticky='W', padx=2, pady=5)
 
                 #  Data source path
         self.vardatafileurl.set('Data source file path...')
         self.lbdatasourcepath = ttk.Label(
             self.fr_simulation, textvariable = self.vardatafileurl).grid(
-                row = 3, column= 1, columnspan=4, sticky='W', padx=2, pady=5)
+                row = 4, column= 1, columnspan=4, sticky='W', padx=2, pady=5)
 
         #  Checkbox for Simulation
         self.lbsimulation = ttk.Label(
             self.fr_simulation, text= 'Run test type...').grid(
-                row = 4, column = 0, sticky='W', padx=2, pady=5)
+                row = 5, column = 0, sticky='W', padx=2, pady=5)
         self.cbsimulation = ttk.Checkbutton(
             self.fr_simulation,
             text='Simulation',
             variable=self.varsimulation)
         self.cbsimulation.grid(
-            row = 4, column = 1, sticky='W', padx=2, pady=5)
+            row = 5, column = 1, sticky='W', padx=2, pady=5)
 
         self.cbbenchmark = ttk.Checkbutton(
             self.fr_simulation,
             text='Benchmark',
             variable=self.varbenchmark)
         self.cbbenchmark.grid(
-            row = 4, column = 2, sticky='W', padx=2, pady=5)
+            row = 5, column = 2, sticky='W', padx=2, pady=5)
 
         self.lbfastmode = ttk.Label(
               self.fr_simulation, text= 'Fast mode').grid(
-                  row = 5, column = 0, sticky='W', padx=2, pady=5)
+                  row = 6, column = 0, sticky='W', padx=2, pady=5)
         self.cbfastmode = ttk.Checkbutton(
             self.fr_simulation,
             textvariable = self.varfastmodetext,
             variable= self.varfastmode,
             command = lambda: self.checkFastmode()).grid(
-                row = 5, column = 1, sticky='W', padx=2, pady=5)
+                row = 6, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbsitename = ttk.Label(
               self.fr_simulation, text= 'Site').grid(
-                  row = 6, column = 0, sticky='W', padx=2, pady=5)
+                  row = 7, column = 0, sticky='W', padx=2, pady=5)
         self.ensitename = ttk.Entry(
               self.fr_simulation, textvariable= self.varsitename).grid(
-                  row = 6, column = 1, sticky='W', padx=2, pady=5)
+                  row = 7, column = 1, sticky='W', padx=2, pady=5)
 
         self.cbloadsitedata = ttk.Checkbutton(
             self.fr_simulation,
             text='Load site data from weather file',
             variable=self.varloadsitedata)
         self.cbloadsitedata.grid(
-            row = 6, column = 2, sticky='W', padx=2, pady=5)
+            row = 7, column = 2, sticky='W', padx=2, pady=5)
 
         self.lbsitelat = ttk.Label(
               self.fr_simulation, text= 'Latitude').grid(
-                  row = 8, column = 0, sticky='W', padx=2, pady=5)
+                  row = 9, column = 0, sticky='W', padx=2, pady=5)
         self.ensitelat = ttk.Entry(
               self.fr_simulation, textvariable = self.varsitelat).grid(
-                  row = 8, column = 1, sticky='W', padx=2, pady=5)
+                  row = 9, column = 1, sticky='W', padx=2, pady=5)
         self.lbsitelong = ttk.Label(
               self.fr_simulation, text= 'Longitude').grid(
-                  row = 9, column = 0, sticky='W', padx=2, pady=5)
+                  row = 10, column = 0, sticky='W', padx=2, pady=5)
         self.ensitelong = ttk.Entry(
               self.fr_simulation, textvariable= self.varsitelong).grid(
-                  row = 9, column = 1, sticky='W', padx=2, pady=5)
+                  row = 10, column = 1, sticky='W', padx=2, pady=5)
         self.lbsitealt = ttk.Label(
               self.fr_simulation, text= 'Altitude').grid(
-                  row = 10, column = 0, sticky='W', padx=2, pady=5)
+                  row = 11, column = 0, sticky='W', padx=2, pady=5)
         self.ensitealt = ttk.Entry(
               self.fr_simulation, textvariable = self.varsitealt).grid(
-                  row = 10, column = 1, sticky='W', padx=2, pady=5)
+                  row = 11, column = 1, sticky='W', padx=2, pady=5)
 
         self.varsimdatatype.set(1)  #  1 for Weather File, 2 for Field Data File
         self.checkoptions()
@@ -1172,7 +1233,7 @@ class Interface(object):
         var = self.varfluidtable.get()
 
         if var == 1: #  Fluid from table
-            self.varcoolpropID.set('')
+            self.cmbcoolpropID.set('')
             #self.encoolpropID['state'] ='disabled'
             self.cmbcoolpropID['state'] = 'disabled'
             self.enfluidname['state'] = 'normal'
@@ -1199,7 +1260,6 @@ class Interface(object):
 
         self.varfluidtable = tk.IntVar(self.fr_fluid)
         self.varfluidtable.set(1)  # 1 for Table, 2 for CoolProp Library
-        self.varcoolpropID = tk.StringVar(self.fr_fluid)
 
         #  RadioButton for fluid from library
         self.rbfluidlib = tk.Radiobutton(
