@@ -5,7 +5,7 @@
   "simulation": true,
   "benchmark": false,
   "fastmode": true,
-  "filename": "marzo3.tm2",
+  "filename": "JUNIO_TMY3.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },
  "model": {
@@ -14,15 +14,9 @@
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
  },
- "site": {
-  "name": "Alc\u00e1zar de San Juan",
-  "latitude": 39.1,
-  "longitude": -3.16,
-  "altitude": 645.0
- },
  "loop": {
   "scas": 4,
-  "hces": 24,
+  "hces": 1,
   "rated_tin": 563.15,
   "rated_tout": 663.15,
   "rated_pin": 2000000.0,
@@ -52,7 +46,7 @@
  },
  "HCE": {
   "Name": "Solel UVAC 3",
-  "Length": 4.05,
+  "Length": 97.2,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,
