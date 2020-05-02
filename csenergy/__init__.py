@@ -1,25 +1,25 @@
-import csenergy as cs
-import pandas as pd
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Apr 25 11:29:44 2020
+
+@author: paco
+"""
+
 from tkinter import *
 import json
 import copy
 import sys
 from datetime import datetime
+import pandas as pd
+import csenergy as cs
 
-with open("./saved_configurations/simulation_S_F_UVAC.json") as simulation_file:
-    simulation_settings = json.load(simulation_file)
+with open("./saved_configurations/WxSxF.json") as simulation_file:
+    SIMULATION_SETTINGS = json.load(simulation_file)
 
-sim = cs.SolarFieldSimulation(simulation_settings)
+SIM = cs.SolarFieldSimulation(SIMULATION_SETTINGS)
 
-
-flag_00 = datetime.now()
-sim.runSimulation()
-flag_01 = datetime.now()
-delta_01 = flag_01 - flag_00
-print("Total runtime: ", delta_01.total_seconds())
-
-
-
-
-
-
+FLAG_00 = datetime.now()
+SIM.runSimulation()
+FLAG_01 = datetime.now()
+DELTA_01 = FLAG_01 - FLAG_00
+print("Total runtime: ", DELTA_01.total_seconds())

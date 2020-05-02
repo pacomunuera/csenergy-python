@@ -22,17 +22,15 @@ from tkinter.filedialog import askopenfilename
 from datetime import datetime
 import time
 import os.path
-import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import rc
 #  import pint
 
 
-class Model(object):
+class Model:
 
-    def __init__(self):
-
+    def calc_pr(self):
         pass
 
     def get_hext_eext(self, hce, reext, tro, wind):
@@ -47,7 +45,7 @@ class Model(object):
             pass
 
         elif hce.parameters['Name'] == 'Schott PTR70':
-            pas
+            pass
 
         if (hce.parameters['coating'] == 'CERMET' and
             hce.parameters['annulus'] == 'VACUUM'):
@@ -102,10 +100,6 @@ class ModelBarbero4thOrder(Model):
 
         flag_0 = datetime.now()
 
-
-        hce.set_tin()
-        hce.set_pin()
-        hce.tout = hce.tin
         tin = hce.tin
         tf = hce.tin  # HTF bulk temperature
         tri = hce.tin  #  Absorber tube inner surface temperature
@@ -145,6 +139,10 @@ class ModelBarbero4thOrder(Model):
         #  Thermal power loss. Eq. 3.23 Barbero2016
         qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
+        #  Increase qperd with  the thermal power loss througth  bracktets
+        qloss_brackets = hce.get_qloss_brackets(tf, text)
+        qperd = qperd + qloss_brackets
+
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
         qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
 
@@ -152,7 +150,7 @@ class ModelBarbero4thOrder(Model):
         ucrit = 4 * sigma * eext * tf**3 + hext
 
         #  Transmission Units Number, Ec. 3.30 Barbero2016
-        NTU = urec * x * L * sc.pi * dro / (massflow * cp)
+        NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
         if qabs > qcrit:
 
@@ -214,14 +212,13 @@ class ModelBarbero4thOrder(Model):
 
                 #  Eq. 3.39 Barbero2016
                 pr2 = ((pr0 * g1 / (1 - g1)) * (1 / (NTU * x)) *
-                       (sc.exp((1 - g1) * NTU * x / g1) - 1) -
+                       (np.exp((1 - g1) * NTU * x / g1) - 1) -
                        (g2 / (6 * g1)) * (pr0 * NTU * x)**2 -
                        (g3 / (24 * g1) * (pr0 * NTU * x)**3))
 
                 errpr = abs(pr2-pr)
                 pr = pr2
                 hce.pr = pr
-                hce.qabs = qabs
                 hce.set_tout(htf)
                 hce.set_pout(htf)
                 tf = 0.5 * (hce.tin + hce.tout)
@@ -253,6 +250,10 @@ class ModelBarbero4thOrder(Model):
                 #  Thermal power loss. Eq. 3.23 Barbero2016
                 qperd = sigma * eext * (tro2**4 - text**4) + hext * (tro2 - text)
 
+                #  Increase qperd with  the thermal power loss througth  bracktets
+                qloss_brackets = hce.get_qloss_brackets(tf, text)
+                qperd = qperd + qloss_brackets
+
                 #  Critical Thermal power loss. Eq. 3.50 Barbero2016
                 qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
 
@@ -260,17 +261,20 @@ class ModelBarbero4thOrder(Model):
                 ucrit = 4 * sigma * eext * tf**3 + hext
 
                 #  Transmission Units Number, Ec. 3.30 Barbero2016
-                NTU = urec * x * L * sc.pi * dro / (massflow * cp)
+                NTU = urec * x * L * np.pi * dro / (massflow * cp)
+
+            hce.qperd = qperd  * hce.parameters['Length']
+            hce.qloss_brackets = qloss_brackets * hce.parameters['Length']
+            hce.qabs = qabs * hce.parameters['Length']
 
         else:
             hce.pr = 0.0
-            hce.qperd = qperd
-            hce.qabs = qabs
+            hce.qperd = qperd * hce.parameters['Length']
+            hce.qabs = qabs * hce.parameters['Length']
+            hce.qloss_brackets =  qloss_brackets * hce.parameters['Length']
             hce.set_tout(htf)
             hce.set_pout(htf)
             flag_3 = datetime.now()
-
-
 
 
 class ModelBarbero1stOrder(Model):
@@ -283,9 +287,6 @@ class ModelBarbero1stOrder(Model):
 
         flag_0 = datetime.now()
 
-        hce.set_tin()
-        hce.set_pin()
-        hce.tout = hce.tin
         tin = hce.tin
         tf = hce.tin  # HTF bulk temperature
         tri = hce.tin  #  Absorber tube inner surface temperature
@@ -325,6 +326,10 @@ class ModelBarbero1stOrder(Model):
         #  Thermal power loss. Eq. 3.23 Barbero2016
         qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
+        #  Increase qperd with  the thermal power loss througth  bracktets
+        qloss_brackets = hce.get_qloss_brackets(tf, text)
+        qperd = qperd + qloss_brackets
+
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
         qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
 
@@ -347,8 +352,9 @@ class ModelBarbero1stOrder(Model):
         else:
             hce.pr = 0
 
-        hce.qabs = qabs
-        hce.qperd = qperd
+        hce.qabs = qabs * hce.parameters['Length']
+        hce.qperd = qperd * hce.parameters['Length']
+        hce.qloss_brackets = qloss_brackets * hce.parameters['Length']
         hce.set_tout(htf)
         hce.set_pout(htf)
 
@@ -364,9 +370,6 @@ class ModelBarberoSimplified(Model):
 
         flag_0 = datetime.now()
 
-        hce.set_tin()
-        hce.set_pin()
-        hce.tout = hce.tin
         tin = hce.tin
         tf = hce.tin  # HTF bulk temperature
         tri = hce.tin  #  Absorber tube inner surface temperature
@@ -429,22 +432,22 @@ class ModelBarberoSimplified(Model):
         hce.set_pout(htf)
 
 
-class ModelHottelWhilier(Model):
+# class ModelHottelWhilier(Model):
 
-        def __ini__(self, simulation):
-            super(Model, self).__init__(simulation)
-
-
-class ModelNaumFrainderaich(Model):
-
-        def __ini__(self, simulation):
-            super(Model, self).__init__(simulation)
+#         def __ini__(self, simulation):
+#             super(Model, self).__init__(simulation)
 
 
-class ModelASHRAE(Model):
+# class ModelNaumFrainderaich(Model):
 
-        def __ini__(self, simulation):
-            super(Model, self).__init__(simulation)
+#         def __ini__(self, simulation):
+#             super(Model, self).__init__(simulation)
+
+
+# class ModelASHRAE(Model):
+
+#         def __ini__(self, simulation):
+#             super(Model, self).__init__(simulation)
 
 
 class HCE(object):
@@ -459,6 +462,7 @@ class HCE(object):
         self.pr = 0.0
         self.qabs = 0.0
         self.qperd = 0.0
+        self.qloss_brackets = 0.0
         self.pout = 0.0
         self.pin = 0.0
 
@@ -533,19 +537,15 @@ class HCE(object):
         g = sc.constants.g
 
         # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
-        deltap_mcl = darcy_factor * (self.parameters['Length'] / D ) * (v**2 / (2 * g))
-
+        deltap_mcl = darcy_factor * (self.parameters['Length'] / D) * \
+            (v**2 / (2 * g))
         deltap = deltap_mcl * rho * g
-
         self.pout = self.pin - deltap
-
 
     def get_qabs(self, aoi, solarpos, row):
         ''' Total solar power that reach de absorber tube per longitude unit'''
 
         dni = row[1]['DNI']
-        wspd = row[1]['Wspd']
-        text = row[1]['DryBulb']
         cg = (self.sca.parameters['Aperture'] /
               (np.pi*self.parameters['Absorber tube outer diameter']))
 
@@ -637,13 +637,14 @@ class HCE(object):
                      self.sca.loop.parameters['row_spacing'] /
                      self.sca.parameters['Aperture'])
 
-        if shadowing < 0.0:
+        if shadowing < 0.0 or shadowing > 1.0:
             shadowing = 0.0
 
         if solarpos['elevation'][0] < 0:
             shadowing = 1.0
 
         pr_shadows = 1 - shadowing
+
 
         if  pr_shadows > 1 or  pr_shadows < 0:
             print("ERROR",  pr_shadows)
@@ -721,26 +722,21 @@ class HCE(object):
         return self.sca.parameters['Reflectance']
 
 
-    def get_qloss_brackets(self, tf, tamb, wind):
+    def get_qloss_brackets(self, tf, text):
 
         #  Ec. 4.12
 
-        n = 1
+        n = self.parameters['Length'] / self.parameters['Brackets'] + \
+            + (self.hce_order == 0)
         pb = 0.2032
         acsb = 1.613e-4
         kb = 48
-        tbase = tf
-        text = tamb
-        dgo = self.parameters['Glass envelope outer diameter']
-        redgo = Air.get_reynolds(tamb, pb, wind)
+        hb = 20
+        tbase = tf - 10
 
-        nu_air = Air.get_cinematic_viscosity(tamb)
+        L = self.parameters['Length']
 
-        #  Ec. 4.44
-        hb = nudgo * kext / dgo
-        L = self.parameters['length']
-
-        return n * (np.sqtr(pb * kb * acsb * hb) * (tbase - text)) / L
+        return n * (np.sqrt(pb * kb * acsb * hb) * (tbase - text)) / L
 
 
 class SCA(object):
@@ -791,18 +787,16 @@ class SCA(object):
         F1 = self.parameters['IAM Coefficient F1']
         F2 = self.parameters['IAM Coefficient F2']
 
-#        PROVISIONAL HASTA ACLARAR LA FÓRMULA DE IAM
-#        kiam = (1-2.23073e-4 * theta - 1.1e-4 * theta**2 +
-#                3.1859e-6 * theta**3 - 4.85509e-8 * theta** 4)
-#        return kiam
-
 
         if (theta > 0 and theta < 80):
-            theta = np.radians(theta)
-            kiam = F0 + (F1*theta+F2*theta**2) / np.cos(theta)
+            kiam = (F0 + (F1 * np.radians(theta) + F2 * np.radians(theta)**2) /
+                    np.cos(np.radians(theta)))
 
             if kiam > 1:
-                kiam = 2 -kiam
+                kiam = 2 - kiam
+
+            if kiam < 0:
+                kiam = 0.0
 
         else:
             kiam = 0.0
@@ -818,12 +812,12 @@ class SCA(object):
         sigmabeta = 0.0
         beta0 = 0.0
 
-        if self.parameters['Tracking Type'] == 1: # N-S single axis tracker
+        if self.loop.parameters['Tracking Type'] == 1: # N-S single axis tracker
             if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
                 surface_azimuth = 90 # Surface facing east
             else:
                 surface_azimuth = 270 # Surface facing west
-        elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+        elif self.loop.parameters['Tracking Type'] == 2:  # E-W single axis tracker
             surface_azimuth = 180  # Surface facing the equator
 
         #  En esta fórmula asumo que el seguimiento del SCA es perfecto
@@ -863,6 +857,8 @@ class __Loop__(object):
         self.req_massflow = 0.0  # Required massflow (to achieve setpoint tout)
         self.pr_req_massflow = 0.0
         self.pr_act_massflow = 0.0
+        self.qabs = 0.0
+        self.qloss_brackets = 0.0
 
         self.act_tin = 0.0
         self.act_tout = 0.0
@@ -899,27 +895,39 @@ class __Loop__(object):
             sys.exit()
 
 
-    def load_actual(self):
+    def load_actual(self, subfield = None):
 
-        self.act_massflow = self.subfield.act_massflow / len(self.subfield.loops)
-        self.act_tin = self.subfield.act_tin
-        self.act_pin = self.subfield.act_pin
-        self.act_tout = self.subfield.act_tout
-        self.act_pout = self.subfield.act_pout
+        if subfield == None:
+            subfield = self.subfield
 
+        self.act_massflow = subfield.act_massflow / len(subfield.loops)
+        self.act_tin = subfield.act_tin
+        self.act_tout = subfield.act_tout
+        self.act_pin = subfield.act_pin
+        self.act_pout = subfield.act_pout
 
-    def set_loop_avg_pr(self, type_of_massflow):
+    def set_loop_values_from_HCEs(self, type_of_massflow):
 
         pr_list = []
+        qabs_list = []
+        qloss_brackets_list = []
+        qperd_list = []
+
         for s in self.scas:
             for h in s.hces:
                 pr_list.append(h.pr)
+                qabs_list.append(h.qabs)
+                qloss_brackets_list.append(h.qloss_brackets)
+                qperd_list.append(h.qperd)
 
         if type_of_massflow == 'required':
             self.pr_req_massflow = np.mean(pr_list)
         elif type_of_massflow == 'actual':
             self.pr_act_massflow = np.mean(pr_list)
 
+        self.qabs = np.sum(qabs_list)
+        self.qloss_brackets = np.sum(qloss_brackets_list)
+        self.qperd = np.sum(qperd_list)
 
     def load_from_base_loop(self, base_loop):
 
@@ -945,10 +953,15 @@ class __Loop__(object):
             aoi = s.get_aoi(solarpos)
             for h in s.hces:
                 qabs = h.get_qabs(aoi, solarpos, row)
+                h.set_tin()
+                h.set_pin()
+                h.tout = h.tin
                 model.calc_pr(h, htf, qabs, row)
 
         self.tout = self.scas[-1].hces[-1].tout
         self.pout = self.scas[-1].hces[-1].pout
+        self.pr_req_massflow = 0.0
+        self.set_loop_values_from_HCEs('actual')
 
     def calc_loop_pr_for_tout(self, row, solarpos, htf, model):
 
@@ -987,10 +1000,11 @@ class __Loop__(object):
             else:
                 search = False
 
+        self.tout = self.scas[-1].hces[-1].tout
+        self.pout = self.scas[-1].hces[-1].pout
         self.req_massflow = self.massflow
-
-
-
+        self.pr_act_massflow = 0.0
+        self.set_loop_values_from_HCEs('required')
 
 
     def show_parameter_vs_x(self, parameters = None):
@@ -1078,6 +1092,16 @@ class Loop(__Loop__):
 
         super().__init__(settings)
 
+
+    # def load_actual(self):
+
+    #     self.act_massflow = self.subfield.act_massflow / len(self.subfield.loops)
+    #     self.act_tin = self.subfield.act_tin
+    #     self.act_pin = self.subfield.act_pin
+    #     self.act_tout = self.subfield.act_tout
+    #     self.act_pout = self.subfield.act_pout
+
+
 class BaseLoop(__Loop__):
 
     def __init__(self, settings, sca_settings, hce_settings):
@@ -1093,14 +1117,6 @@ class BaseLoop(__Loop__):
                 self.scas[-1].hces.append(
                     HCE(self.scas[-1], h, hce_settings))
 
-    def load_actual(self, subfield):
-
-        self.act_massflow = subfield.act_massflow / len(subfield.loops)
-        self.act_tin = subfield.act_tin
-        self.act_tout = subfield.act_tout
-        self.act_pin = subfield.act_pin
-        self.act_pout = subfield.act_pout
-
 
     def get_id(self, subfield = None):
 
@@ -1111,6 +1127,145 @@ class BaseLoop(__Loop__):
             id = 'BL'
 
         return id
+
+    def get_qloss_brackets(self, tf, text):
+
+        #  Ec. 4.12
+
+        L = self.parameters_hce['Length']
+        n = (L / self.parameters_hce['Brackets'])
+        pb = 0.2032
+        acsb = 1.613e-4
+        kb = 48
+        hb = 20
+        tbase = tf - 10
+
+        return n * (np.sqrt(pb * kb * acsb * hb) * (tbase - text)) / L
+
+    def get_pr_opt_peak(self):
+
+        alpha = self.parameters_hce['Absorber absorptance']
+        tau = self.parameters_hce['Envelope transmittance']
+        rho = self.parameters_sca['Reflectance']
+        gamma = self.get_solar_fraction()
+
+        pr_opt_peak = alpha * tau * rho * gamma
+
+        if pr_opt_peak > 1 or pr_opt_peak < 0:
+            print("ERROR pr_opt_peak", pr_opt_peak)
+
+        return pr_opt_peak
+
+
+    def get_pr_geo(self, aoi):
+
+        if aoi > 90:
+            pr_geo = 0.0
+
+        else:
+            # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
+            sca_unused_length = (self.parameters_sca["Focal Len"] *
+                                 np.tan(np.radians(aoi)))
+
+            pr_geo = 1 - sca_unused_length / (self.parameters['hces'] * \
+                                              self.parameters_hce["Length"])
+
+            if pr_geo > 1.0 or pr_geo < 0.0:
+                print("ERROR pr_geo out of limits", pr_geo)
+
+        return pr_geo
+
+
+    def get_pr_shadows(self, solarpos):
+
+        # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
+        # Sombras debidas a otros lazos
+
+        shadowing = (1 -
+                     np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+                     self.parameters['row_spacing'] /
+                     self.parameters_sca['Aperture'])
+
+        if shadowing < 0.0 or shadowing > 1.0:
+            shadowing = 0.0
+
+        if solarpos['elevation'][0] < 0:
+            shadowing = 1.0
+
+        pr_shadows = 1 - shadowing
+
+        if pr_shadows > 1 or pr_shadows < 0:
+            print("ERROR",  pr_shadows)
+
+        return pr_shadows
+
+    def get_solar_fraction(self):
+
+        solarfraction = (self.parameters_sca['Reflectance'] *
+                         self.parameters_sca['Geom.Accuracy'] *
+                         self.parameters_sca['Track Twist'] *
+                         self.parameters_sca['Cleanliness'] *
+                         self.parameters_sca['Dust'] *
+                         self.parameters_sca['Factor'] *
+                         self.parameters_sca['Availability'])
+
+        if solarfraction > 1 or solarfraction < 0:
+            print("ERROR",  solarfraction)
+
+        return solarfraction
+
+    def get_IAM(self, theta):
+
+        F0 = self.parameters_sca['IAM Coefficient F0']
+        F1 = self.parameters_sca['IAM Coefficient F1']
+        F2 = self.parameters_sca['IAM Coefficient F2']
+
+        if (theta > 0 and theta < 80):
+            kiam = (F0 + (F1 * np.radians(theta) + F2 * np.radians(theta)**2) /
+                    np.cos(np.radians(theta)))
+            if kiam > 1:
+                kiam = 2 - kiam
+            if kiam < 0:
+                kiam = 0.0
+        else:
+            kiam = 0.0
+        if kiam > 1 or kiam < 0:
+            print("ERROR kiam={0:.4f} for angle of incidence {1:.4f}".format(
+                kiam, theta))
+
+        return kiam
+
+    def get_aoi(self, solarpos):
+
+        sigmabeta = 0.0
+        beta0 = 0.0
+
+        if self.parameters['Tracking Type'] == 1:  # N-S single axis tracker
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90  # Surface facing east
+            else:
+                surface_azimuth = 270  # Surface facing west
+        elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+            surface_azimuth = 180  # Surface facing the equator
+
+        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
+        #  pero hay que ver la posibilidad de modelar cierto error o desfase
+        beta0 = np.degrees(np.arctan(
+            np.tan(np.radians(solarpos['zenith'][0])) *
+            np.cos(np.radians(surface_azimuth -
+                              solarpos['azimuth'][0]))))
+        if beta0 >= 0:
+            sigmabeta = 0
+        else:
+            sigmabeta = 1
+
+        beta = beta0 + 180 * sigmabeta
+        aoi = pvlib.irradiance.aoi(beta,
+                                   surface_azimuth,
+                                   solarpos['zenith'][0],
+                                   solarpos['azimuth'][0])
+        return aoi
+
 
 class Subfield(object):
     '''
@@ -1181,9 +1336,10 @@ class Subfield(object):
         loops_var = []
 
         for l in self.loops:
+
             loops_var.append(l.pr_req_massflow * l.req_massflow)
 
-        self.req_pr =  np.mean(loops_var) / self.massflow
+        self.pr_req_massflow = np.sum(loops_var) / self.req_massflow
 
     def set_pr_act_massflow(self):
 
@@ -1192,7 +1348,7 @@ class Subfield(object):
         for l in self.loops:
             loops_var.append(l.pr_act_massflow * l.act_massflow)
 
-        self.act_pr =  np.mean(loops_var) / self.act_massflow
+        self.pr_act_massflow =  np.sum(loops_var) / self.act_massflow
 
 
     def set_pout(self):
@@ -1202,7 +1358,7 @@ class Subfield(object):
         for l in self.loops:
             loops_var.append(l.pout * l.massflow)
 
-        self.pout = np.mean(loops_var) / self.massflow
+        self.pout = np.sum(loops_var) / self.massflow
 
     def set_tout(self, htf):
         '''
@@ -1226,11 +1382,11 @@ class Subfield(object):
         self.tmax = htf.get_T(dH_tmax, self.pout)
 
 
-    def set_tin(self):
+    # def set_tin(self):
 
-        self.tin = (self.solarfield.heatexchanger.htf_tout *
-                    self.coolPipeLosses
-                    )
+    #     self.tin = (self.solarfield.heatexchanger.htf_tout *
+    #                 self.coolPipeLosses
+    #                 )
 
     def apply_temp_limitation(self, htf):
 
@@ -1239,7 +1395,7 @@ class Subfield(object):
                 HH = htf.get_deltaH(l.tout, l.pout)
                 HL = htf.get_deltaH(l.solarfield.tmax, l.pout)
                 l.wasted_power = l.massflow * (HH - HL)
-                l.tmax = t.out
+                l.tmax = l.out
                 l.tout = l.parameters['tmax']
             else:
                 l.wasted_power = 0.0
@@ -1401,8 +1557,8 @@ class SolarField(object):
         H_tout /= massflow
 
         self.act_massflow = massflow
-        self.act_pin = np.mean(list_pin) / massflow
-        self.act_pout = np.mean(list_pout) / massflow
+        self.act_pin = np.sum(list_pin) / massflow
+        self.act_pout = np.sum(list_pout) / massflow
         self.act_tin = htf.get_T(H_tin, self.act_pin)
         self.act_tout = htf.get_T(H_tout, self.act_pout)
 
@@ -1445,7 +1601,7 @@ class SolarField(object):
         for s in self.subfields:
             subfields_var.append(s.pr_req_massflow * s.req_massflow)
 
-        self.pr_req_massflow = np.mean(subfields_var) / self.req_massflow
+        self.pr_req_massflow = np.sum(subfields_var) / self.req_massflow
 
 
     def set_pr_act_massflow(self):
@@ -1454,7 +1610,7 @@ class SolarField(object):
         for s in self.subfields:
             subfields_var.append(s.pr_act_massflow * s.act_massflow)
 
-        self.pr_act_massflow = np.mean(subfields_var) / self.act_massflow
+        self.pr_act_massflow = np.sum(subfields_var) / self.act_massflow
 
 
     def set_pout(self):
@@ -1464,7 +1620,7 @@ class SolarField(object):
         for sf in self.subfields:
             subfields_var.append(sf.pout * sf.massflow)
 
-        self.pout = np.mean(subfields_var) / self.massflow
+        self.pout = np.sum(subfields_var) / self.massflow
 
     def set_tout(self, htf):
         '''
@@ -1527,7 +1683,7 @@ class SolarField(object):
         for sf in self.subfields:
             subfields_var.append(sf.pin * sf.massflow)
 
-        self.pin = np.mean(subfields_var) / self.massflow
+        self.pin = np.sum(subfields_var) / self.massflow
 
 
     def set_act_pin(self):
@@ -1537,7 +1693,7 @@ class SolarField(object):
         for sf in self.subfields:
             subfields_var.append(sf.act_pin * sf.act_massflow)
 
-        self.act_pin = np.mean(subfields_var) / self.act_massflow
+        self.act_pin = np.sum(subfields_var) / self.act_massflow
 
 
     def get_thermalpoweroutput(self, htf):
@@ -1569,7 +1725,6 @@ class SolarField(object):
                     self.operation_mode = "solarfield_not_heating"
 
 
-
     def print(self):
 
         for sf in self.subfields:
@@ -1582,7 +1737,6 @@ class SolarField(object):
                               "HCE: ", h.hce_order,
                               "tin", "=", h.tin,
                               "tout", "=", h.tout)
-
 
 
 class SolarFieldSimulation(object):
@@ -1648,39 +1802,15 @@ class SolarFieldSimulation(object):
                                   settings['HCE'])
 
 
-
-    def check_min_massflow(self):
-
-        dri = self.solarfield.hce_settings['Absorber tube inner diameter']
-        t = self.solarfield.tin
-        p = self.solarfield.pin
-        re = self.solarfield.hce_settings['Min Reynolds']
-        loop_min_massflow = self.htf.get_massflow_from_Reynolds(
-                dri, t, p , re)
-        solarfield_min_massflow = self.solarfield.total_loops * loop_min_massflow
-        # self.solarfield.rated_massflow = self.powersystem.get_rated_massflow(
-        #         self.powersystem.ratedpower, self.solarfield, self.htf)
-#        fluid_speed = 4 * loop_min_massflow / ( np.pi * hce_settings['dri']**2 *
-#                self.htf.get_density(self.solarfield.rated_tin,
-#                                     self.solarfield.rated_pressure))
-        if  solarfield_min_massflow > self.solarfield.rated_massflow:
-            print("Too low massflow", solarfield_min_massflow ,">",
-                  self.solarfield.rated_massflow)
-
-
     def runSimulation(self):
 
         self.show_message()
 
         for row in self.datasource.dataframe.iterrows():
 
-            solarpos = pvlib.solarposition.get_solarposition(
-                    row[0],
-                    self.site.latitude,
-                    self.site.longitude,
-                    self.site.altitude,
-                    pressure=row[1]['Pressure'],
-                    temperature=row[1]['DryBulb'])
+            solarpos = self.site.get_solarposition(row)
+
+            self.gather_general_data(row, solarpos)
 
             if solarpos['zenith'][0] < 90:
                 self.tracking = True
@@ -1689,12 +1819,13 @@ class SolarFieldSimulation(object):
 
             if self.simulation:
                 self.simulate_solarfield(solarpos, row)
+                self.gather_simulation_data(row)
 
             if self.benchmark and self.datatype == 2:  # 2: Field Data File available
                 self.benchmarksolarfield(solarpos, row)
+                self.gather_benchmark_data(row)
 
             self.plantperformance(row)
-            self.gather_data(row, solarpos)
             str_data = ("{0} Ang. Zenith: {1:.2f} DNI: {2} W/m2 " +
                          "Qm: {3:.1f}kg/s Tin: {4:.1f}K Tout: {5:1f}K")
 
@@ -1726,21 +1857,6 @@ class SolarFieldSimulation(object):
         else:
             self.base_loop.calc_loop_pr_for_tout(
                 row, solarpos, self.htf, self.model)
-
-
-        self.base_loop.tout = self.base_loop.scas[-1].hces[-1].tout
-        self.base_loop.pout = self.base_loop.scas[-1].hces[-1].pout
-        self.base_loop.req_massflow = self.base_loop.massflow
-        self.base_loop.set_loop_avg_pr('required')
-
-        values = {'BL.tin': self.base_loop.tin,
-                  'BL.tout': self.base_loop.tout,
-                  'BL.pin': self.base_loop.pin,
-                  'BL.pout': self.base_loop.pout,
-                  'BL.req_mf': self.base_loop.req_massflow,
-                  'BL.req_pr': self.base_loop.pr_req_massflow}
-
-        self.store_values(row, values)
 
         if  self.fastmode:
 
@@ -1780,31 +1896,12 @@ class SolarFieldSimulation(object):
                         l.calc_loop_pr_for_tout(
                             row, solarpos, self.htf, self.model)
 
-                    l.set_loop_avg_pr('required')
-                    values = {l.get_id() + '.tin': l.tin,
-                              l.get_id() + '.tout': l.tout,
-                              l.get_id() + '.pin': l.pin,
-                              l.get_id() + '.pout': l.pout,
-                              l.get_id() + '.req_mf': l.req_massflow,
-                              l.get_id() + '.req_pr': l.pr_req_massflow}
-
-                    self.store_values(row, values)
-
-                s.set_massflow()
-                s.set_req_massflow()
-                s.set_pr_req_massflow()
-                s.apply_temp_limitation(self.htf)
-                s.set_tout(self.htf)
-                s.set_pout()
-
-                values = {s.get_id() + '.tin': s.tin,
-                          s.get_id() + '.tout': s.tout,
-                          s.get_id() + '.pin': s.pin,
-                          s.get_id() + '.pout': s.pout,
-                          s.get_id() + '.req_mf': s.req_massflow,
-                          s.get_id() + '.req_pr': s.pr_req_massflow}
-
-                self.store_values(row, values)
+                    s.set_massflow()
+                    s.set_req_massflow()
+                    s.set_pr_req_massflow()
+                    s.apply_temp_limitation(self.htf)
+                    s.set_tout(self.htf)
+                    s.set_pout()
 
             flag_2 = datetime.now()
             delta_2 = flag_2 - flag_0
@@ -1817,14 +1914,6 @@ class SolarFieldSimulation(object):
         self.solarfield.set_tout(self.htf)
         self.solarfield.set_pout()
 
-        values = {'SF.tin': self.solarfield.tin,
-                  'SF.tout':self.solarfield.tout,
-                  'SF.pin': self.solarfield.pin,
-                  'SF.pout': self.solarfield.pout,
-                  'SF.req_mf': self.solarfield.req_massflow,
-                  'SF.req_pr': self.solarfield.pr_req_massflow}
-
-        self.store_values(row, values)
 
     def benchmarksolarfield(self, solarpos, row):
 
@@ -1838,7 +1927,7 @@ class SolarFieldSimulation(object):
                 self.base_loop.initialize('actual')
                 self.base_loop.calc_loop_pr_for_massflow(
                     row, solarpos, self.htf, self.model)
-                self.base_loop.set_loop_avg_pr('actual')
+                self.base_loop.set_loop_values_from_HCEs('actual')
 
                 for l in s.loops:
                     l.load_from_base_loop(self.base_loop)
@@ -1881,7 +1970,7 @@ class SolarFieldSimulation(object):
                     l.initialize('actual')
                     l.calc_loop_pr_for_massflow(
                         row, solarpos, self.htf, self.model)
-                    l.set_loop_avg_pr('actual')
+                    l.set_loop_values_from_HCEs('actual')
 
                 s.set_massflow()
                 s.set_pr_act_massflow()
@@ -1952,11 +2041,151 @@ class SolarFieldSimulation(object):
         for v in values:
             self.datasource.dataframe.at[row[0], v] = values[v]
 
-    def gather_data(self, row, solarpos):
+    def gather_general_data(self, row, solarpos):
 
         #TO-DO: CALCULOS PARA AGREGAR AL DATAFRAME
+        #  Solar postion data
+        self.datasource.dataframe.at[row[0], 'elevation'] = \
+            solarpos['elevation'][0]
+        self.datasource.dataframe.at[row[0], 'zenith'] = \
+            solarpos['zenith'][0]
+        self.datasource.dataframe.at[row[0], 'azimuth'] = \
+            solarpos['azimuth'][0]
+        aoi = self.base_loop.get_aoi(solarpos)
+        self.datasource.dataframe.at[row[0], 'aoi'] = aoi
+        self.datasource.dataframe.at[row[0], 'IAM'] = \
+            self.base_loop.get_IAM(aoi)
+        self.datasource.dataframe.at[row[0], 'pr_geo'] = \
+            self.base_loop.get_pr_geo(aoi)
+        self.datasource.dataframe.at[row[0], 'pr_shadows'] = \
+            self.base_loop.get_pr_shadows(solarpos)
+        self.datasource.dataframe.at[row[0], 'pr_opt_peak'] = \
+            self.base_loop.get_pr_opt_peak()
+        self.datasource.dataframe.at[row[0], 'solar_fraction'] = \
+            self.base_loop.get_solar_fraction()
+
+
+    def gather_simulation_data(self, row):
+
+        #  Solarfield data
+        self.datasource.dataframe.at[row[0], 'REQ_MASSFLOW'] = \
+            self.solarfield.req_massflow
+        self.datasource.dataframe.at[row[0], 'TIN'] = \
+            self.solarfield.tin
+        self.datasource.dataframe.at[row[0], 'TOUT'] = \
+            self.solarfield.tout
+        self.datasource.dataframe.at[row[0], 'PIN'] = \
+            self.solarfield.pin
+        self.datasource.dataframe.at[row[0], 'POUT'] = \
+            self.solarfield.pout
+        self.datasource.dataframe.at[row[0], 'PR_REQ_MF'] = \
+            self.solarfield.pr_req_massflow
+
+        power_th = self.solarfield.req_massflow * \
+            (self.htf.get_deltaH(self.solarfield.tout,
+                            self.solarfield.pout) -
+             self.htf.get_deltaH(self.solarfield.tin,
+                            self.solarfield.pin))
+
+        self.datasource.dataframe.at[row[0], 'THERMAL_POWER'] = power_th
+
+        values = {
+            self.base_loop.get_id() + '.mf': self.base_loop.req_massflow,
+            self.base_loop.get_id() + '.tin': self.base_loop.tin,
+            self.base_loop.get_id() + '.tout': self.base_loop.tout,
+            self.base_loop.get_id() + '.pin': self.base_loop.pin,
+            self.base_loop.get_id() + '.pout': self.base_loop.pout,
+            self.base_loop.get_id() + '.req_pr': \
+                self.base_loop.pr_req_massflow,
+            self.base_loop.get_id() + '.qabs': self.base_loop.qabs,
+            self.base_loop.get_id() + '.qloss_brackets': \
+                self.base_loop.qloss_brackets,
+            self.base_loop.get_id() + '.qperd': self.base_loop.qperd}
+
+        self.store_values(row, values)
+
+        df = self.datasource.dataframe
+
+        for s in self.solarfield.subfields:
+            #  Agretate data from subfields
+            values = {
+                s.get_id() + '.req_mf': s.req_massflow,
+                s.get_id() + '.tin': s.tin,
+                s.get_id() + '.tout': s.tout,
+                s.get_id() + '.pin': s.pin,
+                s.get_id() + '.pout': s.pout,
+                s.get_id() + '.req_pr': s.pr_req_massflow}
+
+            self.store_values(row, values)
+
+            for l in s.loops:
+                #  Loop data
+                values = {
+                    l.get_id() + '.req_mf':  l.req_massflow,
+                    l.get_id() + '.tin':  l.tin,
+                    l.get_id() + '.tout':  l.tout,
+                    l.get_id() + '.pin':  l.act_tin,
+                    l.get_id() + '.pout':  l.act_tout,
+                    l.get_id() + '.pr_req_mf':  l.pr_req_massflow}
+
+                self.store_values(row, values)
+
+
+
+    def gather_benckmark_data(self, row, solarpos):
+
+        #  Solarfield data
+        self.datasource.dataframe.at[row[0], 'ACT_MASSFLOW'] = \
+            self.solarfield.act_massflow
+        self.datasource.dataframe.at[row[0], 'ACT_TIN'] = \
+            self.solarfield.act_tin
+        self.datasource.dataframe.at[row[0], 'ACT_TOUT'] = \
+            self.solarfield.act_tout
+        self.datasource.dataframe.at[row[0], 'TOUT'] = \
+            self.solarfield.tout
+        self.datasource.dataframe.at[row[0], 'MAX_TOUT'] = \
+            self.solarfield.tmax
+        self.datasource.dataframe.at[row[0], 'ACT_PIN'] = \
+            self.solarfield.act_pin
+        self.datasource.dataframe.at[row[0], 'ACT_POUT'] = \
+            self.solarfield.act_pout
+        self.datasource.dataframe.at[row[0], 'PR_ACT_MF'] = \
+            self.solarfield.pr_act_massflow
+        self.datasource.dataframe.at[row[0], 'WASTED_POWER'] = \
+            self.solarfield.wasted_power
+
+        act_power_th = self.solarfield.act_massflow * \
+            (self.htf.get_deltaH(self.solarfield.act_tout,
+                            self.solarfield.act_pout) -
+             self.htf.get_deltaH(self.solarfield.act_tin,
+                            self.solarfield.act_pin))
+
+        self.datasource.dataframe.at[row[0], 'ACT_THERMAL_POWER'] = \
+            act_power_th
+
+
+
 
         for sf in self.solarfield.subfields:
+            #  Agretate data from subfields and BaseLoop with subfields actual
+            #  dataa
+
+            values = {
+                self.base_loop.get_id(s) +'.tin': self.base_loop.tin,
+                self.base_loop.get_id(s) +'.tout': self.base_loop.tout,
+                self.base_loop.get_id(s) +'.tmax': self.base_loop.tmax,
+                self.base_loop.get_id(s) +'.pin': self.base_loop.pin,
+                self.base_loop.get_id(s) +'.pout': self.base_loop.pout,
+                self.base_loop.get_id(s) +'.act_mf': self.base_loop.act_massflow,
+                self.base_loop.get_id(s) +'.act_pr': self.base_loop.pr_act_massflow,
+                self.base_loop.get_id(s) +'.wasted_power': self.base_loop.wasted_power,
+                s.get_id() + '.tin': s.tin,
+                s.get_id() + '.tout': s.tout,
+                s.get_id() + '.pin': s.pin,
+                s.get_id() + '.pout': s.pout,
+                s.get_id() + '.wasted_power': s.wasted_power,
+                s.get_id() + '.act_mf': s.act_massflow,
+                s.get_id() + '.act_pr': s.pr_act_massflow}
 
             for l in sf.loops:
 
@@ -1970,17 +2199,7 @@ class SolarFieldSimulation(object):
                 self.datasource.dataframe.at[row[0], l.get_id() + '.act_mf'] = l.act_massflow
                 self.datasource.dataframe.at[row[0], l.get_id() + '.req_mf'] = l.req_massflow
 
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.mf'] = self.base_loop.massflow
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.tin'] = self.base_loop.tin
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.tout'] = self.base_loop.tout
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.act_tout'] = self.base_loop.act_tout
-        # # self.datasource.dataframe.at[row[0], 'Pthermal'] = round(
-        # #         self.solarfield.get_thermalpoweroutput(self.htf)/1e6,1)
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.req_mf'] = self.base_loop.req_massflow
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.act_mf'] = self.base_loop.act_massflow
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.max_tout'] = self.base_loop.tmax
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.pr_req_massflow'] = self.base_loop.pr_req_massflow
-        # self.datasource.dataframe.at[row[0], 'BaseLoop.pr_act_massflow'] = self.base_loop.pr_act_massflow
+
         # # self.heatexchanger.thermalpowertransfered
         # self.datasource.dataframe.at[row[0], 'Pmec']  = round(
         #         self.heatexchanger.thermalpowertransfered *
@@ -2042,30 +2261,12 @@ class SolarFieldSimulation(object):
             print('Error saving results, unable to save file: %r', path)
 
 
-    def get_solarposition(self, row):
-
-        solarpos = pvlib.solarposition.get_solarposition(
-                row[0],
-                self.site.latitude,
-                self.site.longitude,
-                self.site.altitude,
-                pressure=row[1]['Pressure'],
-                temperature=row[1]['DryBulb'])
-
-        return solarpos
-
     def testgeo(self):
 
 
         for row in self.datasource.dataframe.iterrows():
 
-            solarpos = pvlib.solarposition.get_solarposition(
-                    row[0],
-                    self.site.latitude,
-                    self.site.longitude,
-                    self.site.altitude,
-                    pressure = row[1]['Pressure'],
-                    temperature=row[1]['DryBulb'])
+            solarpos = self.site.get_solarposition(row)
 
             for s in self.base_loop.scas:
                 aoi = s.get_aoi(solarpos)
@@ -2150,8 +2351,6 @@ class LoopSimulation(object):
                                   settings['SCA'],
                                   settings['HCE'])
 
-
-
     def runSimulation(self):
 
         self.show_message()
@@ -2160,13 +2359,7 @@ class LoopSimulation(object):
 
         for row in self.datasource.dataframe.iterrows():
 
-            solarpos = pvlib.solarposition.get_solarposition(
-                    row[1]['Date'],
-                    self.site.latitude,
-                    self.site.longitude,
-                    self.site.altitude,
-                    pressure=row[1]['Pressure'],
-                    temperature=row[1]['DryBulb'])
+            solarpos = self.site.get_solarposition(row)
 
             if solarpos['zenith'][0] < 90:
                 self.tracking = True
@@ -2236,15 +2429,17 @@ class LoopSimulation(object):
                 if HCE_var != '':
                     h.parameters[HCE_var] = row[1][HCE_var]
                 qabs = h.get_qabs(aoi, solarpos, row)
+                h.set_tin()
+                h.set_pin()
+                h.tout = h.tin
                 self.model.calc_pr(h, self.htf, qabs, row)
 
         self.base_loop.tout = self.base_loop.scas[-1].hces[-1].tout
         self.base_loop.pout = self.base_loop.scas[-1].hces[-1].pout
-        self.base_loop.set_loop_avg_pr('actual')
+        self.base_loop.set_loop_values_from_HCEs('actual')
         print('pr', self.base_loop.pr_act_massflow ,
               'tout', self.base_loop.tout,
               'massflow', self.base_loop.massflow)
-             # HCE_var + SCA_var, row[1][HCE_var + SCA_var])
 
         if HCE_var +  SCA_var != '':
             self.datasource.dataframe.at[row[0], HCE_var + SCA_var] = row[1][HCE_var + SCA_var]
@@ -2307,7 +2502,7 @@ class Air(object):
 
         return v * L / nu
 
-class Fluid(object):
+class Fluid:
 
     _T_REF = 285.856
     _COOLPROP_FLUIDS = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
@@ -2328,6 +2523,23 @@ class Fluid(object):
         df = pd.DataFrame(data)
         print(round(df, 6))
 
+    def get_cp(self, p, t):
+        pass
+
+    def get_density(self, p, t):
+        pass
+
+    def get_thermal_conductivity(self, p, t):
+        pass
+
+    def get_deltaH(self, p, t):
+        pass
+
+    def get_T(self, h, p):
+        pass
+
+    def get_dynamic_viscosity(self, t, p):
+        pass
 
     def get_Reynolds(self, dri, t, p, massflow):
 
@@ -2956,6 +3168,19 @@ class Site(object):
         self.latitude = settings['latitude']
         self.longitude = settings['longitude']
         self.altitude = settings['altitude']
+
+
+    def get_solarposition(self, row):
+
+        solarpos = pvlib.solarposition.get_solarposition(
+                row[0],
+                self.latitude,
+                self.longitude,
+                self.altitude,
+                pressure=row[1]['Pressure'],
+                temperature=row[1]['DryBulb'])
+
+        return solarpos
 
 
 class HCEScatterMask(object):
