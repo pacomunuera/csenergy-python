@@ -1,0 +1,143 @@
+{
+ "simulation": {
+  "ID": "ANDASOL_SEVILLA",
+  "datatype": 1,
+  "simulation": true,
+  "benchmark": false,
+  "fastmode": true,
+  "filename": "METEO_SEVILLA.csv",
+  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
+ },
+ "model": {
+  "name": "Barbero1stOrder",
+  "max_err_t": 0.1,
+  "max_err_tro": 0.1,
+  "max_err_pr": 0.01
+ },
+ "site": {
+  "name": "Sevilla",
+  "latitude": 37.42,
+  "longitude": -5.9,
+  "altitude": 31.0
+ },
+ "loop": {
+  "scas": 4,
+  "hces": 1,
+  "rated_tin": 563.15,
+  "rated_tout": 663.15,
+  "rated_pin": 2000000.0,
+  "rated_pout": 1600000.0,
+  "tmin": 288.0,
+  "tmax": 670.0,
+  "rated_massflow": 4.0,
+  "min_massflow": 1.0,
+  "row_spacing": 16.25,
+  "Tracking Type": 1
+ },
+ "SCA": {
+  "Name": "Flagsol SKAL-ET 150 (recopilación propia)",
+  "SCA Length": 148.5,
+  "Aperture": 5.77,
+  "Focal Len": 1.71,
+  "IAM Coefficient F0": 1.0,
+  "IAM Coefficient F1": 0.0506,
+  "IAM Coefficient F2": -0.1763,
+  "Track Twist": 0.99,
+  "Geom.Accuracy": 0.98,
+  "Reflectance": 0.935,
+  "Cleanliness": 0.97,
+  "Dust": 0.98,
+  "Factor": 1.0,
+  "Availability": 0.99
+ },
+ "HCE": {
+  "Name": "Solel UVAC 3",
+  "Length": 145.8,
+  "Absorber tube inner diameter": 0.066,
+  "Absorber tube outer diameter": 0.07,
+  "Glass envelope inner diameter": 0.115,
+  "Glass envelope outer diameter": 0.121,
+  "Min Reynolds": 30000.0,
+  "Inner surface roughness": 4.5e-05,
+  "Envelope transmittance": 0.96,
+  "absorptance": 0.96,
+  "coating": "",
+  "annulus": "",
+  "Absorber emittance factor A0": 0.043,
+  "Absorber emittance factor A1": 0.000206,
+  "Absorber absorptance": 0.96,
+  "Brackets": 4.05
+ },
+ "HTF": {
+  "source": "table",
+  "name": "DOWTHERM A",
+  "cp": [
+   -2364.0,
+   39.46,
+   -0.1703,
+   0.0003904,
+   -4.422e-07,
+   1.979e-10
+  ],
+  "rho": [
+   1493.0,
+   -3.332,
+   0.01248,
+   -2.968e-05,
+   3.444e-08,
+   -1.622e-11
+  ],
+  "kt": [
+   0.1856,
+   -0.00016,
+   5.913e-12,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "h": [
+   -651100.0,
+   4121.0,
+   -12.35,
+   0.02771,
+   -2.777e-05,
+   1.106e-08
+  ],
+  "t": [
+   285.344,
+   0.000620726,
+   -1.82158e-10,
+   -1.42322e-16,
+   3.31588e-22,
+   -1.75256e-28
+  ],
+  "mu": [
+   0.34013,
+   -0.00337267,
+   1.33042e-05,
+   -2.60139e-08,
+   2.51799e-11,
+   -9.6475e-15
+  ],
+  "tmax": 670.0,
+  "tmin": 288.0
+ },
+ "subfields": [
+  {
+   "name": "SO",
+   "loops": 39
+  },
+  {
+   "name": "SE",
+   "loops": 39
+  },
+  {
+   "name": "NO",
+   "loops": 39
+  },
+  {
+   "name": "NE",
+   "loops": 39
+  }
+ ]
+}
