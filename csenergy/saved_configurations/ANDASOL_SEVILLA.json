@@ -5,7 +5,7 @@
   "simulation": true,
   "benchmark": false,
   "fastmode": true,
-  "filename": "METEO_SEVILLA.csv",
+  "filename": "METEO_SEVILLA_JULIO.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },
  "model": {

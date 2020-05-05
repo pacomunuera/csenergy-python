@@ -756,11 +756,11 @@ class Interface(object):
         if self.varbenchmark.get():
 
             for row in self.solarfield_table.table_data:
-                columns_names.append([row[0]+'.mf','',''])
-                columns_names.append([row[0]+'.tin','',''])
-                columns_names.append([row[0]+'.tout','',''])
-                columns_names.append([row[0]+'.pin','',''])
-                columns_names.append([row[0]+'.pout','',''])
+                columns_names.append(['SB.'+row[0]+'.a.mf','',''])
+                columns_names.append(['SB.'+row[0]+'.a.tin','',''])
+                columns_names.append(['SB.'+row[0]+'.a.tout','',''])
+                columns_names.append(['SB.'+row[0]+'.a.pin','',''])
+                columns_names.append(['SB.'+row[0]+'.a.pout','',''])
 
         self.columns_table.table_data = columns_names
 

@@ -9,7 +9,7 @@
   "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },
  "model": {
-  "name": "Barbero4thOrder",
+  "name": "Barbero1stOrder",
   "max_err_t": 0.1,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
@@ -22,7 +22,7 @@
  },
  "loop": {
   "scas": 4,
-  "hces": 24,
+  "hces": 36,
   "rated_tin": 563.15,
   "rated_tout": 663.15,
   "rated_pin": 2000000.0,

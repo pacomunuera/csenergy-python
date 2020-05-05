@@ -95,9 +95,13 @@ class ModelBarbero4thOrder(Model):
         self.max_err_tro = self.parameters['max_err_tro']
         self.max_err_pr = self.parameters['max_err_pr']
 
-    def calc_pr(self, hce, htf, row, qabs = None):
+    def calc_pr(self, hce, htf, row, qabs=None):
 
-        if qabs is None:
+        flag_0 = datetime.now()
+
+        if qabs is not None:
+            qabs = qabs
+        else:
             qabs = hce.qabs
 
         tin = hce.tin
@@ -137,7 +141,7 @@ class ModelBarbero4thOrder(Model):
         hext = hce.get_hext(wspd)
 
         #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         #  Thermal power lost througth  bracktets
         qlost_brackets = hce.get_qlost_brackets(tf, text)
@@ -151,7 +155,6 @@ class ModelBarbero4thOrder(Model):
         #  Transmission Units Number, Ec. 3.30 Barbero2016
         NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
-
         if qabs > qcrit:
 
             #  We use Barbero2016's simplified model aproximation
@@ -161,7 +164,7 @@ class ModelBarbero4thOrder(Model):
             #  Eq. 3.71 Barbero2016
             pr = fcrit * (1 - qcrit / qabs)
 
-            errtro = 10.
+            errtro = 1.
             errpr = 1.
             step = 0
 
@@ -248,10 +251,11 @@ class ModelBarbero4thOrder(Model):
                 tro = tro2
 
                 #  Thermal power loss. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro2**4 - text**4) + hext * (tro2 - text)
+                qperd = sigma * eext * (tro2**4 - text**4) + hext * (tro2 - text)
 
-                #  Increase qlost with  the thermal power loss througth  bracktets
+                #  Increase qperd with  the thermal power loss througth  bracktets
                 qlost_brackets = hce.get_qlost_brackets(tf, text)
+                qperd = qperd + qlost_brackets
 
                 #  Critical Thermal power loss. Eq. 3.50 Barbero2016
                 qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -263,15 +267,19 @@ class ModelBarbero4thOrder(Model):
                 NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
             hce.pr = hce.pr * (1 - qlost_brackets / qabs)
-            hce.qlost = qlost
-            hce.qlost_brackets = qlost_brackets
+            hce.qperd = qperd  * hce.parameters['Length']
+            hce.qlost_brackets = qlost_brackets * hce.parameters['Length']
+            hce.qabs = qabs * hce.parameters['Length']
 
         else:
             hce.pr = 0.0
-            hce.qlost = qlost
-            hce.qlost_brackets =  qlost_brackets
+            hce.qperd = qperd * hce.parameters['Length']
+            hce.qabs = qabs * hce.parameters['Length']
+            hce.qlost_brackets =  qlost_brackets * hce.parameters['Length']
             hce.set_tout(htf)
             hce.set_pout(htf)
+            flag_3 = datetime.now()
+
 
 class ModelBarbero1stOrder(Model):
 
@@ -282,7 +290,11 @@ class ModelBarbero1stOrder(Model):
 
     def calc_pr(self, hce, htf, row, qabs = None):
 
-        if qabs is None:
+        flag_0 = datetime.now()
+
+        if qabs is not None:
+            qabs = qabs
+        else:
             qabs = hce.qabs
 
         tin = hce.tin
@@ -322,7 +334,7 @@ class ModelBarbero1stOrder(Model):
         hext = hce.get_hext(wspd)
 
         #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         #  Thermal power lost througth  bracktets
         qlost_brackets = hce.get_qlost_brackets(tf, text)
@@ -338,21 +350,26 @@ class ModelBarbero1stOrder(Model):
         fcrit = 1 / (1 + (ucrit / urec))
 
         #  Ec. 3.64
-        Aext = np.pi * dro * x  # Pendiente de confirmar
+        Aext = np.pi * dro * x / 2  # Pendiente de confirmar
         NTUperd = ucrit * Aext / (massflow * cp)
 
         if qabs > qcrit:
+
             hce.pr = ((1 - (qcrit / qabs)) *
                   (1 / (NTUperd * x)) *
                   (1 - np.exp(-NTUperd * fcrit * x)))
-            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
-        else:
-            hce.pr = 0.0
 
-        hce.qlost = qlost
-        hce.qlost_brackets = qlost_brackets
+            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+
+        else:
+            hce.pr = 0
+
+        hce.qabs = qabs * hce.parameters['Length']
+        hce.qperd = qperd * hce.parameters['Length']
+        hce.qlost_brackets = qlost_brackets * hce.parameters['Length']
         hce.set_tout(htf)
         hce.set_pout(htf)
+
 
 class ModelBarberoSimplified(Model):
 
@@ -363,7 +380,11 @@ class ModelBarberoSimplified(Model):
 
     def calc_pr(self, hce, htf, row, qabs=None):
 
-        hce.qabs = qabs * hce.parameters['Length']
+        if qabs is not None:
+            qabs = qabs
+        else:
+            qabs = hce.qabs
+
         tin = hce.tin
         tf = hce.tin  # HTF bulk temperature
         tri = hce.tin  #  Absorber tube inner surface temperature
@@ -401,7 +422,7 @@ class ModelBarberoSimplified(Model):
         hext = hce.get_hext(wspd)
 
         #  Thermal power loss. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
         #  Thermal power lost througth  bracktets
         qlost_brackets = hce.get_qlost_brackets(tf, text)
@@ -427,7 +448,7 @@ class ModelBarberoSimplified(Model):
 
 
         hce.qabs = qabs * hce.parameters['Length']
-        hce.qlost = qlost * hce.parameters['Length']
+        hce.qperd = qperd * hce.parameters['Length']
         hce.qlost_brackets = qlost_brackets * hce.parameters['Length']
         hce.set_tout(htf)
         hce.set_pout(htf)
@@ -457,16 +478,16 @@ class HCE(object):
 
         self.sca = sca  # SCA in which the HCE is located
         self.hce_order = hce_order  # Relative position of the HCE in the SCA
-        self.parameters = settings  # Set of parameters of the HCE
+        self.parameters = dict(settings)  # Set of parameters of the HCE
         self.tin = 0.0  # Temperature of the HTF when enters in the HCE
         self.tout = 0.0  # Temperature of the HTF when goes out the HCE
-        self.pin = 0.0  # Pressure of the HTF when enters in the HCE
-        self.pout = 0.0  # Pressure of the HTF when goes out the HCE
         self.pr = 0.0  # Thermal performance of the HCE
         self.pr_opt = 0.0  # Optical performance of the HCE+SCA set
         self.qabs = 0.0  # Thermal which reach the aboserber tube
-        self.qlost = 0.0  # Thermal power lost througth out the HCE
+        self.qperd = 0.0  # Thermal power lost througth out the HCE
         self.qlost_brackets = 0.0  # Thermal power lost in brackets and arms
+        self.pout = 0.0
+        self.pin = 0.0
 
     def set_tin(self):
 
@@ -490,16 +511,12 @@ class HCE(object):
 
         HL = htf.get_deltaH(self.tin, self.sca.loop.pin)
 
-        if self.pr > 0:
+        if self.qabs > 0:
 
-            h = (self.qabs * self.parameters['Length'] * np.pi *
-                 self.parameters['Absorber tube outer diameter'] * self.pr  /
-                 self.sca.loop.massflow)
+            h = (self.qabs * self.pr * self.pr_opt / self.sca.loop.massflow)
 
         else:
-            h = (-self.qlost * self.parameters['Length'] * np.pi *
-                 self.parameters['Absorber tube outer diameter'] /
-                 self.sca.loop.massflow)
+            h = -self.qperd / self.sca.loop.massflow
 
         self.tout = htf.get_T(HL + h, self.sca.loop.pin)
 
@@ -562,7 +579,7 @@ class HCE(object):
         pr_geo = self.get_pr_geo(aoi)
         pr_shadows = self.get_pr_shadows(solarpos)
         #  Ec. 3.20 Barbero
-        self.qabs = self.pr_opt * cg * dni * pr_geo * pr_shadows
+        self.qabs = (self.pr_opt * cg * dni * pr_geo * pr_shadows)
 
     def get_krec(self, t):
 
@@ -859,12 +876,12 @@ class __Loop__(object):
         self.pin = 0.0
         self.pout = 0.0
         self.massflow = 0.0
-        self.qabs = 0.0
-        self.qlost = 0.0
-        self.qlost_brackets = 0.0
-        self.wasted_power = 0.0
-        self.pr = 0.0
+        self.req_massflow = 0.0  # Required massflow (to achieve setpoint tout)
+        self.pr_req_massflow = 0.0
+        self.pr_act_massflow = 0.0
         self.pr_opt = 0.0
+        self.qabs = 0.0
+        self.qlost_brackets = 0.0
 
         self.act_tin = 0.0
         self.act_tout = 0.0
@@ -875,30 +892,30 @@ class __Loop__(object):
         self.wasted_power = 0.0
         self.tracking = True
 
-    def initialize(self, type_of_source, source=None):
+    def initialize(self, source, values = None):
 
-        if type_of_source == 'rated':
+        if source == 'rated':
             self.massflow = self.parameters['rated_massflow']
             self.tin = self.parameters['rated_tin']
             self.pin = self.parameters['rated_pin']
+            # self.tout = self.parameters['rated_tout']
+            # self.pout = self.parameters['rated_pout']
 
-        elif type_of_source == 'subfield' and source is not None:
-            self.massflow = source.massflow / len(source.loops)
-            self.tin = source.tin
-            self.pin = source.pin
+        elif source == 'actual':
+            self.massflow = self.act_massflow
+            self.tin = self.act_tin
+            self.pin = self.act_pin
+            # self.tout = self.act_tout
+            # self.pout = self.act_pout
 
-        elif type_of_source  == 'solarfield' and source is not None:
-            self.massflow = source.massflow / source.total_loops
-            self.tin = solarfield.tin
-            self.pin = solarfield.pin
-
-        elif type_of_source == 'values' and source is not None:
-            self.massflow = source['massflow']
-            self.tin = source['tin']
-            self.pin = source['pin']
+        elif source == 'values' and values is not None:
+            self.massflow = values['massflow']
+            self.tin = values['tin']
+            self.pin = values['pin']
 
         else:
-            print("ERROR initialize()")
+            print('Select source [rated|actual|values]')
+            sys.exit()
 
 
     def load_actual(self, subfield = None):
@@ -912,12 +929,12 @@ class __Loop__(object):
         self.act_pin = subfield.act_pin
         self.act_pout = subfield.act_pout
 
-    def set_loop_values_from_HCEs(self):
+    def set_loop_values_from_HCEs(self, type_of_massflow):
 
         pr_list = []
         qabs_list = []
         qlost_brackets_list = []
-        qlost_list = []
+        qperd_list = []
         pr_opt_list = []
 
         for s in self.scas:
@@ -925,28 +942,36 @@ class __Loop__(object):
                 pr_list.append(h.pr)
                 qabs_list.append(h.qabs)
                 qlost_brackets_list.append(h.qlost_brackets)
-                qlost_list.append(h.qlost)
+                qperd_list.append(h.qperd)
                 pr_opt_list.append(h.pr_opt)
 
-        self.pr = np.mean(pr_list)
+        if type_of_massflow == 'required':
+            self.pr_req_massflow = np.mean(pr_list)
+        elif type_of_massflow == 'actual':
+            self.pr_act_massflow = np.mean(pr_list)
+
         self.qabs = np.sum(qabs_list)
         self.qlost_brackets = np.sum(qlost_brackets_list)
-        self.qlost = np.sum(qlost_list)
+        self.qperd = np.sum(qperd_list)
         self.pr_opt = np.mean(pr_opt_list)
+
 
     def load_from_base_loop(self, base_loop):
 
         self.massflow = base_loop.massflow
+        self.req_massflow = base_loop.req_massflow
+        self.act_massflow = base_loop.act_massflow
         self.tin = base_loop.tin
+        self.act_tin = base_loop.act_tin
         self.pin = base_loop.pin
+        self.act_pin = base_loop.act_pin
         self.tout = base_loop.tout
+        self.act_tout = base_loop.act_tout
         self.pout = base_loop.pout
-        self.pr = base_loop.pr
+        self.act_pout = base_loop.act_pout
+        self.pr_req_massflow = base_loop.pr_req_massflow
+        self.pr_act_massflow = base_loop.pr_act_massflow
         self.wasted_power = base_loop.wasted_power
-        self.pr_opt = base_loop.pr_opt
-        self.qabs = base_loop.qabs
-        self.qlost = base_loop.qlost
-        self.qlost_brackets = base_loop.qlost_brackets
 
     def calc_loop_pr_for_massflow(self, row, solarpos, htf, model):
 
@@ -957,11 +982,13 @@ class __Loop__(object):
                 h.set_qabs(aoi, solarpos, row)
                 h.set_tin()
                 h.set_pin()
+                h.tout = h.tin
                 model.calc_pr(h, htf, row)
 
         self.tout = self.scas[-1].hces[-1].tout
         self.pout = self.scas[-1].hces[-1].pout
-        self.set_loop_values_from_HCEs()
+        self.pr_req_massflow = 0.0
+        self.set_loop_values_from_HCEs('actual')
         self.set_wasted_power(htf)
 
     def calc_loop_pr_for_tout(self, row, solarpos, htf, model):
@@ -979,17 +1006,18 @@ class __Loop__(object):
 
             self.calc_loop_pr_for_massflow(row, solarpos, htf, model)
 
-            err = abs(self.tout-self.parameters['rated_tout'])
+            err = 100 * (abs(self.tout-self.parameters['rated_tout']) /
+                   self.parameters['rated_tout'])
 
             if err > max_error:
 
                 if self.tout >= self.parameters['rated_tout']:
-                    self.massflow *= (1 + err / self.parameters['rated_tout'])
+                    self.massflow *= (1 + err / 100)
                     search = True
                 elif (self.massflow > min_massflow and
                       self.massflow >
                       self.parameters['min_massflow']):
-                    self.massflow *= (1 - err / self.parameters['rated_tout'])
+                    self.massflow *= (1 - err / 100)
                     search = True
                 else:
                     self.massflow = max(
@@ -1002,8 +1030,9 @@ class __Loop__(object):
 
         self.tout = self.scas[-1].hces[-1].tout
         self.pout = self.scas[-1].hces[-1].pout
-        self.set_loop_values_from_HCEs()
-        self.wasted_power = 0.0
+        self.req_massflow = self.massflow
+        self.pr_act_massflow = 0.0
+        self.set_loop_values_from_HCEs('required')
 
 
     def show_parameter_vs_x(self, parameters = None):
@@ -1019,7 +1048,7 @@ class __Loop__(object):
                              'pout': round(h.pout/100000,3),
                              'pr': h.pr,
                              'qabs': h.qabs,
-                             'qlost': h.qlost})
+                             'qperd': h.qperd})
 
         loop_df = pd.DataFrame(data)
 
@@ -1032,7 +1061,7 @@ class __Loop__(object):
         else:
 
             loop_df[['num', 'tin', 'tout', 'pin', 'pout',
-                     'pr', 'qabs', 'qlost']].plot(
+                     'pr', 'qabs', 'qperd']].plot(
                 figsize=(20,10), linewidth=5, fontsize=20)
 
             plt.xlabel('HCE order', fontsize=20)
@@ -1043,7 +1072,7 @@ class __Loop__(object):
         pd.set_option('display.width', None)
         # pd.set_option('display.max_colwidth', -1)
         print(loop_df[['num', 'tin', 'tout', 'pin', 'pout',
-                       'pr', 'qabs', 'qlost']])
+                       'pr', 'qabs', 'qperd']])
         #print(self.datasource.dataframe)
 
     def check_min_massflow(self, htf):
@@ -1089,7 +1118,7 @@ class __Loop__(object):
 
     def get_id(self):
 
-        return 'LP.{0}.{1:03d}'.format(self.subfield.name, self.loop_order)
+        return 'LO.{0}.{1:000}'.format(self.subfield.name, self.loop_order)
 
 class Loop(__Loop__):
 
@@ -1130,9 +1159,9 @@ class BaseLoop(__Loop__):
 
         id = ''
         if subfield is not None:
-            id = 'LB.'+subfield.name
+            id = 'BL.'+subfield.name
         else:
-            id = 'LB.000'
+            id = 'BL'
 
         return id
 
@@ -1293,12 +1322,9 @@ class Subfield(object):
         self.pin = 0.0
         self.pout = 0.0
         self.massflow = 0.0
-        self.qabs = 0.0
-        self.qlost = 0.0
-        self.qlost_brackets = 0.0
+        self.req_massflow = 0.0
+        self.pr_req_massflow = 0.0
         self.wasted_power = 0.0
-        self.pr = 0.0
-        self.pr_opt = 0.0
 
         self.act_tin = 0.0
         self.act_tout = 0.0
@@ -1315,40 +1341,6 @@ class Subfield(object):
                                self.parameters['loops'] /
                                self.solarfield.total_loops)
 
-    def set_subfield_values_from_loops(self, htf):
-
-        massflow_list = []
-        pr_list = []
-        pr_opt_list = []
-        wasted_power_list = []
-        pout_list = []
-        enthalpy_list = []
-        qlost_list = []
-        qabs_list = []
-        qlost_brackets_list = []
-
-        for l in self.loops:
-            massflow_list.append(l.massflow)
-            pr_list.append(l.pr * l.massflow)
-            pr_opt_list.append(l.pr_opt * l.massflow)
-            wasted_power_list.append(l.wasted_power)
-            pout_list.append(l.pout * l.massflow)
-            enthalpy_list.append(l.massflow * htf.get_deltaH(l.tout, l.pout))
-            qlost_list.append(l.qlost)
-            qabs_list.append(l.qabs)
-            qlost_brackets_list.append(l.qlost_brackets)
-
-        self.massflow = np.sum(massflow_list)
-        self.pr = np.sum(pr_list) / self.massflow
-        self.pr_opt = np.sum(pr_opt_list) / self.massflow
-        self.wasted_power = np.sum(wasted_power_list)
-        self.pout = np.sum(pout_list) / self.massflow
-        self.tout = htf.get_T(np.sum(enthalpy_list) /
-                              self.massflow, self.pout)
-        self.qlost = np.sum(qlost_list)
-        self.qabs = np.sum(qabs_list)
-        self.qlost_brackets = np.sum(qlost_brackets_list)
-
     def set_massflow(self):
 
         mf = 0.0
@@ -1356,6 +1348,7 @@ class Subfield(object):
             mf += l.massflow
 
         self.massflow = mf
+
 
     def set_req_massflow(self):
 
@@ -1459,11 +1452,11 @@ class Subfield(object):
 
     def load_actual(self, row):
 
-        self.act_massflow = row[1][self.get_id() +'.a.mf']
-        self.act_tin = row[1][self.get_id() +'.a.tin']
-        self.act_pin = row[1][self.get_id() +'.a.pin']
-        self.act_tout = row[1][self.get_id() +'.a.tout']
-        self.act_pout = row[1][self.get_id() +'.a.pout']
+        self.act_massflow = row[1][self.get_id() +'.act_mf']
+        self.act_tin = row[1][self.get_id() +'.act_tin']
+        self.act_pin = row[1][self.get_id() +'.act_pin']
+        self.act_tout = row[1][self.get_id() +'.act_tout']
+        self.act_pout = row[1][self.get_id() +'.act_pout']
 
 
     def get_id(self):
@@ -1487,18 +1480,16 @@ class SolarField(object):
         self.pin = 0.0
         self.pout = 0.0
         self.massflow = 0.0
-        self.qabs = 0.0
-        self.qlost = 0.0
-        self.qlost_brackets = 0.0
+        self.req_massflow = 0.0
+        self.pr_req_massflow = 0.0
         self.wasted_power = 0.0
-        self.pr = 0.0
-        self.pr_opt = 0.0
 
         self.act_tin = 0.0
         self.act_tout = 0.0
         self.act_pin = 0.0
         self.act_pout = 0.0
         self.act_massflow = 0.0
+        self.pr_act_massflow = 0.0
 
         self.rated_tin = loop_settings['rated_tin']
         self.rated_tout = loop_settings['rated_tout']
@@ -1579,39 +1570,6 @@ class SolarField(object):
         self.act_tin = htf.get_T(H_tin, self.act_pin)
         self.act_tout = htf.get_T(H_tout, self.act_pout)
 
-    def set_solarfield_values_from_subfields(self, htf):
-
-        massflow_list = []
-        pr_list = []
-        pr_opt_list = []
-        wasted_power_list = []
-        pout_list = []
-        enthalpy_list = []
-        qlost_list = []
-        qabs_list = []
-        qlost_brackets_list = []
-
-        for s in self.subfields:
-            massflow_list.append(s.massflow)
-            pr_list.append(s.pr * s.massflow)
-            pr_opt_list.append(s.pr_opt * s.massflow)
-            wasted_power_list.append(s.wasted_power)
-            pout_list.append(s.pout * s.massflow)
-            enthalpy_list.append(s.massflow * htf.get_deltaH(s.tout, s.pout))
-            qlost_list.append(s.qlost)
-            qabs_list.append(s.qabs)
-            qlost_brackets_list.append(s.qlost_brackets)
-
-        self.massflow = np.sum(massflow_list)
-        self.pr = np.sum(pr_list) / self.massflow
-        self.pr_opt = np.sum(pr_opt_list) / self.massflow
-        self.wasted_power = np.sum(wasted_power_list)
-        self.pout = np.sum(pout_list) /self.massflow
-        self.tout = htf.get_T(np.sum(enthalpy_list) /
-                              self.massflow, self.pout)
-        self.qlost = np.sum(qlost_list)
-        self.qabs = np.sum(qabs_list)
-        self.qlost_brackets = np.sum(qlost_brackets_list)
 
     def set_massflow(self):
 
@@ -1846,38 +1804,6 @@ class SolarFieldSimulation(object):
                                   settings['HCE'])
 
 
-    # def initialize(self, type_of_source, row = None):
-
-    #     if type_of_source == 'rated':
-    #         for s in self.solarfield.subfields:
-    #             s.initialize('rated')
-    #             for l in s.loops:
-    #                 l.initialize('rated')
-    #         self.base_loop.initialize('rated')
-
-    #     elif type_of_source == 'actual':
-    #         massflow = 0.0
-    #         H_tin = 0.0
-    #         H_tout = 0.0
-    #         list_pin = []
-    #         list_pout = []
-
-    #         for s in self.solarfield.subfields:
-    #             massflow += s.act_massflow
-    #             H_tin += (s.act_massflow *
-    #                       htf.get_deltaH(s.act_tin, s.act_pin))
-    #             H_tout += (sf.act_massflow *
-    #                        htf.get_deltaH(sf.act_tout, sf.act_pout))
-    #             list_pin.append(sf.act_pin * sf.act_massflow)
-    #             list_pout.append(sf.act_pout * sf.act_massflow)
-    #             s.massflow = row[1][self.get_id() +'.act_mf']
-    #             s.tin = row[1][self.get_id() +'.act_tin']
-    #             s.pin = row[1][self.get_id() +'.act_pin']
-    #         H_tin /= massflow
-    #         H_tout /= massflow
-    #         self.solarfield.initialize(self.htf)
-    #         self.base_loop.initialize('solarfield', self.solarfield)
-
     def runSimulation(self):
 
         self.show_message()
@@ -1897,150 +1823,168 @@ class SolarFieldSimulation(object):
                 self.simulate_solarfield(solarpos, row)
                 self.gather_simulation_data(row)
 
-                str_data = ("SIMULATION: {0} " +
-                            "DNI: {1:3.0f} W/m2 Qm: {2:4.1f}kg/s " +
-                            "Tin: {3:4.1f}K Tout: {4:4.1f}K")
-
-                print(str_data.format(row[0],
-                                      row[1]['DNI'],
-                                      self.solarfield.massflow,
-                                      self.solarfield.tin,
-                                      self.solarfield.tout))
-
-
             if self.benchmark and self.datatype == 2:  # 2: Field Data File available
                 self.benchmarksolarfield(solarpos, row)
                 self.gather_benchmark_data(row)
 
-                str_data = ("BENCHMARK: {0} " +
-                            "DNI: {1:3.0f} W/m2 act_Qm: {2:4.1f}kg/s " +
-                            "act_Tin: {3:4.1f}K act_Tout: {4:4.1f}K " +
-                            "Tout: {5:4.1f}K")
+            self.plantperformance(row)
+            str_data = ("{0} Ang. Zenith: {1:.2f} DNI: {2} W/m2 " +
+                         "Qm: {3:.1f}kg/s Tin: {4:.1f}K Tout: {5:1f}K act_Tout: {6:1f}K")
 
-                print(str_data.format(row[0],
-                                      row[1]['DNI'],
-                                      self.solarfield.act_massflow,
-                                      self.solarfield.act_tin,
-                                      self.solarfield.act_tout,
-                                      self.solarfield.tout))
+            print(str_data.format(row[0], solarpos['zenith'][0],
+                                   row[1]['DNI'], self.solarfield.massflow,
+                                   self.solarfield.tin, self.solarfield.tout,
+                                   self.solarfield.act_tout))
 
         self.save_results()
 
+
     def simulate_solarfield(self, solarpos, row):
 
-        if self.datatype == 1:
-            for s in self.solarfield.subfields:
-                s.initialize('rated')
-                for l in s.loops:
-                    l.initialize('rated')
-            self.solarfield.initialize('rated')
-            self.base_loop.initialize('rated')
-            if self.fastmode:
-                if solarpos['zenith'][0] > 90:
-                    self.base_loop.massflow = \
-                        self.base_loop.parameters['min_massflow']
-                    self.base_loop.calc_loop_pr_for_massflow(
-                        row, solarpos, self.htf, self.model)
-                else:
-                    self.base_loop.calc_loop_pr_for_tout(
-                        row, solarpos, self.htf, self.model)
-                for s in self.solarfield.subfields:
-                    for l in s.loops:
-                        l.load_from_base_loop(self.base_loop)
-            else:
-                for s in self.solarfield.subfields:
-                    for l in s.loops:
-                        if solarpos['zenith'][0] > 90:
-                            l.massflow = \
-                                self.base_loop.parameters['min_massflow']
-                            l.calc_loop_pr_for_massflow(
-                                row, solarpos, self.htf, self.model)
-                        else:
-                            if l.loop_order > 1:
-                                # For a faster convergence
-                                l.massflow = \
-                                l.subfield.loops[l.loop_order - 1].massflow
-                            l.calc_loop_pr_for_tout(
-                                row, solarpos, self.htf, self.model)
+        flag_0 = datetime.now()
+        self.base_loop.initialize('rated')
 
-        elif self.datatype == 2:
-            #  1st, we initialize subfields because actual data are given for
-            #  subfields. 2nd, we initialize solarfield.
+        if self.datatype == 2:
             for s in self.solarfield.subfields:
                 s.load_actual(row)
                 s.initialize('actual')
             self.solarfield.load_actual(self.htf)
-            self.solarfield.initialize('actual')
-            if self.fastmode:
-                # Force minimum massflow at night
-                for s in self.solarfield.subfields:
-                    self.base_loop.initialize('subfield', s)
-                    if solarpos['zenith'][0] > 90:
-                        self.base_loop.massflow = \
-                            self.base_loop.parameters['min_massflow']
-                        self.base_loop.calc_loop_pr_for_massflow(
-                            row, solarpos, self.htf, self.model)
-                    else:
-                        self.base_loop.calc_loop_pr_for_tout(
-                            row, solarpos, self.htf, self.model)
-                    for l in s.loops:
-                        l.load_from_base_loop(self.base_loop)
-            else:
-                for s in self.solarfield.subfields:
-                    for l in s.loops:
-                        # l.load_actual(s)
-                        l.initialize('subfield', s)
-                        if solarpos['zenith'][0] > 90:
-                            l.massflow = l.parameters['min_massflow']
-                            l.calc_loop_pr_for_massflow(
-                                row, solarpos, self.htf, self.model)
-                        else:
-                            if l.loop_order > 1:
-                                # For a faster convergence
-                                l.massflow = \
-                                l.subfield.loops[l.loop_order - 1].massflow
-                            l.calc_loop_pr_for_tout(
-                                row, solarpos, self.htf, self.model)
+            self.base_loop.tin = self.solarfield.act_tin
 
-        #
-        for s in self.solarfield.subfields:
-            s.set_subfield_values_from_loops(self.htf)
+        # Force minimum massflow at night
+        if solarpos['zenith'][0] > 90:
+            self.base_loop.massflow = self.base_loop.parameters['min_massflow']
+            self.base_loop.req_massflow = self.base_loop.massflow
+            self.base_loop.calc_loop_pr_for_massflow(
+                row, solarpos, self.htf, self.model)
+        else:
+            self.base_loop.calc_loop_pr_for_tout(
+                row, solarpos, self.htf, self.model)
 
-        self.solarfield.set_solarfield_values_from_subfields(self.htf)
+        if  self.fastmode:
 
-    def benchmarksolarfield(self, solarpos, row):
-
-        for s in self.solarfield.subfields:
-            s.load_actual(row)
-            s.initialize('actual')
-        self.solarfield.load_actual(self.htf)
-        self.solarfield.initialize('actual')
-
-        if self.fastmode:
             for s in self.solarfield.subfields:
-                # self.base_loop.load_actual(s)
-                self.base_loop.initialize('subfield', s)
-                self.base_loop.calc_loop_pr_for_massflow(
-                    row, solarpos, self.htf, self.model)
-                self.base_loop.set_loop_values_from_HCEs()
-
+                s.initialize('rated')
                 for l in s.loops:
                     l.load_from_base_loop(self.base_loop)
 
-                s.set_subfield_values_from_loops(self.htf)
+                s.set_massflow()
+                s.set_req_massflow()
+                s.set_pr_req_massflow()
+                s.set_pout()
+                s.set_tout(self.htf)
+                s.set_wasted_power()
+
+            flag_1 = datetime.now()
+            delta_1 = flag_1 - flag_0
 
         else:
             for s in self.solarfield.subfields:
                 for l in s.loops:
-                    # l.load_actual()
-                    l.initialize('subfield', s)
+                    l.initialize('rated')
+                    if solarpos['zenith'][0] > 90:
+                        l.massflow = self.base_loop.parameters['min_massflow']
+                        l.calc_loop_pr_for_massflow(
+                            row, solarpos, self.htf, self.model)
+                        l.req_massflow = l.massflow
+
+                    else:
+                        # Start with the previous loop massflow, for a better convergence
+                        if l.loop_order > 0:
+                            l.massflow = \
+                                l.subfield.loops[l.loop_order-1].massflow
+                        else:
+                            l.massflow = self.base_loop.massflow
+
+                        l.calc_loop_pr_for_tout(
+                            row, solarpos, self.htf, self.model)
+
+                    s.set_massflow()
+                    s.set_req_massflow()
+                    s.set_pr_req_massflow()
+                    s.set_tout(self.htf)
+                    s.set_pout()
+                    s.set_wasted_power()
+
+            flag_2 = datetime.now()
+            delta_2 = flag_2 - flag_0
+
+        self.solarfield.set_massflow()
+        self.solarfield.set_req_massflow()
+        self.solarfield.set_pr_req_massflow()
+        self.solarfield.set_tin(self.htf)
+        self.solarfield.set_pin()
+        self.solarfield.set_tout(self.htf)
+        self.solarfield.set_pout()
+
+
+    def benchmarksolarfield(self, solarpos, row):
+
+        flag_0 = datetime.now()
+
+        if self.fastmode:
+            for s in self.solarfield.subfields:
+                s.load_actual(row)
+                s.initialize('actual')
+                self.base_loop.load_actual(s)
+                self.base_loop.initialize('actual')
+                self.base_loop.calc_loop_pr_for_massflow(
+                    row, solarpos, self.htf, self.model)
+                self.base_loop.set_loop_values_from_HCEs('actual')
+
+                for l in s.loops:
+                    l.load_from_base_loop(self.base_loop)
+
+                s.set_massflow()
+                s.set_pr_act_massflow()
+                s.set_pout()
+                s.set_tout(self.htf)
+                s.set_wasted_power()
+
+            flag_1 = datetime.now()
+            delta_1 = flag_1 - flag_0
+
+        else:
+            for s in self.solarfield.subfields:
+                s.load_actual(row)
+                s.initialize('actual')
+
+                for l in s.loops:
+                    l.load_actual()
+                    l.initialize('actual')
                     l.calc_loop_pr_for_massflow(
                         row, solarpos, self.htf, self.model)
-                    l.set_loop_values_from_HCEs()
+                    l.set_loop_values_from_HCEs('actual')
 
-                s.set_subfield_values_from_loops(self.htf)
+                s.set_massflow()
+                s.set_pr_act_massflow()
+                s.set_pout()
+                s.set_tout(self.htf)
+                s.set_wasted_power()
 
-        self.solarfield.set_solarfield_values_from_subfields(self.htf)
+                values = {self.base_loop.get_id(s) +'.tin': self.base_loop.tin,
+                   self.base_loop.get_id(s) +'.tout': self.base_loop.tout,
+                   self.base_loop.get_id(s) +'.pin': self.base_loop.pin,
+                   self.base_loop.get_id(s) +'.pout': self.base_loop.pout,
+                   self.base_loop.get_id(s) +'.act_mf': self.base_loop.act_massflow,
+                   self.base_loop.get_id(s) +'.act_pr': self.base_loop.pr_act_massflow,
+                   self.base_loop.get_id(s) +'.wasted_power': self.base_loop.wasted_power,
+                   s.get_id() + '.tout': s.tout,
+                   s.get_id() + '.wasted_power': s.wasted_power,
+                   s.get_id() + '.act_pr': s.pr_act_massflow}
+
+                self.store_values(row, values)
+
+            flag_2 = datetime.now()
+            delta_2 = flag_2 - flag_0
+
+        self.solarfield.load_actual(self.htf)
+        self.solarfield.initialize('actual')
+        self.solarfield.set_massflow()
+        self.solarfield.set_tout(self.htf)
+        self.solarfield.set_pout()
+        self.solarfield.set_pr_act_massflow()
+        self.solarfield.set_wasted_power()
 
 
     def plantperformance(self, row):
@@ -2095,195 +2039,167 @@ class SolarFieldSimulation(object):
     def gather_simulation_data(self, row):
 
         #  Solarfield data
-        self.datasource.dataframe.at[row[0], 'SF.x.mf'] = \
-            self.solarfield.massflow
-        self.datasource.dataframe.at[row[0], 'SF.x.tin'] = \
+        self.datasource.dataframe.at[row[0], 'REQ_MASSFLOW'] = \
+            self.solarfield.req_massflow
+        self.datasource.dataframe.at[row[0], 'TIN'] = \
             self.solarfield.tin
-        self.datasource.dataframe.at[row[0], 'SF.x.tout'] = \
+        self.datasource.dataframe.at[row[0], 'TOUT'] = \
             self.solarfield.tout
-        self.datasource.dataframe.at[row[0], 'SF.x.pin'] = \
+        self.datasource.dataframe.at[row[0], 'PIN'] = \
             self.solarfield.pin
-        self.datasource.dataframe.at[row[0], 'SF.x.pout'] = \
+        self.datasource.dataframe.at[row[0], 'POUT'] = \
             self.solarfield.pout
-        self.datasource.dataframe.at[row[0], 'SF.x.prth'] = \
-            self.solarfield.pr
-        self.datasource.dataframe.at[row[0], 'SF.x.prop'] = \
-            self.solarfield.pr_opt
-        self.datasource.dataframe.at[row[0], 'SF.x.qabs'] = \
-            self.solarfield.qabs
-        self.datasource.dataframe.at[row[0], 'SF.x.qlst'] = \
-            self.solarfield.qlost
-        self.datasource.dataframe.at[row[0], 'SF.x.qlbk'] = \
-            self.solarfield.qlost_brackets
+        self.datasource.dataframe.at[row[0], 'PR_REQ_MF'] = \
+            self.solarfield.pr_req_massflow
 
-        power_th = self.solarfield.massflow * \
+        power_th = self.solarfield.req_massflow * \
             (self.htf.get_deltaH(self.solarfield.tout,
                             self.solarfield.pout) -
              self.htf.get_deltaH(self.solarfield.tin,
                             self.solarfield.pin))
 
-        self.datasource.dataframe.at[row[0], 'SF.x.pwr'] = power_th
+        self.datasource.dataframe.at[row[0], 'THERMAL_POWER'] = power_th
 
-        if self.fastmode:
+        values = {
+            self.base_loop.get_id() + '.mf': self.base_loop.req_massflow,
+            self.base_loop.get_id() + '.tin': self.base_loop.tin,
+            self.base_loop.get_id() + '.tout': self.base_loop.tout,
+            self.base_loop.get_id() + '.pin': self.base_loop.pin,
+            self.base_loop.get_id() + '.pout': self.base_loop.pout,
+            self.base_loop.get_id() + '.req_pr': \
+                self.base_loop.pr_req_massflow,
+            self.base_loop.get_id() + '.pr_opt': \
+                self.base_loop.pr_opt,
+            self.base_loop.get_id() + '.qabs': self.base_loop.qabs,
+            self.base_loop.get_id() + '.qlost_brackets': \
+                self.base_loop.qlost_brackets,
+            self.base_loop.get_id() + '.qperd': self.base_loop.qperd}
 
-            values = {
-                self.base_loop.get_id() + '.x.mf': self.base_loop.massflow,
-                self.base_loop.get_id() + '.x.tin': self.base_loop.tin,
-                self.base_loop.get_id() + '.x.tout': self.base_loop.tout,
-                self.base_loop.get_id() + '.x.pin': self.base_loop.pin,
-                self.base_loop.get_id() + '.x.pout': self.base_loop.pout,
-                self.base_loop.get_id() + '.x.prth': self.base_loop.pr,
-                self.base_loop.get_id() + '.x.prop': self.base_loop.pr_opt,
-                self.base_loop.get_id() + '.x.qabs': self.base_loop.qabs,
-                self.base_loop.get_id() + '.x.qlst': self.base_loop.qlost,
-                self.base_loop.get_id() + '.x.qlbk': \
-                    self.base_loop.qlost_brackets}
-            self.store_values(row, values)
+        self.store_values(row, values)
+
+        df = self.datasource.dataframe
 
         for s in self.solarfield.subfields:
             #  Agretate data from subfields
             values = {
-                s.get_id() + '.x.mf': s.massflow,
-                s.get_id() + '.x.tin': s.tin,
-                s.get_id() + '.x.tout': s.tout,
-                s.get_id() + '.x.pin': s.pin,
-                s.get_id() + '.x.pout': s.pout,
-                s.get_id() + '.x.prth': s.pr,
-                s.get_id() + '.x.prop': s.pr_opt,
-                s.get_id() + '.x.qabs': s.qabs,
-                s.get_id() + '.x.qlst': s.qlost,
-                s.get_id() + '.x.qlbk': s.qlost_brackets}
+                s.get_id() + '.req_mf': s.req_massflow,
+                s.get_id() + '.tin': s.tin,
+                s.get_id() + '.tout': s.tout,
+                s.get_id() + '.pin': s.pin,
+                s.get_id() + '.pout': s.pout,
+                s.get_id() + '.req_pr': s.pr_req_massflow}
 
             self.store_values(row, values)
 
             for l in s.loops:
                 #  Loop data
                 values = {
-                    l.get_id() + '.x.mf':  l.massflow,
-                    l.get_id() + '.x.tin':  l.tin,
-                    l.get_id() + '.x.tout':  l.tout,
-                    l.get_id() + '.x.pin':  l.pin,
-                    l.get_id() + '.x.pout':  l.pout,
-                    l.get_id() + '.x.prth':  l.pr,
-                    l.get_id() + '.x.prop':  l.pr_opt,
-                    l.get_id() + '.x.qabs':  l.qabs,
-                    l.get_id() + '.x.qlost':  l.qlost,
-                    l.get_id() + '.x.qlbk':  l.qlost_brackets}
+                    l.get_id() + '.req_mf':  l.req_massflow,
+                    l.get_id() + '.tin':  l.tin,
+                    l.get_id() + '.tout':  l.tout,
+                    l.get_id() + '.pin':  l.pin,
+                    l.get_id() + '.pout':  l.pout,
+                    l.get_id() + '.pr_req_mf':  l.pr_req_massflow,
+                    l.get_id() + '.pr_opt':  l.pr_opt}
 
                 self.store_values(row, values)
 
     def gather_benchmark_data(self, row):
 
         #  Solarfield data
-        self.datasource.dataframe.at[row[0], 'SF.a.mf'] = \
-            self.solarfield.massflow
-        self.datasource.dataframe.at[row[0], 'SF.a.tin'] = \
-            self.solarfield.tin
-        self.datasource.dataframe.at[row[0], 'SF.a.tout'] = \
+        self.datasource.dataframe.at[row[0], 'ACT_MASSFLOW'] = \
+            self.solarfield.act_massflow
+        self.datasource.dataframe.at[row[0], 'ACT_TIN'] = \
+            self.solarfield.act_tin
+        self.datasource.dataframe.at[row[0], 'ACT_TOUT'] = \
             self.solarfield.act_tout
-        self.datasource.dataframe.at[row[0], 'SF.b.tout'] = \
+        self.datasource.dataframe.at[row[0], 'TOUT'] = \
             self.solarfield.tout
-        self.datasource.dataframe.at[row[0], 'SF.b.prth'] = \
-            self.solarfield.pr
-        self.datasource.dataframe.at[row[0], 'SF.b.prop'] = \
-            self.solarfield.pr_opt
-
-        power_th = self.solarfield.massflow * \
-            (self.htf.get_deltaH(self.solarfield.tout,
-                                 self.solarfield.pout) -
-             self.htf.get_deltaH(self.solarfield.tin,
-                                 self.solarfield.pin))
-        self.datasource.dataframe.at[row[0], 'SF.b.pwr'] = power_th
+        self.datasource.dataframe.at[row[0], 'ACT_PIN'] = \
+            self.solarfield.act_pin
+        self.datasource.dataframe.at[row[0], 'ACT_POUT'] = \
+            self.solarfield.act_pout
+        self.datasource.dataframe.at[row[0], 'POUT'] = \
+            self.solarfield.pout
+        self.datasource.dataframe.at[row[0], 'PR_ACT_MF'] = \
+            self.solarfield.pr_act_massflow
+        self.datasource.dataframe.at[row[0], 'WASTED_POWER'] = \
+            self.solarfield.wasted_power
 
         act_power_th = self.solarfield.act_massflow * \
             (self.htf.get_deltaH(self.solarfield.act_tout,
                                  self.solarfield.act_pout) -
              self.htf.get_deltaH(self.solarfield.act_tin,
                                  self.solarfield.act_pin))
-        self.datasource.dataframe.at[row[0], 'SF.a.pwr'] = act_power_th
 
-        self.datasource.dataframe.at[row[0], 'SF.b.wpwr'] = \
-            self.solarfield.wasted_power
-        self.datasource.dataframe.at[row[0], 'SF.a.pin'] = \
-            self.solarfield.pin
-        self.datasource.dataframe.at[row[0], 'SF.a.pout'] = \
-            self.solarfield.act_pout
-        self.datasource.dataframe.at[row[0], 'SF.b.pout'] = \
-            self.solarfield.pout
-        self.datasource.dataframe.at[row[0], 'SF.b.qabs'] = \
-            self.solarfield.qabs
-        self.datasource.dataframe.at[row[0], 'SF.b.qlst'] = \
-            self.solarfield.qlost
-        self.datasource.dataframe.at[row[0], 'SF.b.qlbk'] = \
-            self.solarfield.qlost_brackets
+        available_power_th = self.solarfield.act_massflow * \
+            (self.htf.get_deltaH(self.solarfield.tout,
+                                 self.solarfield.pout) -
+             self.htf.get_deltaH(self.solarfield.act_tin,
+                                 self.solarfield.act_pin))
 
+        self.datasource.dataframe.at[row[0], 'THERMAL_POWER'] = act_power_th
+        self.datasource.dataframe.at[row[0], 'THERMAL_POWER_AVAILABLE'] = \
+            available_power_th
+
+        values = {
+            self.base_loop.get_id() + '.mf': self.base_loop.act_massflow,
+            self.base_loop.get_id() + '.tin': self.base_loop.act_tin,
+            self.base_loop.get_id() + '.tout': self.base_loop.act_tout,
+            self.base_loop.get_id() + '.pin': self.base_loop.act_pin,
+            self.base_loop.get_id() + '.pout': self.base_loop.act_pout,
+            self.base_loop.get_id() + '.act_pr':
+                self.base_loop.pr_act_massflow,
+            self.base_loop.get_id() + '.pr_opt':
+                self.base_loop.pr_opt,
+            self.base_loop.get_id() + '.qabs': self.base_loop.qabs,
+            self.base_loop.get_id() + '.qlost_brackets':
+                self.base_loop.qlost_brackets,
+            self.base_loop.get_id() + '.qperd': self.base_loop.qperd}
+
+        self.store_values(row, values)
 
         for s in self.solarfield.subfields:
-            if self.fastmode:
-
-                values = {
-                    self.base_loop.get_id(s) + '.a.mf':
-                        self.base_loop.massflow,
-                    self.base_loop.get_id(s) + '.a.tin': self.base_loop.tin,
-                    self.base_loop.get_id(s) + '.a.tout':
-                        self.base_loop.act_tout,
-                    self.base_loop.get_id(s) + '.b.tout': self.base_loop.tout,
-                    self.base_loop.get_id(s) + '.a.pin': self.base_loop.pin,
-                    self.base_loop.get_id(s) + '.b.pout': self.base_loop.pout,
-                    self.base_loop.get_id(s) + '.b.prth': self.base_loop.pr,
-                    self.base_loop.get_id(s) + '.b.prop':
-                        self.base_loop.pr_opt,
-                    self.base_loop.get_id(s) + '.b.qabs': self.base_loop.qabs,
-                    self.base_loop.get_id(s) + '.b.qlst': self.base_loop.qlost,
-                    self.base_loop.get_id(s) + '.b.qlbk':
-                        self.base_loop.qlost_brackets,
-                    self.base_loop.get_id(s) + '.b.wpwr':
-                        self.base_loop.wasted_power}
-                self.store_values(row, values)
 
             #  Agretate data from subfields
             values = {
-                s.get_id() + '.a.mf': s.act_massflow,
-                s.get_id() + '.a.tin': s.act_tin,
-                s.get_id() + '.a.tout': s.act_tout,
-                s.get_id() + '.b.tout': s.tout,
-                s.get_id() + '.a.pin': s.act_pin,
-                s.get_id() + '.a.pout': s.act_pout,
-                s.get_id() + '.b.pout': s.pout,
-                s.get_id() + '.b.prth': s.pr,
-                s.get_id() + '.b.prop': s.pr_opt,
-                s.get_id() + '.b.qabs': s.qabs,
-                s.get_id() + '.b.qlst': s.qlost,
-                s.get_id() + '.b.qlbk': s.qlost_brackets,
-                s.get_id() + '.b.wpwr': s.wasted_power}
+                s.get_id() + '.act_mf': s.act_massflow,
+                s.get_id() + '.tin': s.act_tin,
+                s.get_id() + '.tout': s.act_tout,
+                s.get_id() + '.pin': s.act_pin,
+                s.get_id() + '.pout': s.act_pout,
+                s.get_id() + '.act_pr': s.pr_act_massflow,
+                s.get_id() + '.wasted_power': s.wasted_power}
 
             self.store_values(row, values)
 
-            if not self.fastmode:
-                for l in s.loops:
-                    #  Loop data
-                    values = {
-                        l.get_id() + '.a.mf':  l.act_massflow,
-                        l.get_id() + '.a.tin':  l.act_tin,
-                        l.get_id() + '.a.tout':  l.act_tout,
-                        l.get_id() + '.b.tout':  l.tout,
-                        l.get_id() + '.a.pin':  l.act_pin,
-                        l.get_id() + '.a.pout':  l.act_pout,
-                        l.get_id() + '.b.pout':  l.pout,
-                        l.get_id() + '.b.prth':  l.pr,
-                        l.get_id() + '.b.prop':  l.pr_opt,
-                        l.get_id() + '.b.qabs':  l.qabs,
-                        l.get_id() + '.b.qlost':  l.qlost,
-                        l.get_id() + '.b.qlbk':  l.qlost_brackets,
-                        l.get_id() + '.b.wpwr': l.wasted_power}
+            for l in s.loops:
+                #  Loop data
+                values = {
+                    l.get_id() + '.act_mf':  l.act_massflow,
+                    l.get_id() + '.tin':  l.act_tin,
+                    l.get_id() + '.tout':  l.act_tout,
+                    l.get_id() + '.pin':  l.act_pin,
+                    l.get_id() + '.pout':  l.act_pout,
+                    l.get_id() + '.pr_act_mf':  l.pr_act_massflow,
+                    l.get_id() + '.pr_opt': l.pr_opt,
+                    l.get_id() + '.wasted_power': l.wasted_power}
 
-                    self.store_values(row, values)
+                self.store_values(row, values)
 
+    def show_results(self):
 
-    def show_report(self, keys):
+        mf_keys = ['SF.req_mf', 'SF.act_mf']
 
+        for c in self.datasource.dataframe.columns:
+            if 'BaseLoop.req_mf' in c:
+                mf_keys.append(c)
 
-        self.datasource.dataframe[keys].plot(
+        for c in self.datasource.dataframe.columns:
+            if 'BaseLoop.act_mf' in c:
+                mf_keys.append(c)
+
+        self.datasource.dataframe[mf_keys].plot(
                         figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
         pd.set_option('display.max_rows', None)
@@ -2950,9 +2866,9 @@ class FieldData(object):
     def change_units(self):
 
         for c in self.dataframe.columns:
-            if ('.a.t' in c) or ('DryBulb' in c) or ('Dew' in c):
+            if ('.act_t' in c) or ('DryBulb' in c) or ('Dew' in c):
                 self.dataframe[c] += 273.15 # From Celsius Degrees to K
-            if '.a.p' in c:
+            if '.act_p' in c:
                 self.dataframe[c] *= 1e5 # From Bar to Pa
             if 'Pressure' in c:
                 self.dataframe[c] *= 1e2 # From mBar to Pa
