@@ -2156,21 +2156,22 @@ class SolarFieldSimulation(object):
 
             self.store_values(row, values)
 
-            for l in s.loops:
-                #  Loop data
-                values = {
-                    l.get_id() + '.x.mf':  l.massflow,
-                    l.get_id() + '.x.tin':  l.tin,
-                    l.get_id() + '.x.tout':  l.tout,
-                    l.get_id() + '.x.pin':  l.pin,
-                    l.get_id() + '.x.pout':  l.pout,
-                    l.get_id() + '.x.prth':  l.pr,
-                    l.get_id() + '.x.prop':  l.pr_opt,
-                    l.get_id() + '.x.qabs':  l.qabs,
-                    l.get_id() + '.x.qlost':  l.qlost,
-                    l.get_id() + '.x.qlbk':  l.qlost_brackets}
+            if not self.fastmode:
+                for l in s.loops:
+                    #  Loop data
+                    values = {
+                        l.get_id() + '.x.mf':  l.massflow,
+                        l.get_id() + '.x.tin':  l.tin,
+                        l.get_id() + '.x.tout':  l.tout,
+                        l.get_id() + '.x.pin':  l.pin,
+                        l.get_id() + '.x.pout':  l.pout,
+                        l.get_id() + '.x.prth':  l.pr,
+                        l.get_id() + '.x.prop':  l.pr_opt,
+                        l.get_id() + '.x.qabs':  l.qabs,
+                        l.get_id() + '.x.qlost':  l.qlost,
+                        l.get_id() + '.x.qlbk':  l.qlost_brackets}
 
-                self.store_values(row, values)
+                    self.store_values(row, values)
 
     def gather_benchmark_data(self, row):
 
@@ -2219,8 +2220,8 @@ class SolarFieldSimulation(object):
 
 
         for s in self.solarfield.subfields:
-            if self.fastmode:
 
+            if self.fastmode:
                 values = {
                     self.base_loop.get_id(s) + '.a.mf':
                         self.base_loop.massflow,

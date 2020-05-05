@@ -1,0 +1,47 @@
+ - El texto debe estar justificado.
+  - Todas las figuras y tablas deben tener su pie indicando la numeración y descripción en
+ la parte inferior.
+  - Se debe incluir un índice de capítulos y de símbolos (variables y acrónimos).
+  - Referencias bibliográficas con un número entre corchetes. No te olvides de referenciar cualquier modelo o 
+dato que saques de otros documentos o webs.
+  - Ecuaciones numeradas.
+  - En el pie de página numeración y si quieres puedes poner un encabezado con el título del proyecto. 
+Aquí ya no hay formato específico.
+
+INDICE
+INTRODUCCIÓN
+- OBJETIVO
+- ESTRUCTURA DE LA MEMORIA
+- MODELADO DE CONCENTRADORES CILINDROPARABOLICOS
+
+DESCRIPCIÓN DEL MODELO TEORICO UTILIZADO
+- APROXIMACIONES RELIZADAS
+- ECUACIONES DEL MODELO
+- LÍMITES DE APLICACIÓN DEL MODELO
+
+MODELADO DEL SISTEMA
+- PARADIGMA DE LA POO APLICADO A LA INGENIERÍA
+- DEFINICIÓN DE CLASES PARA MODELAR EL CAMPO SOLAR
+
+DESCRIPCIÓN DEL CÓDIGO
+- CLASES CORRESPONDIENTES A LOS SISTEMAS FÍSICOS
+- PRIMEROS RESULTADOS Y VALIDACIÓN
+- ALGUNOS EJEMPLOS
+
+SIMULACIÓN DE UN CAMPO SOLAR
+- DESCRIPCIÓN DE LA CONFIGURACIÓN DEL CAMPO
+- RESULTADOS DE LA SIMULACIÓN SEGÚN CASOS
+CAMBIO GRADO MODELO, CAMBIO TAMAÑO HCE,
+CAMBIO PRECISION, CAMBIO FICHERO HORARIO (MES TIPO U HORARIO)
+
+DOCUMENTACIÓN FINAL
+- HERRAMIENTAS UTILIZADAS PARA EL TFG
+- ACCESO A LA DOCUMENTACIÓN
+
+CONCLUSIONES Y TRABAJO FUTURO
+
+INDICE DE FIGURAS
+INDICE DE TABLAS
+LISTA DE SÍMBOLOS
+REFERENCIAS
+ 

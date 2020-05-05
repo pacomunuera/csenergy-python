@@ -9,7 +9,7 @@
   "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
  },
  "model": {
-  "name": "Barbero1stOrder",
+  "name": "Barbero4thOrder",
   "max_err_t": 0.1,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
@@ -46,7 +46,7 @@
   "Geom.Accuracy": 0.98,
   "Reflectance": 0.935,
   "Cleanliness": 0.97,
-  "Dust": 0.98,
+  "Dust": 0.97,
   "Factor": 1.0,
   "Availability": 0.99
  },
