@@ -6,10 +6,12 @@
   "benchmark": false,
   "fastmode": true,
   "filename": "METEO_SEVILLA.csv",
-  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
+  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/",
+  "first_date": "1989-07-01 01:00:00+01:00",
+  "last_date": "1989-07-31 01:00:00+01:00"
  },
  "model": {
-  "name": "Barbero4thOrder",
+  "name": "BarberoSimplified",
   "max_err_t": 0.1,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01

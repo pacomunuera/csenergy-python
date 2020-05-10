@@ -16,16 +16,17 @@ import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfile
 import tkinter.ttk as ttk
 from tkinter import messagebox
-
+import inspect
 # recipe-580746-1.py from
 # http://code.activestate.com/recipes/
 # 580746-t kinter-treeview-like-a-table-or-multicolumn-listb/
 import recipe5807461 as table
-
 import json
 from decimal import Decimal
 from json import encoder
-
+import copy
+from datetime import datetime
+import csenergy as cs
 import pandas as pd
 
 class Interface(object):
@@ -76,13 +77,12 @@ class Interface(object):
         self.simulation_menu.add_command(label='Open', command=self.simulation_open)
         self.simulation_menu.add_command(label='Save', command=self.simulation_save)
         self.simulation_menu.add_command(label='Save as...', command=self.simulation_save_as)
-        self.simulation_menu.add_command(label='Close', command=self.simulation_close)
         self.simulation_menu.add_separator()
         self.simulation_menu.add_command(label='Exit', command=self.simulation_exit)
         self.menubar.add_cascade(label='Simulation', menu=self.simulation_menu)
 
         self.run_menu= tk.Menu(self.menubar,tearoff=0)
-        self.run_menu.add_command(label='Run', command=self.run_simulate)
+        self.run_menu.add_command(label='Run', command=self.run_simulation)
         self.menubar.add_cascade(label='Run', menu=self.run_menu)
 
         self.help_menu= tk.Menu(self.menubar,tearoff=0)
@@ -110,7 +110,109 @@ class Interface(object):
         self.buildSCAFrame()
 
     def simulation_new(self):
-        pass
+
+        # for att in inspect.getmembers(self):
+        #     if isinstance(att, tuple):
+        #         if isinstance(att[1], ttk.Entry):
+        #             print(att[0])
+        #             att[1].delete(0, tk.END)
+
+ #  Simulation configuration
+        self.varsimID.set('')
+        self.varsimdatatype.set(1)
+        self.varsimulation.set(False)
+        self.varbenchmark.set(False)
+        self.varfastmode.set(False)
+        self.vardatafilename.set('')
+        self.vardatafilepath.set('')
+        self.vardatafileurl.set('')
+
+        self.varfirstdate.set(pd.to_datetime('2000/01/01 1:00').strftime(
+                '%Y/%m/%d %H:%M'))
+        self.varlastdate.set(pd.to_datetime('2000/12/31 1:00').strftime(
+                '%Y/%m/%d %H:%M'))
+
+        self.cmbmodelname.set('')
+        self.varmodelmaxerrt.set(1.0)
+        self.varmodelmaxerrtro.set(0.1)
+        self.varmodelmaxerrpr.set(0.01)
+
+        self.varsitename.set(0)
+        self.varsitelat.set(0)
+        self.varsitelong.set(0)
+        self.varsitealt.set(0)
+        self.checkoptions()
+        self.checkfastmode()
+
+        #  Solarfield configuration
+        self.solarfield_table.table_data = []
+        self.columns_table.table_data = []
+
+        self.vartin.set(0)
+        self.vartout.set(0)
+        self.varpin.set(0)
+        self.varpout.set(0)
+        self.vartmin.set(0)
+        self.vartmax.set(0)
+        self.varratedmassflow.set(0)
+        self.varrecirculation.set(0)
+        self.varscas.set(0)
+        self.varhces.set(0)
+        self.varrowspacing.set(0)
+        self.varscatrackingtype.set(1)
+
+
+
+        self.varfluidtable.set(1)
+        self.varfluidname.set('')
+        self.varfluidtmax.set(0)
+        self.varfluidtmin.set(0)
+
+        self.fluid_table.table_data = []
+
+        self.cmbcoolpropID.set('')
+
+        self.checkfluid()
+
+        #  SCA configuration
+        self.varscaname.set('')
+        self.varscalength.set(0)
+        self.varscaaperture.set(0)
+        self.varscafocallen.set(0)
+        self.varscaIAMF0.set(0)
+        self.varscaIAMF1.set(0)
+        self.varscaIAMF2.set(0)
+        self.varscareflectance.set(0)
+        self.varscageoaccuracy.set(0)
+        self.varscatracktwist.set(0)
+        self.varscacleanliness.set(0)
+        self.varscadust.set(0)
+        self.varscafactor.set(0)
+        self.varscaavailability.set(0)
+
+
+        #  HCE configuration
+        self.varhcename.set('')
+        self.varhcedri.set(0)
+        self.varhcedro.set(0)
+        self.varhcedgi.set(0)
+        self.varhcedgo.set(0)
+        self.varhcelength.set(0)
+        self.varhceemittanceA0.set(0)
+        self.varhceemittanceA1.set(0)
+        self.varhceabsorptance.set(0)
+        self.varhcetransmittance.set(0)
+        self.varhceinnerroughness.set(0)
+        self.varhceminreynolds.set(0)
+        self.varhcebrackets.set(0)
+        self.updateHCEperSCA()
+
+        self.fr_fluid.update()
+        self.fr_hce.update()
+        self.fr_solarfield.update()
+        self.fr_sca.update()
+        self.fr_simulation.update()
+
 
     def simulation_open(self):
 
@@ -119,6 +221,7 @@ class Interface(object):
                                filetypes = [('JSON files', '*.json')])
 
         head, tail = os.path.split(path)
+        self.filename = path
         self.root.title('Solar Field Configurator: ' + tail)
         with open(path) as cfg_file:
             cfg = json.load(cfg_file,
@@ -136,6 +239,18 @@ class Interface(object):
         self.vardatafilepath.set(cfg['simulation']['filepath'])
         self.vardatafileurl.set(cfg['simulation']['filepath'] +
                                 cfg['simulation']['filename'])
+
+        self.varfirstdate.set(pd.to_datetime(
+            cfg['simulation']['first_date']))
+        self.varlastdate.set(pd.to_datetime(
+            cfg['simulation']['last_date']))
+        # self.varfirstdate.set(pd.to_datetime(
+        #     cfg['simulation']['first_date']).strftime(
+        #         '%Y/%m/%d %H:%M'))
+        # self.varlastdate.set(pd.to_datetime(
+        #     cfg['simulation']['last_date']).strftime(
+        #         '%Y/%m/%d %H:%M'))
+
 
         self.cmbmodelname.set(cfg['model']['name'])
         self.varmodelmaxerrt.set(cfg['model']['max_err_t'])
@@ -235,10 +350,16 @@ class Interface(object):
         self.varhcebrackets.set(cfg['HCE']['Brackets'])
         self.updateHCEperSCA()
 
+        self.fr_fluid.update()
+        self.fr_hce.update()
+        self.fr_solarfield.update()
+        self.fr_sca.update()
+        self.fr_simulation.update()
 
     def simulation_save(self):
 
-        self.saveConfigJSON(self.generate_json)
+        self.save_as_JSON(self.generate_json(), self.filename)
+
 
 
     def simulation_save_as(self):
@@ -265,6 +386,12 @@ class Interface(object):
         cfg['simulation']['fastmode'] = self.varfastmode.get()
         cfg['simulation']['filename'] = self.vardatafilename.get()
         cfg['simulation']['filepath'] = self.vardatafilepath.get()
+        cfg['simulation']['first_date'] = pd.to_datetime(
+            self.varfirstdate.get()).strftime(
+                '%Y/%m/%d %H:%M%z')
+        cfg['simulation']['last_date'] = pd.to_datetime(
+            self.varlastdate.get()).strftime(
+                '%Y/%m/%d %H:%M%z')
 
         cfg['model']['name'] =  self.cmbmodelname.get()
         cfg['model']['max_err_t'] = self.varmodelmaxerrt.get()
@@ -371,13 +498,16 @@ class Interface(object):
 
         return cfg
 
-    def save_as_JSON(self, cfg):
+    def save_as_JSON(self, cfg, filename = None):
 
-        #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-        f = asksaveasfile(initialdir = self._DIR['saved_configurations'],
-                               title = 'choose your file name',
-                               filetypes = [('JSON files', '*.json')],
-                               defaultextension = 'json')
+        if filename is None:
+            #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
+            f = asksaveasfile(initialdir = self._DIR['saved_configurations'],
+                                   title = 'choose your file name',
+                                   filetypes = [('JSON files', '*.json')],
+                                   defaultextension = 'json')
+        else:
+            f = open(filename,'w')
 
         if f is not None:
             f.write(json.dumps(cfg,
@@ -387,8 +517,6 @@ class Interface(object):
         else:
             pass
 
-    def simulation_close():
-        pass
 
     def __insert_rows__(self, table):
 
@@ -402,8 +530,31 @@ class Interface(object):
     def __del_rows__(self, table):
         table.delete_all_selected_rows()
 
-    def run_simulate():
-        pass
+    def run_simulation(self):
+        # import subprocess
+        import threading
+        try:
+            cfg = self.generate_json()
+
+            # subprocess.Popen(["rm","-r","./csenergy.py "+str(cfg)])
+
+            SIM = cs.SolarFieldSimulation(cfg)
+            FLAG_00 = datetime.now()
+            hilo =  threading.Thread(target=SIM.runSimulation())
+            hilo.start()
+            FLAG_01 = datetime.now()
+            DELTA_01 = FLAG_01 - FLAG_00
+
+        except Exception as e:
+            print("serialization failed", e)
+
+
+
+
+
+
+
+
 
     def help_help():
         pass
@@ -501,6 +652,8 @@ class Interface(object):
         self.varbenchmark = tk.BooleanVar(self.fr_simulation)
         self.varfastmode = tk.BooleanVar(self.fr_simulation)
         self.varfastmodetext = tk.StringVar(self.fr_simulation)
+        self.varfirstdate = tk.StringVar(self.fr_simulation)
+        self.varlastdate = tk.StringVar(self.fr_simulation)
 
         self.varmodelmaxerrtro = tk.DoubleVar(self.fr_simulation)
         self.varmodelmaxerrt = tk.DoubleVar(self.fr_simulation)
@@ -607,66 +760,80 @@ class Interface(object):
             self.fr_simulation, textvariable = self.vardatafileurl).grid(
                 row = 4, column= 1, columnspan=4, sticky='W', padx=2, pady=5)
 
+        self.lbfirstdate = ttk.Label(
+            self.fr_simulation, text='First Date').grid(
+                row = 5, column = 0,sticky='W', padx=2, pady=5)
+        self.enfirstdate = ttk.Entry(
+              self.fr_simulation, textvariable= self.varfirstdate).grid(
+                  row = 5, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lblastdate = ttk.Label(
+            self.fr_simulation, text='Last Date').grid(
+                row = 5, column = 2,sticky='W', padx=2, pady=5)
+        self.enlastdate = ttk.Entry(
+              self.fr_simulation, textvariable= self.varlastdate).grid(
+                  row = 5, column = 3, sticky='W', padx=2, pady=5)
+
         #  Checkbox for Simulation
         self.lbsimulation = ttk.Label(
             self.fr_simulation, text= 'Run test type...').grid(
-                row = 5, column = 0, sticky='W', padx=2, pady=5)
+                row = 6, column = 0, sticky='W', padx=2, pady=5)
         self.cbsimulation = ttk.Checkbutton(
             self.fr_simulation,
             text='Simulation',
             variable=self.varsimulation)
         self.cbsimulation.grid(
-            row = 5, column = 1, sticky='W', padx=2, pady=5)
+            row = 6, column = 1, sticky='W', padx=2, pady=5)
 
         self.cbbenchmark = ttk.Checkbutton(
             self.fr_simulation,
             text='Benchmark',
             variable=self.varbenchmark)
         self.cbbenchmark.grid(
-            row = 5, column = 2, sticky='W', padx=2, pady=5)
+            row = 6, column = 2, sticky='W', padx=2, pady=5)
 
         self.lbfastmode = ttk.Label(
               self.fr_simulation, text= 'Fast mode').grid(
-                  row = 6, column = 0, sticky='W', padx=2, pady=5)
+                  row = 7, column = 0, sticky='W', padx=2, pady=5)
         self.cbfastmode = ttk.Checkbutton(
             self.fr_simulation,
             textvariable = self.varfastmodetext,
             variable= self.varfastmode,
             command = lambda: self.checkfastmode()).grid(
-                row = 6, column = 1, sticky='W', padx=2, pady=5)
+                row = 7, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbsitename = ttk.Label(
               self.fr_simulation, text= 'Site').grid(
-                  row = 7, column = 0, sticky='W', padx=2, pady=5)
+                  row = 8, column = 0, sticky='W', padx=2, pady=5)
         self.ensitename = ttk.Entry(
               self.fr_simulation, textvariable= self.varsitename).grid(
-                  row = 7, column = 1, sticky='W', padx=2, pady=5)
+                  row = 8, column = 1, sticky='W', padx=2, pady=5)
 
         self.cbloadsitedata = ttk.Checkbutton(
             self.fr_simulation,
             text='Load site data from weather file',
             variable=self.varloadsitedata)
         self.cbloadsitedata.grid(
-            row = 7, column = 2, sticky='W', padx=2, pady=5)
+            row = 8, column = 2, sticky='W', padx=2, pady=5)
 
         self.lbsitelat = ttk.Label(
               self.fr_simulation, text= 'Latitude').grid(
-                  row = 9, column = 0, sticky='W', padx=2, pady=5)
+                  row = 10, column = 0, sticky='W', padx=2, pady=5)
         self.ensitelat = ttk.Entry(
               self.fr_simulation, textvariable = self.varsitelat).grid(
-                  row = 9, column = 1, sticky='W', padx=2, pady=5)
+                  row = 10, column = 1, sticky='W', padx=2, pady=5)
         self.lbsitelong = ttk.Label(
               self.fr_simulation, text= 'Longitude').grid(
-                  row = 10, column = 0, sticky='W', padx=2, pady=5)
+                  row = 11, column = 0, sticky='W', padx=2, pady=5)
         self.ensitelong = ttk.Entry(
               self.fr_simulation, textvariable= self.varsitelong).grid(
-                  row = 10, column = 1, sticky='W', padx=2, pady=5)
+                  row = 11, column = 1, sticky='W', padx=2, pady=5)
         self.lbsitealt = ttk.Label(
               self.fr_simulation, text= 'Altitude').grid(
-                  row = 11, column = 0, sticky='W', padx=2, pady=5)
+                  row = 12, column = 0, sticky='W', padx=2, pady=5)
         self.ensitealt = ttk.Entry(
               self.fr_simulation, textvariable = self.varsitealt).grid(
-                  row = 11, column = 1, sticky='W', padx=2, pady=5)
+                  row = 12, column = 1, sticky='W', padx=2, pady=5)
 
         self.varsimdatatype.set(1)  #  1 for Weather File, 2 for Field Data File
         self.checkoptions()
@@ -1008,49 +1175,27 @@ class Interface(object):
         f.write(json.dumps(cfg_settings['weather']))
         f.close()
 
-    def buildDataFrame(self):
+    # def buildDataFrame(self):
 
-        # self.varsitename = tk.StringVar(self.fr_data)
-        # self.varsitelat = tk.DoubleVar(self.fr_data)
-        # self.varsitelong = tk.DoubleVar(self.fr_data)
-        # self.varsitealt = tk.DoubleVar(self.fr_data)
-
-        # self.lbsitename = ttk.Label(
-        #     self.fr_data, text= 'Name').grid(row = 0, column = 0, sticky='W', padx=5, pady=5)
-        # self.ensitename = ttk.Entry(
-        #     self.fr_data, textvariable= self.varsitename).grid(row = 0, column = 1, sticky='W', padx=5, pady=5)
-        # self.lbsitelat = ttk.Label(
-        #     self.fr_data, text= 'Latitude').grid(row = 0, column = 2, sticky='W', padx=5, pady=5)
-        # self.ensitelat = ttk.Entry(
-        #     self.fr_data, textvariable = self.varsitelat).grid(row = 0, column = 3, sticky='W', padx=5, pady=5)
-        # self.lbsitelong = ttk.Label(
-        #     self.fr_data, text= 'Longitude').grid(row = 0, column = 4, sticky='W', padx=5, pady=5)
-        # self.ensitelong = ttk.Entry(
-        #     self.fr_data, textvariable= self.varsitelong).grid(row = 0, column = 5, sticky='W', padx=5, pady=5)
-        # self.lbsitealt = ttk.Label(
-        #     self.fr_data, text= 'Altitude').grid(row = 0, column = 6, sticky='W', padx=5, pady=5)
-        # self.ensitealt = ttk.Entry(
-        #     self.fr_data, textvariable = self.varsitealt).grid(row = 0, column = 7, sticky='W', padx=5, pady=5)
-
-        self.lbweatherfile = ttk.Label(self.fr_data, text= 'Weather File')
-        self.lbweatherfile.grid(row = 1, column = 0)
-        self.enweatherfile = ttk.Entry(self.fr_data)
-        self.enweatherfile.insert(0, 'Path to Weather File')
-        self.enweatherfile.grid(row = 1, column = 1, columnspan = 4)
-        self.btloadcfgweather = ttk.Button(
-            self.fr_data,
-            text= 'Load Weather',
-            command= lambda : self.dataLoadDialog(
-                'Load config file',
-                labeltext='Weather File'))
-        self.btloadcfgweather.grid(row = 1, column = 6)
-        self.btsavecfgweather = ttk.Button(
-                text= 'Save config',
-                command= lambda : self.dataSaveDialog(
-                        self.fr_data,
-                        'nombre',
-                        'Save config file',
-                        labeltext='Weather'))
+    #     self.lbweatherfile = ttk.Label(self.fr_data, text= 'Weather File')
+    #     self.lbweatherfile.grid(row = 1, column = 0)
+    #     self.enweatherfile = ttk.Entry(self.fr_data)
+    #     self.enweatherfile.insert(0, 'Path to Weather File')
+    #     self.enweatherfile.grid(row = 1, column = 1, columnspan = 4)
+    #     self.btloadcfgweather = ttk.Button(
+    #         self.fr_data,
+    #         text= 'Load Weather',
+    #         command= lambda : self.dataLoadDialog(
+    #             'Load config file',
+    #             labeltext='Weather File'))
+    #     self.btloadcfgweather.grid(row = 1, column = 6)
+    #     self.btsavecfgweather = ttk.Button(
+    #             text= 'Save config',
+    #             command= lambda : self.dataSaveDialog(
+    #                     self.fr_data,
+    #                     'nombre',
+    #                     'Save config file',
+    #                     labeltext='Weather'))
         #self.btsavecfgweather.grid(row = 1, column = 7)
 
 
@@ -1313,9 +1458,6 @@ class Interface(object):
         self.cmbcoolpropID['state']='readonly'
         self.cmbcoolpropID.current(0)
         self.cmbcoolpropID.grid(row = 0, column = 3, sticky='W', padx=2, pady=5)
-
-        # self.encoolpropID = ttk.Entry(self.fr_fluid, textvariable=self.varcoolpropID)
-        # self.encoolpropID.grid(row = 0, column = 3)
 
         self.separator = ttk.Separator(self.fr_fluid).grid(
             row = 1, column=0, columnspan=99, sticky=(tk.W, tk.E))

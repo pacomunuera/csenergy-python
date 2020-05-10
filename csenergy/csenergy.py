@@ -363,7 +363,9 @@ class ModelBarberoSimplified(Model):
 
     def calc_pr(self, hce, htf, row, qabs=None):
 
-        hce.qabs = qabs * hce.parameters['Length']
+        if qabs is None:
+            qabs = hce.qabs
+
         tin = hce.tin
         tf = hce.tin  # HTF bulk temperature
         tri = hce.tin  #  Absorber tube inner surface temperature
@@ -425,14 +427,10 @@ class ModelBarberoSimplified(Model):
         else:
             hce.pr = 0
 
-
-        hce.qabs = qabs * hce.parameters['Length']
-        hce.qlost = qlost * hce.parameters['Length']
-        hce.qlost_brackets = qlost_brackets * hce.parameters['Length']
+        hce.qlost = qlost
+        hce.qlost_brackets = qlost_brackets
         hce.set_tout(htf)
         hce.set_pout(htf)
-
-
 # class ModelHottelWhilier(Model):
 
 #         def __ini__(self, simulation):
@@ -1806,6 +1804,8 @@ class SolarFieldSimulation(object):
         self.datasource = None
         self.powercycle = None
         self.parameters = settings
+        self.first_date = pd.to_datetime(settings['simulation']['first_date'])
+        self.last_date = pd.to_datetime(settings['simulation']['last_date'])
 
         if settings['model']['name'] == 'Barbero4thOrder':
             self.model = ModelBarbero4thOrder(settings['model'])
@@ -1884,45 +1884,50 @@ class SolarFieldSimulation(object):
 
         for row in self.datasource.dataframe.iterrows():
 
-            solarpos = self.site.get_solarposition(row)
-
-            self.gather_general_data(row, solarpos)
-
-            if solarpos['zenith'][0] < 90:
-                self.tracking = True
+            if (row[0] < self.first_date or
+                row[0] > self.last_date):
+                pass
             else:
-                self.tracking = False
 
-            if self.simulation:
-                self.simulate_solarfield(solarpos, row)
-                self.gather_simulation_data(row)
+                solarpos = self.site.get_solarposition(row)
 
-                str_data = ("SIMULATION: {0} " +
-                            "DNI: {1:3.0f} W/m2 Qm: {2:4.1f}kg/s " +
-                            "Tin: {3:4.1f}K Tout: {4:4.1f}K")
+                self.gather_general_data(row, solarpos)
 
-                print(str_data.format(row[0],
-                                      row[1]['DNI'],
-                                      self.solarfield.massflow,
-                                      self.solarfield.tin,
-                                      self.solarfield.tout))
+                if solarpos['zenith'][0] < 90:
+                    self.tracking = True
+                else:
+                    self.tracking = False
+
+                if self.simulation:
+                    self.simulate_solarfield(solarpos, row)
+                    self.gather_simulation_data(row)
+
+                    str_data = ("SIMULATION: {0} " +
+                                "DNI: {1:3.0f} W/m2 Qm: {2:4.1f}kg/s " +
+                                "Tin: {3:4.1f}K Tout: {4:4.1f}K")
+
+                    print(str_data.format(row[0],
+                                          row[1]['DNI'],
+                                          self.solarfield.massflow,
+                                          self.solarfield.tin,
+                                          self.solarfield.tout))
 
 
-            if self.benchmark and self.datatype == 2:  # 2: Field Data File available
-                self.benchmarksolarfield(solarpos, row)
-                self.gather_benchmark_data(row)
+                if self.benchmark and self.datatype == 2:  # 2: Field Data File available
+                    self.benchmarksolarfield(solarpos, row)
+                    self.gather_benchmark_data(row)
 
-                str_data = ("BENCHMARK: {0} " +
-                            "DNI: {1:3.0f} W/m2 act_Qm: {2:4.1f}kg/s " +
-                            "act_Tin: {3:4.1f}K act_Tout: {4:4.1f}K " +
-                            "Tout: {5:4.1f}K")
+                    str_data = ("BENCHMARK: {0} " +
+                                "DNI: {1:3.0f} W/m2 act_Qm: {2:4.1f}kg/s " +
+                                "act_Tin: {3:4.1f}K act_Tout: {4:4.1f}K " +
+                                "Tout: {5:4.1f}K")
 
-                print(str_data.format(row[0],
-                                      row[1]['DNI'],
-                                      self.solarfield.act_massflow,
-                                      self.solarfield.act_tin,
-                                      self.solarfield.act_tout,
-                                      self.solarfield.tout))
+                    print(str_data.format(row[0],
+                                          row[1]['DNI'],
+                                          self.solarfield.act_massflow,
+                                          self.solarfield.act_tin,
+                                          self.solarfield.act_tout,
+                                          self.solarfield.tout))
 
         self.save_results()
 
@@ -2774,15 +2779,23 @@ class FluidTabular(Fluid):
 
 class Weather(object):
 
-    def __init__(self, settings):
-        self.filename = settings['filename']
-        self.filepath = settings['filepath']
-        self.file = self.filepath + self.filename
+    def __init__(self, settings = None):
+
         self.dataframe = None
         self.site = None
         self.weatherdata = None
 
-        self.openWeatherDataFile(self.file)
+        if settings is not None:
+            # self.filename = settings['filename']
+            # self.filepath = settings['filepath']
+            # self.file = self.filepath + self.filename
+            self.openWeatherDataFile(settings['filepath'] +
+                                     settings['filename'])
+            # self.file
+        else:
+            self.openWeatherDataFile()
+
+
 
         self.dataframe = self.weatherdata[0]
         self.site = self.weatherdata[1]
@@ -3293,5 +3306,15 @@ class SCAScatterMask(object):
 
 
 
+# if __name__=='__main__':
 
+#     cfg = sys.argv[1:]
+
+#     SIM = cs.SolarFieldSimulation(cfg)
+
+#     FLAG_00 = datetime.now()
+#     SIM.runSimulation()
+#     FLAG_01 = datetime.now()
+#     DELTA_01 = FLAG_01 - FLAG_00
+#     print("Total runtime: ", DELTA_01.total_seconds())
 

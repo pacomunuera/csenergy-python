@@ -5,17 +5,19 @@
   "simulation": true,
   "benchmark": false,
   "fastmode": true,
-  "filename": "marzo3.tm2",
-  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/"
+  "filename": "METEO_SEVILLA.csv",
+  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/",
+  "first_date": "1988/01/01 01:00+0100",
+  "last_date": "1988/01/31 01:00+0100"
  },
  "model": {
   "name": "Barbero1stOrder",
-  "max_err_t": 0.1,
+  "max_err_t": 0.2,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
  },
  "site": {
-  "name": "Alc\u00e1zar de San Juan",
+  "name": "Alcázar de San Juan",
   "latitude": 39.1,
   "longitude": -3.16,
   "altitude": 645.0
@@ -124,19 +126,19 @@
  },
  "subfields": [
   {
-   "name": "SE",
-   "loops": 30
-  },
-  {
-   "name": "NO",
-   "loops": 30
-  },
-  {
    "name": "NE",
    "loops": 30
   },
   {
    "name": "SO",
+   "loops": 30
+  },
+  {
+   "name": "SE",
+   "loops": 30
+  },
+  {
+   "name": "NO",
    "loops": 30
   }
  ]
