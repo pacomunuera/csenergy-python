@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['__init__.py', 'csenergy.py', 'interface.py', 'saved_configurations\\ANDASOL_SEVILLA_1ORDEN.json', 'libs\\recipe5807461.py']
+recent_files = ['__init__.py', 'csenergy.py', 'interface.py', 'script_grupo_a tabla.py', 'script_min_to_hour.py']
 
