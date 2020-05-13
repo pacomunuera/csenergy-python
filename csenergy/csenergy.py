@@ -2288,6 +2288,8 @@ class SolarFieldSimulation(object):
 
     def show_report(self, keys):
 
+        # from IPython.display import display, Math, Latex
+        # display(Math(r'F(k) = \int_{-\infty}^{\infty} f(x) e^{2\pi i k} dx'))
 
         self.datasource.dataframe[keys].plot(
                         figsize=(20,10), linewidth=5, fontsize=20)

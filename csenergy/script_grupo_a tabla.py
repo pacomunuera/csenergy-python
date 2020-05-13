@@ -23,12 +23,13 @@ from mpl_toolkits.mplot3d import Axes3D   # Permite agregar eje tridimensionales
 import random
 
 
-tags = ['1310-FX-1800','1310-FX-1801','1310-FX-1809','1310-FX-1810',
-        '1310-TT-1800','1310-TT-1801','1310-TT-1809','1310-TT-1810',
-        '1310-PT-1800','1310-PT-1801','1310-PT-1802','1310-PT-1803',
-        '1310-PT-1807','1310-PT-1808','1310-PT-1809','1310-PT-1810']
-
-
+# tags = ['1310-FX-1800','1310-FX-1801','1310-FX-1809','1310-FX-1810',
+#         '1310-TT-1800','1310-TT-1801','1310-TT-1809','1310-TT-1810',
+#         '1310-PT-1800','1310-PT-1801','1310-PT-1802','1310-PT-1803',
+#         '1310-PT-1807','1310-PT-1808','1310-PT-1809','1310-PT-1810']
+# tags = ['1300-XT-1883R','1320-TT-1937','1320-TT-1931',
+        # '3320-TT-3002','3320-TT-3007']
+tags = ['MKA01CE074-XE01']
 tabla_df = {}
 tabla_dfH = {}
 df_destino = pd.DataFrame()
@@ -50,6 +51,6 @@ for t in tags:
                         right_index=True)
     print(df_destino)
 
-df_destino.to_csv('./data/tabla.csv', sep=';', decimal=',')
+df_destino.to_csv('./data/tabla_turbina.csv', sep=';', decimal=',')
 
 
