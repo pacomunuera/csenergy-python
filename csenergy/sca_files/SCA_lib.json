@@ -15,6 +15,22 @@
 	"Factor": 1,
 	"Availability": 0.99
 },{
+        "Name": "SenerTrough-1 (SNT-1)",
+  	"SCA Length": 148.5,
+  	"Aperture": 5.77,
+  	"Aperture Area": 817.5,
+	"Focal Len": 1.71,
+  	"IAM Coefficient F0": 1.0,
+  	"IAM Coefficient F1": 0.0506,
+ 	"IAM Coefficient F2": -0.1763,
+  	"Track Twist": 0.99,
+ 	"Geom.Accuracy": 0.98,
+  	"Reflectance": 0.935,
+  	"Cleanliness": 0.97,
+  	"Dust": 0.97,
+  	"Factor": 1.0,
+  	"Availability": 0.99
+ },{
 	"Name": "Flagsol SKAL-ET 150 (recopilación propia)",
 	"SCA Length": 148.5,
 	"Aperture": 5.77,

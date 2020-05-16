@@ -33,7 +33,7 @@ class Interface(object):
 
     _COOLPROP_FLUIDS = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
-    _MODELS = ['Babero4thOrder', 'Barbero1stOrder', 'BarberoSimplified']
+    _MODELS = ['Barbero4thOrder', 'Barbero1stOrder', 'BarberoSimplified']
 
     _DIR = {'saved_configurations' : './saved_configurations/',
         'site_files' : './site_files/',
@@ -216,9 +216,9 @@ class Interface(object):
 
     def simulation_open(self):
 
-        path = askopenfilename(initialdir = self._DIR['saved_configurations'],
-                               title = 'choose your file',
-                               filetypes = [('JSON files', '*.json')])
+        path = askopenfilename(initialdir=self._DIR['saved_configurations'],
+                               title='choose your file',
+                               filetypes=[('JSON files', '*.json')])
 
         head, tail = os.path.split(path)
         self.filename = path
@@ -498,14 +498,14 @@ class Interface(object):
 
         return cfg
 
-    def save_as_JSON(self, cfg, filename = None):
+    def save_as_JSON(self, cfg, filename=None):
 
         if filename is None:
-            #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-            f = asksaveasfile(initialdir = self._DIR['saved_configurations'],
-                                   title = 'choose your file name',
-                                   filetypes = [('JSON files', '*.json')],
-                                   defaultextension = 'json')
+            #  encoder.FLOAT_REPR = lambda o: format(o, '.2f')
+            f = asksaveasfile(initialdir=self._DIR['saved_configurations'],
+                              title='choose your file name',
+                              filetypes=[('JSON files', '*.json')],
+                              defaultextension='json')
         else:
             f = open(filename,'w')
 
@@ -769,7 +769,7 @@ class Interface(object):
 
         self.lblastdate = ttk.Label(
             self.fr_simulation, text='Last Date').grid(
-                row = 5, column = 2,sticky='W', padx=2, pady=5)
+                row = 5, column = 2,sticky='E', padx=2, pady=5)
         self.enlastdate = ttk.Entry(
               self.fr_simulation, textvariable= self.varlastdate).grid(
                   row = 5, column = 3, sticky='W', padx=2, pady=5)
@@ -915,8 +915,7 @@ class Interface(object):
         if self.varsimdatatype.get() == 2: # Data from field data file
 
             columns_names.append(['DNI','',''])
-            columns_names.append(['Wspc','',''])
-            columns_names.append(['Wdir','',''])
+            columns_names.append(['Wspd','',''])
             columns_names.append(['DryBulb','',''])
             columns_names.append(['Pressure','',''])
 
@@ -1102,7 +1101,10 @@ class Interface(object):
 
     def dataLoadDialog(self, title, labeltext = ''):
 
+        df = pd.DataFrame()
+
         if self.varsimdatatype.get() == 1:
+
             path = askopenfilename(initialdir = self._DIR['weather_files'],
                                    title = 'choose your file',
                                    filetypes = (('TMY files','*.tm2'),
@@ -1113,6 +1115,8 @@ class Interface(object):
             self.vardatafilename.set(os.path.basename(path))
             self.vardatafileurl.set(os.path.dirname(path)+'/' +
                                     os.path.basename(path))
+
+
         elif self.varsimdatatype.get() == 2:
             path = askopenfilename(initialdir = self._DIR['fielddata_files'],
                        title = 'choose your file',
@@ -1124,16 +1128,14 @@ class Interface(object):
                                     os.path.basename(path))
 
             strfilename, strext = os.path.splitext(path)
-            self.dataframe = pd.read_csv(path, sep=';',
+            df = pd.read_csv(path, sep=';',
                                              decimal= ',',
                                              dayfirst=True,
                                              index_col=0)
             count = 0
-            for r in list(self.dataframe):
+            for r in list(df):
                 count += 1
                 self.tagslist.append([count, r])
-
-            # self.tagslist = list(self.dataframe)
 
         else:
 
@@ -1164,40 +1166,16 @@ class Interface(object):
             self.varsitealt.set(weatherdata[1]['altitude'])
 
 
-    def dataSaveDialog(self, title, labeltext = '' ):
+    # def dataSaveDialog(self, title, labeltext = '' ):
 
-        #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-        f = asksaveasfile(initialdir = self._DIR['site_files'],
-                               title = 'choose your file name',
-                               filetypes = [('JSON files', '*.json')],
-                               defaultextension = 'json')
+    #     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
+    #     f = asksaveasfile(initialdir = self._DIR['site_files'],
+    #                            title = 'choose your file name',
+    #                            filetypes = [('JSON files', '*.json')],
+    #                            defaultextension = 'json')
 
-        f.write(json.dumps(cfg_settings['weather']))
-        f.close()
-
-    # def buildDataFrame(self):
-
-    #     self.lbweatherfile = ttk.Label(self.fr_data, text= 'Weather File')
-    #     self.lbweatherfile.grid(row = 1, column = 0)
-    #     self.enweatherfile = ttk.Entry(self.fr_data)
-    #     self.enweatherfile.insert(0, 'Path to Weather File')
-    #     self.enweatherfile.grid(row = 1, column = 1, columnspan = 4)
-    #     self.btloadcfgweather = ttk.Button(
-    #         self.fr_data,
-    #         text= 'Load Weather',
-    #         command= lambda : self.dataLoadDialog(
-    #             'Load config file',
-    #             labeltext='Weather File'))
-    #     self.btloadcfgweather.grid(row = 1, column = 6)
-    #     self.btsavecfgweather = ttk.Button(
-    #             text= 'Save config',
-    #             command= lambda : self.dataSaveDialog(
-    #                     self.fr_data,
-    #                     'nombre',
-    #                     'Save config file',
-    #                     labeltext='Weather'))
-        #self.btsavecfgweather.grid(row = 1, column = 7)
-
+    #     f.write(json.dumps(cfg_settings['weather']))
+    #     f.close()
 
 
     #  Fluid contruction Tab

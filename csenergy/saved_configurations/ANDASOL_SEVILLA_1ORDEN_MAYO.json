@@ -1,30 +1,30 @@
 {
  "simulation": {
-  "ID": "ANDASOL_SEVILLA",
-  "datatype": 1,
+  "ID": "ASTE 1B",
+  "datatype": 2,
   "simulation": true,
-  "benchmark": false,
+  "benchmark": true,
   "fastmode": true,
-  "filename": "METEO_SEVILLA.csv",
-  "filepath": "C:/Users/paco/0_TFG/csenergy/weather_files/",
-  "first_date": "1989/05/02 01:00+0100",
-  "last_date": "1989/05/31 01:00+0100"
+  "filename": "DATOS ASTE 1B 2016.csv",
+  "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
+  "first_date": "2016/07/01 01:00+0100",
+  "last_date": "2016/07/02 01:00+0100"
  },
  "model": {
-  "name": "BarberoSimplified",
+  "name": "Babero4thOrder",
   "max_err_t": 0.1,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
  },
  "site": {
-  "name": "Sevill",
-  "latitude": 37.42,
-  "longitude": -5.9,
-  "altitude": 31.0
+  "name": "Alcázar de San Juan",
+  "latitude": 39.1,
+  "longitude": -3.16,
+  "altitude": 651.0
  },
  "loop": {
   "scas": 4,
-  "hces": 1,
+  "hces": 36,
   "rated_tin": 563.15,
   "rated_tout": 663.15,
   "rated_pin": 2000000.0,
@@ -126,20 +126,47 @@
  },
  "subfields": [
   {
-   "name": "NE",
-   "loops": 39
-  },
-  {
    "name": "SO",
-   "loops": 39
+   "loops": 30
   },
   {
    "name": "SE",
-   "loops": 39
+   "loops": 30
   },
   {
    "name": "NO",
-   "loops": 39
+   "loops": 30
+  },
+  {
+   "name": "NE",
+   "loops": 30
   }
- ]
+ ],
+ "tags": {
+  "Wspc": "",
+  "Wdir": "",
+  "DryBulb": "",
+  "Pressure": "",
+  "SB.SO.a.mf": "",
+  "SB.SO.a.tin": "",
+  "SB.SO.a.tout": "",
+  "SB.SO.a.pin": "",
+  "SB.SO.a.pout": "",
+  "SB.SE.a.mf": "",
+  "SB.SE.a.tin": "",
+  "SB.SE.a.tout": "",
+  "SB.SE.a.pin": "",
+  "SB.SE.a.pout": "",
+  "SB.NO.a.mf": "",
+  "SB.NO.a.tin": "",
+  "SB.NO.a.tout": "",
+  "SB.NO.a.pin": "",
+  "SB.NO.a.pout": "",
+  "SB.NE.a.mf": "",
+  "SB.NE.a.tin": "",
+  "SB.NE.a.tout": "",
+  "SB.NE.a.pin": "",
+  "SB.NE.a.pout": "",
+  "DNI": ""
+ }
 }

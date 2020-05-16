@@ -25,6 +25,7 @@ import os.path
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import rc
+import pytz
 #  import pint
 
 
@@ -1745,14 +1746,6 @@ class SolarField(object):
 
         return (HH - HL) * self.massflow
 
-
-
-    # def calcRequired_massflow(self):
-    #     req_massflow = 0
-    #     for sf in self.subfields:
-    #         req_massflow += sf.calc_required_massflow()
-    #     self.req_massflow = req_massflow
-
     def set_operation_mode(self, mode = None):
 
         if mode is not None:
@@ -1765,7 +1758,6 @@ class SolarField(object):
                    self.operation_mode = "solarfield_heating"
                 else:
                     self.operation_mode = "solarfield_not_heating"
-
 
     def print(self):
 
@@ -1845,50 +1837,22 @@ class SolarFieldSimulation(object):
                                   settings['SCA'],
                                   settings['HCE'])
 
-
-    # def initialize(self, type_of_source, row = None):
-
-    #     if type_of_source == 'rated':
-    #         for s in self.solarfield.subfields:
-    #             s.initialize('rated')
-    #             for l in s.loops:
-    #                 l.initialize('rated')
-    #         self.base_loop.initialize('rated')
-
-    #     elif type_of_source == 'actual':
-    #         massflow = 0.0
-    #         H_tin = 0.0
-    #         H_tout = 0.0
-    #         list_pin = []
-    #         list_pout = []
-
-    #         for s in self.solarfield.subfields:
-    #             massflow += s.act_massflow
-    #             H_tin += (s.act_massflow *
-    #                       htf.get_deltaH(s.act_tin, s.act_pin))
-    #             H_tout += (sf.act_massflow *
-    #                        htf.get_deltaH(sf.act_tout, sf.act_pout))
-    #             list_pin.append(sf.act_pin * sf.act_massflow)
-    #             list_pout.append(sf.act_pout * sf.act_massflow)
-    #             s.massflow = row[1][self.get_id() +'.act_mf']
-    #             s.tin = row[1][self.get_id() +'.act_tin']
-    #             s.pin = row[1][self.get_id() +'.act_pin']
-    #         H_tin /= massflow
-    #         H_tout /= massflow
-    #         self.solarfield.initialize(self.htf)
-    #         self.base_loop.initialize('solarfield', self.solarfield)
-
     def runSimulation(self):
 
         self.show_message()
 
         for row in self.datasource.dataframe.iterrows():
 
-            if (row[0] < self.first_date or
-                row[0] > self.last_date):
+            if self.datatype == 1:  # Because tmy format include TZ info
+                naive_datetime = datetime.strptime(
+                row[0].strftime('%Y/%m/%d %H:%M'), "%Y/%m/%d %H:%M")
+            else:
+                naive_datetime = row[0]
+
+            if (naive_datetime < self.first_date or
+                naive_datetime > self.last_date):
                 pass
             else:
-
                 solarpos = self.site.get_solarposition(row)
 
                 self.gather_general_data(row, solarpos)
@@ -2341,8 +2305,13 @@ class SolarFieldSimulation(object):
 
     def show_message(self):
 
-        print("Running simulation for source data file: {0}".format(
-            self.parameters['simulation']['filename']))
+        print("Running simulation for source data file: {0} from: \
+              {1} to {2}".format(
+            self.parameters['simulation']['filename'],
+            self.parameters['simulation']['first_date'],
+            self.parameters['simulation']['last_date']))
+        print("Model: {0}".format(
+            self.parameters['model']['name']))
         print("Simulation: {0} ; Benchmark: {1} ; FastMode: {2}".format(
             self.parameters['simulation']['simulation'],
             self.parameters['simulation']['benchmark'],
@@ -2540,6 +2509,7 @@ class LoopSimulation(object):
         print("HCE model:", self.parameters['HCE']['Name'])
         print("HTF:", self.parameters['HTF']['name'])
         print("---------------------------------------------------")
+
 
 
 class Air(object):
@@ -2870,7 +2840,7 @@ class Weather(object):
 
     def filter_columns(self):
 
-        needed_columns = ['DNI', 'DryBulb', 'DewPoint', 'Wspd', 'Wdir', 'Pressure']
+        needed_columns = ['DNI', 'DryBulb', 'DewPoint', 'Wspd', 'Pressure']
         columns_to_drop = []
         for c in  self.dataframe.columns:
             if c not in needed_columns:
