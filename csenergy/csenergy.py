@@ -125,6 +125,7 @@ class ModelBarbero4thOrder(Model):
         #  Internal transmission coefficient.
         hint = hce.get_hint(tf, hce.pin, htf)
 
+
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
         urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
 
@@ -152,8 +153,8 @@ class ModelBarbero4thOrder(Model):
         #  Transmission Units Number, Ec. 3.30 Barbero2016
         NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
-
-        if qabs > qcrit:
+        #  if qabs > qcrit:
+        if qabs > 0:
 
             #  We use Barbero2016's simplified model aproximation
             #  Eq. 3.63 Barbero2016
@@ -249,7 +250,7 @@ class ModelBarbero4thOrder(Model):
                 tro = tro2
 
                 #  Thermal power loss. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro2**4 - text**4) + hext * (tro2 - text)
+                qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
 
                 #  Increase qlost with  the thermal power loss througth  bracktets
                 qlost_brackets = hce.get_qlost_brackets(tf, text)
@@ -268,11 +269,28 @@ class ModelBarbero4thOrder(Model):
             hce.qlost_brackets = qlost_brackets
 
         else:
-            hce.pr = 0.0
-            hce.qlost = qlost
-            hce.qlost_brackets =  qlost_brackets
-            hce.set_tout(htf)
-            hce.set_pout(htf)
+            errtro = 10.0
+            while (errtro > self.max_err_tro):
+
+                hce.pr = 0.0
+                #  tro = tf
+                tro = 0.5 * (hce.tin + hce.tout)
+                #  HCE emittance
+                eext = hce.get_emittance(tro, wspd)
+                #  External Convective Heat Transfer equivalent coefficient
+                hext = hce.get_hext(wspd)
+
+                #  Thermal power lost. Eq. 3.23 Barbero2016
+                qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+
+                #  Thermal power lost througth  bracktets
+                qlost_brackets = hce.get_qlost_brackets(tro, text)
+
+                hce.qlost = qlost
+                hce.qlost_brackets =  qlost_brackets
+                hce.set_tout(htf)
+                hce.set_pout(htf)
+                errtro = abs(tro - 0.5 * (hce.tin + hce.tout))
 
 class ModelBarbero1stOrder(Model):
 
@@ -487,20 +505,37 @@ class HCE(object):
 
     def set_tout(self, htf):
 
-        HL = htf.get_deltaH(self.tin, self.sca.loop.pin)
+        hin = htf.get_deltaH(self.tin, self.sca.loop.pin)
 
+        # if self.pr > 0:
+
+        #     dh = (self.qabs * self.parameters['Length'] * np.pi *
+        #          self.parameters['Absorber tube outer diameter'] * self.pr  /
+        #          self.sca.loop.massflow)
+        #     dh -= (self.qlost_brackets *
+        #           self.parameters['Length'] * np.pi *
+        #           self.parameters['Absorber tube outer diameter'] /
+        #           self.sca.loop.massflow)
+
+        # else:
+        #     dh =  ( -1 * (self.qlost + self.qlost_brackets ) *
+        #           self.parameters['Length'] * np.pi *
+        #           self.parameters['Absorber tube outer diameter'] /
+        #           self.sca.loop.massflow)
         if self.pr > 0:
 
-            h = (self.qabs * self.parameters['Length'] * np.pi *
-                 self.parameters['Absorber tube outer diameter'] * self.pr  /
-                 self.sca.loop.massflow)
+            q = (self.qabs * self.parameters['Length'] * np.pi *
+                 self.parameters['Absorber tube outer diameter'] * self.pr)
+            # dh -= (self.qlost_brackets *
+            #       self.parameters['Length'] * np.pi *
+            #       self.parameters['Absorber tube outer diameter'])
 
         else:
-            h = (-self.qlost * self.parameters['Length'] * np.pi *
-                 self.parameters['Absorber tube outer diameter'] /
-                 self.sca.loop.massflow)
+            q =  ( -1 * (self.qlost + self.qlost_brackets ) *
+                  self.parameters['Length'] * np.pi *
+                  self.parameters['Absorber tube outer diameter'])
 
-        self.tout = htf.get_T(HL + h, self.sca.loop.pin)
+        self.tout = htf.get_T2(self.tin, q, self.sca.loop.massflow, self.pin)
 
 
     def set_pout(self, htf):
@@ -697,7 +732,7 @@ class HCE(object):
         Lineal Increase if wind speed lower than 4 m/s up to 1% at 4 m/s
         Lineal increase over 4 m/s up to 2% at 7 m/s
         """
-        if wspd <4:
+        if wspd < 4:
             eext = eext * (1 + 0.01 * wspd / 4)
 
         else:
@@ -1097,15 +1132,6 @@ class Loop(__Loop__):
         self.loop_order = loop_order
 
         super().__init__(settings)
-
-
-    # def load_actual(self):
-
-    #     self.act_massflow = self.subfield.act_massflow / len(self.subfield.loops)
-    #     self.act_tin = self.subfield.act_tin
-    #     self.act_pin = self.subfield.act_pin
-    #     self.act_tout = self.subfield.act_tout
-    #     self.act_pout = self.subfield.act_pout
 
 
 class BaseLoop(__Loop__):
@@ -2548,6 +2574,9 @@ class Fluid:
     def get_T(self, h, p):
         pass
 
+    def get_T2(self, tin, q, mf=None, p=None):
+        pass
+
     def get_dynamic_viscosity(self, t, p):
         pass
 
@@ -2636,17 +2665,12 @@ class FluidCoolProp(Fluid):
             t = self.tmax
 
         CP.set_reference_state(self.coolpropID,'ASHRAE')
-
         deltaH = PropsSI('H','T',t ,'P', p, self.coolpropID)
-
         CP.set_reference_state(self.coolpropID, 'DEF')
 
         return deltaH
 
     def get_T(self, h, p):
-
-        # if t > self.tmax:
-        #     t = self.tmax
 
         CP.set_reference_state(self.coolpropID,'ASHRAE')
         temperature = PropsSI('T', 'H', h, 'P', p, self.coolpropID)
@@ -2654,6 +2678,21 @@ class FluidCoolProp(Fluid):
 
         return temperature
 
+    def get_T2(self, tin,  q, mf = None, p = None):
+
+        if tin > 670:
+            tin = 670
+
+        CP.set_reference_state(self.coolpropID,'ASHRAE')
+        hin = PropsSI('H', 'T', tin,  'P', p, self.coolpropID)
+        try:
+            temperature = PropsSI('T', 'H', hin  + q/mf, 'P', p, self.coolpropID)
+        except:
+            print("error")
+            temperature = 670
+        CP.set_reference_state(self.coolpropID, 'DEF')
+
+        return temperature
 
 class FluidTabular(Fluid):
 
@@ -2733,6 +2772,42 @@ class FluidTabular(Fluid):
         return (t0 + t1 * h + t2 * h**2 + t3 * h**3 +
                 t4 * h**4 + t5 * h**5)
 
+    def get_T2(self, tin, h, mf=None, p=None):
+
+        cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
+
+        tout = tin
+
+        a0 = (h/mf + cp0 * tin + cp1 * tin**2 / 2 + cp2 * tin**3 / 3 +
+             cp3 * tin**4 / 4 + cp4 * tin**5 / 5 + cp5 * tin**6 / 6)
+
+        factors = [a0, -cp0, -cp1 / 2, -cp2 / 3, -cp3 / 4, -cp4 / 5, -cp5 / 6]
+
+        poly = np.polynomial.polynomial.Polynomial(factors)
+
+        roots = poly.roots()
+        for r in roots:
+            if r.imag == 0 and r.real >= 0:
+                tout = r.real
+
+        # fx = lambda tout: (h/mf +
+        #                    (cp0 * tin + cp1 * tin**2 / 2 + cp2 * tin**3 / 3 +
+        #                     cp3 * tin**4 / 4 + cp4 * tin**5 / 5 +
+        #                     cp5 * tin**6 / 6) -
+        #                    (cp0 * tout + cp1 * tout**2 / 2 + cp2 * tout**3 / 3 +
+        #                     cp3 * tout**4 / 4 + cp4 * tout**5 / 5 +
+        #                     cp5 * tout**6 / 6))
+
+        # dfx = lambda tout: (cp0 + cp1 * tout + cp2 * tout**2 + cp3 * tout**3 +
+        #                     cp4 * tout**4 + cp5 * tout**5)
+
+        # root = sc.optimize.newton(fx,
+        #                           tout,
+        #                           fprime=dfx,
+        #                           maxiter=100000)
+
+        # tout = root
+        return tout
 
 class Weather(object):
 
@@ -2916,7 +2991,7 @@ class FieldData(object):
                                    'Unable to open file: %r', self.file)
 
         self.dataframe.index = pd.to_datetime(self.dataframe.index,
-                                              infer_datetime_format=True)
+                                              format= "%d/%m/%Y %H:%M")
 
     def change_units(self):
 

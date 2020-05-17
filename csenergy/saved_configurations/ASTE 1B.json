@@ -7,11 +7,11 @@
   "fastmode": true,
   "filename": "DATOS PLANTA 2016.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2016/08/31 00:00",
-  "last_date": "2016/09/01 00:00"
+  "first_date": "2016/03/01 00:00",
+  "last_date": "2016/03/02 00:00"
  },
  "model": {
-  "name": "Barbero4thOrder",
+  "name": "Barbero1stOrder",
   "max_err_t": 0.1,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
@@ -47,62 +47,62 @@
   "Track Twist": 0.99,
   "Geom.Accuracy": 0.98,
   "Reflectance": 0.935,
-  "Cleanliness": 0.9,
+  "Cleanliness": 0.97,
   "Factor": 1.0,
-  "Availability": 0.99
+  "Availability": 1.0
  },
  "HCE": {
   "Name": "Solel UVAC 2",
-  "Length": 3.88,
+  "Length": 4.05,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,
   "Glass envelope outer diameter": 0.121,
   "Min Reynolds": 30000.0,
   "Inner surface roughness": 4.5e-05,
-  "Envelope transmittance": 0.96,
-  "absorptance": 0.96,
+  "Envelope transmittance": 0.965,
+  "absorptance": 0.97,
   "coating": "",
   "annulus": "",
   "Absorber emittance factor A0": 0.101,
   "Absorber emittance factor A1": 0.000131,
-  "Absorber absorptance": 0.96,
+  "Absorber absorptance": 0.97,
   "Brackets": 4.05
  },
  "HTF": {
   "source": "table",
   "name": "DOWTHERM A",
-  "cp": [
-   -2364.0,
-   39.46,
-   -0.1703,
-   0.0003904,
-   -4.422e-07,
-   1.979e-10
+  "mu": [
+   0.34013,
+   -0.00337267,
+   1.33042e-05,
+   -2.60139e-08,
+   2.51799e-11,
+   -9.6475e-15
   ],
   "rho": [
-   1493.0,
-   -3.332,
-   0.01248,
-   -2.968e-05,
-   3.444e-08,
-   -1.622e-11
+   1492.4628,
+   -3.331716,
+   0.012479716,
+   -2.9684039e-05,
+   3.4437643e-08,
+   -1.6215295e-11
   ],
   "kt": [
-   0.1856,
-   -0.00016,
-   5.913e-12,
+   0.18560707,
+   -0.000160008,
+   5.9133304e-12,
    0.0,
    0.0,
    0.0
   ],
   "h": [
-   -651100.0,
-   4121.0,
-   -12.35,
-   0.02771,
-   -2.777e-05,
-   1.106e-08
+   -651130.67,
+   4121.3664,
+   -12.345938,
+   0.027710651,
+   -2.7764463e-05,
+   1.1056661e-08
   ],
   "t": [
    285.344,
@@ -112,22 +112,18 @@
    3.31588e-22,
    -1.75256e-28
   ],
-  "mu": [
-   0.34013,
-   -0.00337267,
-   1.33042e-05,
-   -2.60139e-08,
-   2.51799e-11,
-   -9.6475e-15
+  "cp": [
+   -2.3634842,
+   39.461021,
+   -0.17024546,
+   0.0003903868,
+   -4.421524e-07,
+   1.9792489e-10
   ],
   "tmax": 670.0,
   "tmin": 288.0
  },
  "subfields": [
-  {
-   "name": "SO",
-   "loops": 27
-  },
   {
    "name": "SE",
    "loops": 34
@@ -139,10 +135,13 @@
   {
    "name": "NE",
    "loops": 28
+  },
+  {
+   "name": "SO",
+   "loops": 27
   }
  ],
  "tags": {
-  "SB.SE.a.mf": "1310-FX-1810",
   "SB.SE.a.tin": "1310-TT-1810",
   "SB.SE.a.tout": "1310-TT-1808",
   "SB.SE.a.pin": "1310-PT-1810",
@@ -165,6 +164,7 @@
   "DNI": "1300-AXT-1877R",
   "Wspd": "1300-AXT-1871R",
   "DryBulb": "1300-AXT-1873R",
-  "Pressure": "1300-AXT-1883R"
+  "Pressure": "1300-AXT-1883R",
+  "SB.SE.a.mf": "1310-FX-1810"
  }
 }
