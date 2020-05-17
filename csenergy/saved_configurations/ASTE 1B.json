@@ -4,11 +4,11 @@
   "datatype": 2,
   "simulation": true,
   "benchmark": true,
-  "fastmode": false,
-  "filename": "DATOS ASTE 1B 2016.csv",
+  "fastmode": true,
+  "filename": "DATOS PLANTA 2016.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2016/07/15 00:00",
-  "last_date": "2016/07/16 00:00"
+  "first_date": "2016/08/31 00:00",
+  "last_date": "2016/09/01 00:00"
  },
  "model": {
   "name": "Barbero4thOrder",
@@ -47,14 +47,13 @@
   "Track Twist": 0.99,
   "Geom.Accuracy": 0.98,
   "Reflectance": 0.935,
-  "Cleanliness": 0.97,
-  "Dust": 0.97,
+  "Cleanliness": 0.9,
   "Factor": 1.0,
   "Availability": 0.99
  },
  "HCE": {
-  "Name": "Solel UVAC 3",
-  "Length": 4.05,
+  "Name": "Solel UVAC 2",
+  "Length": 3.88,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,
@@ -65,8 +64,8 @@
   "absorptance": 0.96,
   "coating": "",
   "annulus": "",
-  "Absorber emittance factor A0": 0.043,
-  "Absorber emittance factor A1": 0.000206,
+  "Absorber emittance factor A0": 0.101,
+  "Absorber emittance factor A1": 0.000131,
   "Absorber absorptance": 0.96,
   "Brackets": 4.05
  },
@@ -126,25 +125,23 @@
  },
  "subfields": [
   {
-   "name": "NO",
-   "loops": 31
-  },
-  {
-   "name": "NE",
-   "loops": 28
-  },
-  {
    "name": "SO",
    "loops": 27
   },
   {
    "name": "SE",
    "loops": 34
+  },
+  {
+   "name": "NO",
+   "loops": 31
+  },
+  {
+   "name": "NE",
+   "loops": 28
   }
  ],
  "tags": {
-  "DryBulb": "1300-AXT-1873R",
-  "Pressure": "1300-AXT-1883R",
   "SB.SE.a.mf": "1310-FX-1810",
   "SB.SE.a.tin": "1310-TT-1810",
   "SB.SE.a.tout": "1310-TT-1808",
@@ -166,6 +163,8 @@
   "SB.SO.a.pin": "1310-PT-1809",
   "SB.SO.a.pout": "1310-PT-1807",
   "DNI": "1300-AXT-1877R",
-  "Wspd": "1300-AXT-1871R"
+  "Wspd": "1300-AXT-1871R",
+  "DryBulb": "1300-AXT-1873R",
+  "Pressure": "1300-AXT-1883R"
  }
 }

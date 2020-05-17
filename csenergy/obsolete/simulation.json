@@ -1,7 +1,0 @@
-{
-"simulation" : {
-    "ID" : "00000",
-    "datatype" : 2,
-    "simulation": false,
-    "benchmark": true,
-    "fastmode": true}}

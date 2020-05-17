@@ -186,7 +186,6 @@ class Interface(object):
         self.varscageoaccuracy.set(0)
         self.varscatracktwist.set(0)
         self.varscacleanliness.set(0)
-        self.varscadust.set(0)
         self.varscafactor.set(0)
         self.varscaavailability.set(0)
 
@@ -329,7 +328,6 @@ class Interface(object):
         self.varscageoaccuracy.set(cfg['SCA']['Geom.Accuracy'])
         self.varscatracktwist.set(cfg['SCA']['Track Twist'])
         self.varscacleanliness.set(cfg['SCA']['Cleanliness'])
-        self.varscadust.set(cfg['SCA']['Dust'])
         self.varscafactor.set(cfg['SCA']['Factor'])
         self.varscaavailability.set(cfg['SCA']['Availability'])
 
@@ -435,7 +433,6 @@ class Interface(object):
         cfg['SCA']['Geom.Accuracy'] = self.varscageoaccuracy.get()
         cfg['SCA']['Reflectance'] = self.varscareflectance.get()
         cfg['SCA']['Cleanliness'] = self.varscacleanliness.get()
-        cfg['SCA']['Dust'] = self.varscadust.get()
         cfg['SCA']['Factor'] = self.varscafactor.get()
         cfg['SCA']['Availability'] = self.varscaavailability.get()
 
@@ -1538,10 +1535,8 @@ class Interface(object):
         self.varscageoaccuracy.set(self.sca_config['Geom.Accuracy'])
         self.varscatracktwist.set(self.sca_config['Track Twist'])
         self.varscacleanliness.set(self.sca_config['Cleanliness'])
-        self.varscadust.set(self.sca_config['Dust'])
         self.varscafactor.set(self.sca_config['Factor'])
         self.varscaavailability.set(self.sca_config['Availability'])
-        self.varscatrackingtype.set(self.sca_config['Tracking Type'])
         self.updateHCEperSCA()
 
     def buildSCAFrame(self):
@@ -1559,7 +1554,6 @@ class Interface(object):
         self.varscageoaccuracy = tk.DoubleVar(self.fr_sca)
         self.varscatracktwist = tk.DoubleVar(self.fr_sca)
         self.varscacleanliness = tk.DoubleVar(self.fr_sca)
-        self.varscadust = tk.DoubleVar(self.fr_sca)
         self.varscafactor = tk.DoubleVar(self.fr_sca)
         self.varscaavailability = tk.DoubleVar(self.fr_sca)
 
@@ -1676,32 +1670,23 @@ class Interface(object):
             textvariable = self.varscacleanliness).grid(
                 row = 10, column = 1, sticky='W', padx=2, pady=5)
 
-        self.lbscadust = ttk.Label(
-            self.fr_sca,
-            text= 'SCA Dust []').grid(
-                row = 11, column = 0,  sticky='W', padx=2, pady=5)
-        self.enscadust = ttk.Entry(
-            self.fr_sca,
-            textvariable = self.varscadust).grid(
-                row = 11, column = 1, sticky='W', padx=2, pady=5)
-
         self.lbscafactor = ttk.Label(
             self.fr_sca,
             text= 'SCA Factor []').grid(
-                row = 12, column = 0,  sticky='W', padx=2, pady=5)
+                row = 11, column = 0,  sticky='W', padx=2, pady=5)
         self.enscafactor = ttk.Entry(
             self.fr_sca,
             textvariable = self.varscafactor).grid(
-                row = 12, column = 1, sticky='W', padx=2, pady=5)
+                row = 11, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbscaavailability = ttk.Label(
             self.fr_sca,
             text= 'SCA Availability []').grid(
-                row = 13, column = 0,  sticky='W', padx=2, pady=5)
+                row = 12, column = 0,  sticky='W', padx=2, pady=5)
         self.enscaavailability = ttk.Entry(
             self.fr_sca,
             textvariable = self.varscaavailability).grid(
-                row = 13, column = 1, sticky='W', padx=2, pady=5)
+                row = 12, column = 1, sticky='W', padx=2, pady=5)
 
 
     def load_hce_parameters(self):

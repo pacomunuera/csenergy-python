@@ -1,1 +1,0 @@
-{"solarfield": {"name": "My plant", "rated_tin": "563.15", "rated_tout": "663.15", "rated_pin": "2000000", "rated_pout": "1600000", "rated_masslflow": "4.0", "recirculation_massflow": "1.5", "tmin": "670.0", "loop": {"scas": "4", "hces": "36"}, "subfields": [{"name": "SO", "loops": 30}, {"name": "SE", "loops": 30}, {"name": "NO", "loops": 30}, {"name": "NE", "loops": 30}]}}

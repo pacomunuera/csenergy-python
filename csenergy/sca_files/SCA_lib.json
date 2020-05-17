@@ -10,8 +10,7 @@
 	"Track Twist": 0.99,
 	"Geom.Accuracy": 0.98,
 	"Reflectance": 0.935,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 },{
@@ -26,8 +25,7 @@
   	"Track Twist": 0.99,
  	"Geom.Accuracy": 0.98,
   	"Reflectance": 0.935,
-  	"Cleanliness": 0.97,
-  	"Dust": 0.97,
+  	"Cleanliness": 0.90,
   	"Factor": 1.0,
   	"Availability": 0.99
  },{
@@ -42,8 +40,7 @@
 	"Track Twist": 0.99,
 	"Geom.Accuracy": 0.98,
 	"Reflectance": 0.935,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 },{
@@ -58,8 +55,7 @@
 	"Track Twist": 0.99,
 	"Geom.Accuracy": 0.98,
 	"Reflectance": 0.935,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -74,8 +70,7 @@
 	"Track Twist": 0.99,
 	"Geom.Accuracy": 0.98,
 	"Reflectance": 0.935,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -90,8 +85,7 @@
 	"Track Twist": 0.994,
 	"Geom.Accuracy": 0.98,
 	"Reflectance": 0.935,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -106,8 +100,7 @@
 	"Track Twist": 0.99,
 	"Geom.Accuracy": 0.98,
 	"Reflectance": 0.935,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -122,8 +115,7 @@
 	"Track Twist": 0.99,
 	"Geom.Accuracy": 0.968,
 	"Reflectance": 0.925,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -138,8 +130,7 @@
 	"Track Twist": 0.988,
 	"Geom.Accuracy": 0.952,
 	"Reflectance": 0.93,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -154,8 +145,7 @@
 	"Track Twist": 0.988,
 	"Geom.Accuracy": 0.99,
 	"Reflectance": 0.94,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }, {
@@ -170,8 +160,7 @@
 	"Track Twist": 0.988,
 	"Geom.Accuracy": 0.97,
 	"Reflectance": 0.94,
-	"Cleanliness": 0.97,
-	"Dust": 0.98,
+	"Cleanliness": 0.90,
 	"Factor": 1,
 	"Availability": 0.99
 }]

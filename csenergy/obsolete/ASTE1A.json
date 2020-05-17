@@ -1,1 +1,0 @@
-{"solar_plant": {"name": "ASTE 1A", "solarfields": [{"name": "c0", "loops": 30, "scas": 4, "hces": 12}, {"name": "c1", "loops": 30, "scas": 4, "hces": 12}, {"name": "c2", "loops": 30, "scas": 4, "hces": 12}, {"name": "c3", "loops": 30, "scas": 4, "hces": 12}], "massflow": 6.0, "row_spacing": 16.25}}

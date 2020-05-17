@@ -19,7 +19,7 @@ from pvlib import irradiance
 from pvlib import iam
 from tkinter import *
 from tkinter.filedialog import askopenfilename
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import os.path
 import seaborn as sns
@@ -774,7 +774,6 @@ class SCA(object):
                              self.parameters['Geom.Accuracy'] *
                              self.parameters['Track Twist'] *
                              self.parameters['Cleanliness'] *
-                             self.parameters['Dust'] *
                              self.parameters['Factor'] *
                              self.parameters['Availability'])
         else:
@@ -1212,7 +1211,6 @@ class BaseLoop(__Loop__):
                          self.parameters_sca['Geom.Accuracy'] *
                          self.parameters_sca['Track Twist'] *
                          self.parameters_sca['Cleanliness'] *
-                         self.parameters_sca['Dust'] *
                          self.parameters_sca['Factor'] *
                          self.parameters_sca['Availability'])
 
@@ -1878,7 +1876,7 @@ class SolarFieldSimulation(object):
 
 
                 if self.benchmark and self.datatype == 2:  # 2: Field Data File available
-                    self.benchmarksolarfield(solarpos, row)
+                    self.benchmark_solarfield(solarpos, row)
                     self.gather_benchmark_data(row)
 
                     str_data = ("BENCHMARK: {0} " +
@@ -1977,7 +1975,7 @@ class SolarFieldSimulation(object):
 
         self.solarfield.set_solarfield_values_from_subfields(self.htf)
 
-    def benchmarksolarfield(self, solarpos, row):
+    def benchmark_solarfield(self, solarpos, row):
 
         for s in self.solarfield.subfields:
             s.load_actual(row)
@@ -1987,7 +1985,6 @@ class SolarFieldSimulation(object):
 
         if self.fastmode:
             for s in self.solarfield.subfields:
-                # self.base_loop.load_actual(s)
                 self.base_loop.initialize('subfield', s)
                 self.base_loop.calc_loop_pr_for_massflow(
                     row, solarpos, self.htf, self.model)
@@ -2021,16 +2018,6 @@ class SolarFieldSimulation(object):
         else:
             massflow_to_HE = self.solarfield.massflow
 
-        # self.heatexchanger.set_htf_in(massflow_to_HE,
-        #                                  self.solarfield.tout,
-        #                                  self.solarfield.pout)
-
-        # self.heatexchanger.set_coldfluid_in(
-        #         self.powercycle.massflow, self.powercycle.tout, self.powercycle.pin) #PENDIENTE
-
-        # self.heatexchanger.set_thermalpowertransfered()
-        # self.powercycle.calc_pr_NCA(self.powercycle.tout) #Provisonal temperatura agua coondensador
-        # self.generator.calc_pr()
 
     def store_values(self, row, values):
 
@@ -2039,8 +2026,6 @@ class SolarFieldSimulation(object):
 
     def gather_general_data(self, row, solarpos):
 
-        #TO-DO: CALCULOS PARA AGREGAR AL DATAFRAME
-        #  Solar postion data
         self.datasource.dataframe.at[row[0], 'elevation'] = \
             solarpos['elevation'][0]
         self.datasource.dataframe.at[row[0], 'zenith'] = \
@@ -3025,159 +3010,14 @@ class TableData(object):
 
 class PowerSystem(object):
     '''
-    Power Plant as a set composed by a solarfield, a HeatExchanger, a PowerCycle and a BOPSystem
+    Power Plant as a set composed by a solarfield, a HeatExchanger, a
+    PowerCycle and a BOPSystem
 
     '''
 
-    # Calculo de potencia de salida (positiva o negativa)
-    #y potencia derivada a BOB en base al estado de la planta
-
     def __init__(self, settings):
 
-        self.ratedpower = settings['ratedpower']
-        self.subfield_to_exchanger_pr = settings['solarfield_to_exchanger_pr']
-        self.exchanger_pr = settings['exchanger_pr']
-        self.exchanger_to_turbogroup_pr = settings['exchanger_to_turbogroup_pr']
-        self.steam_cycle_pr = settings['steam_cycle_pr']
-        self.turbogenerator_pr = settings['turbogenerator_pr']
-
-
-    def get_poweroutput(self):
         pass
-
-    def get_powerinput(self):
-        pass
-
-    def get_thermalpower(self, ratedpower):
-
-        return ratedpower / (self.subfield_to_exchanger_pr *
-                                  self.exchanger_pr *
-                                  self.exchanger_to_turbogroup_pr *
-                                  self.steam_cycle_pr *
-                                  self.turbogenerator_pr)
-
-    def get_rated_massflow(self, ratedpower, solarfield, htf, coldfluid = None):
-
-        HH = htf.get_deltaH(solarfield.rated_tout, solarfield.rated_pout)
-        HL = htf.get_deltaH(solarfield.rated_tin, solarfield.rated_pin)
-        rated_massflow = self.get_thermalpower(self.ratedpower) / (HH - HL)
-
-        return rated_massflow
-
-class HeatExchanger(object):
-
-    def __init__(self, settings, htf, coldfluid):
-
-        self.pr = settings['pr']
-        self.thermalpowertransfered = 0.0
-
-        self.htfmassflow = 0.0
-        self.htftin = 0.0
-        self.htftout = 393 + 273.15
-        self.htfpin = 1500000
-        self.htfpout = 0.0
-        self.htf = htf
-
-        self.coldfluidmassflow = 0.0
-        self.coldfluidtin = 0.0
-        self.coldfluidtout = 0.0
-        self.colfluidpin = 0.0
-        self.colfluidtout = 0.0
-        self.coldfluid = coldfluid
-
-    def set_htf_in(self, htfmassflow, htftin, htfpin):
-
-        self.htfmassflow = htfmassflow
-        self.htftin = htftin
-        self.htfpin = htfpin
-
-    def set_coldfluid_in(self, coldfluidmassflow, coldfluidtin, coldfluidpin):
-
-        self.coldfluidmassflow = coldfluidmassflow
-        self.coldfluidtin = coldfluidtin
-        self.coldfluidpin = coldfluidpin
-
-    def set_thermalpowertransfered(self):
-
-        #provisional
-        pinch = 10.0
-
-        HH = self.htf.get_deltaH(self.htftin, self.htfpin)
-        HL = self.htf.get_deltaH(self.coldfluidtin + pinch, self.htfpout)
-
-        self.thermalpowertransfered = self.pr * ((HH-HL)*self.htfmassflow)
-#        self.thermalpowertransfered = (
-#                self.pr *
-#                self.htfmassflow *
-#                self.htf.get_cp(self.htftin, self.htfpin) *
-#                self.htftin - hftout)
-
-
-    def htf_tout():
-        return
-
-
-class HeatStorage(object):
-
-    def __init__(self, settings):
-
-        self.name = settings['heatstorage']
-
-    def set_fluid_tout(self):
-        pass
-
-    def htf_tout():
-        return
-
-class BOPSystem(object):
-    '''
-    BOP: Balance Of Plant System.
-    The BOP encompasses the electrical consumptions for auxiliary systems
-    (pumping, tracing, compressed air)
-
-    '''
-    #BOP debe calcular con consumo de potencia según datos de
-    #campo solar, iintercambiador y ciclo (bombeos) y datos
-    #meteorologicos y de operación (consumo de traceados, aire comprimido...)
-
-    def __init__(self, settings):
-
-        self.name = settings['bopsystem']['name']
-
-    def get_powerinput_from_PowerPlant(self):
-        pass
-
-    def get_powerinput_from_PowerGrid(self):
-        pass
-
-class PowerCycle(object):
-
-    def __init__(self, settings):
-
-        self.name = settings['name']
-        self.pin = settings['rated_pin']
-        self.tin = settings['rated_tin']
-        self.pout = settings['rated_pout']
-        self.tout = settings['rated_tout']
-        self.massflow = settings['rated_massflow']
-        self.pr = 0.0
-
-    def calc_pr_NCA(self, tout): #Novikov-Curzon-Ahlbor
-
-        self.pr = 1 - np.sqrt((tout)/(self.tin))
-
-class Generator(object):
-
-    def __init__(self, settings):
-
-        self.name = settings['name']
-        self.pr = settings['pr']
-
-    def calc_pr(self):
-
-        #TO-DO: Desasrrollar curvas pr-carga-temp.ext por ejemplo.
-        pass
-
 
 
 class Site(object):
@@ -3192,7 +3032,7 @@ class Site(object):
     def get_solarposition(self, row):
 
         solarpos = pvlib.solarposition.get_solarposition(
-                row[0],
+                row[0] + timedelta(hours=0.5),
                 self.latitude,
                 self.longitude,
                 self.altitude,
