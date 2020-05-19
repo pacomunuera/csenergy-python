@@ -125,12 +125,11 @@ class ModelBarbero4thOrder(Model):
         #  Internal transmission coefficient.
         hint = hce.get_hint(tf, hce.pin, htf)
 
-
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
         urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
 
         #  We suppose thermal performance, pr = 1, at first
-        pr = 1.0
+        pr = hce.get_previous_pr()
         tro = tf + qabs * pr / urec
 
         #  HCE emittance
@@ -138,11 +137,13 @@ class ModelBarbero4thOrder(Model):
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
-        #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
-
         #  Thermal power lost througth  bracktets
-        qlost_brackets = hce.get_qlost_brackets(tf, text)
+        qlost_brackets = hce.get_qlost_brackets(tro, text)
+
+        #  Thermal power lost. Eq. 3.23 Barbero2016
+        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
+            qlost_brackets
+
 
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
         qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -249,11 +250,12 @@ class ModelBarbero4thOrder(Model):
                 errtro = abs(tro2-tro)
                 tro = tro2
 
-                #  Thermal power loss. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+                #  Increase qlost with the thermal power lost througth bracktets
+                qlost_brackets = hce.get_qlost_brackets(tro, text)
 
-                #  Increase qlost with  the thermal power loss througth  bracktets
-                qlost_brackets = hce.get_qlost_brackets(tf, text)
+                #  Thermal power loss. Eq. 3.23 Barbero2016
+                qlost = sigma * eext * (tro**4 - text**4) + \
+                    hext * (tro - text) + qlost_brackets
 
                 #  Critical Thermal power loss. Eq. 3.50 Barbero2016
                 qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -264,7 +266,7 @@ class ModelBarbero4thOrder(Model):
                 #  Transmission Units Number, Ec. 3.30 Barbero2016
                 NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
-            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+            # hce.pr = hce.pr * (1 - qlost_brackets / qabs)
             hce.qlost = qlost
             hce.qlost_brackets = qlost_brackets
 
@@ -281,7 +283,8 @@ class ModelBarbero4thOrder(Model):
                 hext = hce.get_hext(wspd)
 
                 #  Thermal power lost. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+                qlost = sigma * eext * (tro**4 - text**4) + \
+                    hext * (tro - text) + hce.get_qlost_brackets(tro, text)
 
                 #  Thermal power lost througth  bracktets
                 qlost_brackets = hce.get_qlost_brackets(tro, text)
@@ -529,9 +532,9 @@ class HCE(object):
             # dh -= (self.qlost_brackets *
             #       self.parameters['Length'] * np.pi *
             #       self.parameters['Absorber tube outer diameter'])
-
+# + self.qlost_brackets
         else:
-            q =  ( -1 * (self.qlost + self.qlost_brackets ) *
+            q =  ( -1 * (self.qlost) *
                   self.parameters['Length'] * np.pi *
                   self.parameters['Absorber tube outer diameter'])
 
@@ -603,9 +606,20 @@ class HCE(object):
         # Ec. 4.22 Conductividad para el acero 321H, ver otras opciones.
         return  0.0153 * (t - 273.15) + 14.77
 
-    def get_previous(self):
+    def get_urec(self, t, p, htf):
 
-        return self.sca.hces[self.hce_order-1]
+        pass
+
+    def get_previous_pr(self):
+
+        if self.hce_order > 0:
+            previous_pr = self.sca.hces[self.hce_order-1].pr
+        elif self.sca.sca_order > 0:
+            previous_pr = self.sca.loop.scas[self.sca.sca_order-1].hces[-1].pr
+        else:
+            previous_pr = 1.0
+
+        return previous_pr
 
     def get_index(self):
 
@@ -1516,12 +1530,14 @@ class SolarField(object):
         self.wasted_power = 0.0
         self.pr = 0.0
         self.pr_opt = 0.0
+        self.pwr = 0.0
 
         self.act_tin = 0.0
         self.act_tout = 0.0
         self.act_pin = 0.0
         self.act_pout = 0.0
         self.act_massflow = 0.0
+        self.act_pwr = 0.0
 
         self.rated_tin = loop_settings['rated_tin']
         self.rated_tout = loop_settings['rated_tout']
@@ -1763,25 +1779,17 @@ class SolarField(object):
         self.act_pin = np.sum(subfields_var) / self.act_massflow
 
 
-    def get_thermalpoweroutput(self, htf):
+    def set_thermal_power(self, htf, datatype):
 
-        HL = htf.get_deltaH(self.tin, self.pin)
-        HH = htf.get_deltaH(self.tout, self.pout)
+        self.pwr = self.massflow * (
+            htf.get_deltaH(self.tout, self.pout) -
+            htf.get_deltaH(self.tin, self.pin))
 
-        return (HH - HL) * self.massflow
+        if datatype == 2:
+            self.act_pwr = self.act_massflow * (
+                htf.get_deltaH(self.act_tout, self.act_pout) -
+                htf.get_deltaH(self.act_tin, self.act_pin))
 
-    def set_operation_mode(self, mode = None):
-
-        if mode is not None:
-            self.operation_mode = mode
-        else:
-            if self.storage_available == True:
-                pass
-            else:
-                if self.tout > self.tin:
-                   self.operation_mode = "solarfield_heating"
-                else:
-                    self.operation_mode = "solarfield_not_heating"
 
     def print(self):
 
@@ -1822,6 +1830,7 @@ class SolarFieldSimulation(object):
         self.parameters = settings
         self.first_date = pd.to_datetime(settings['simulation']['first_date'])
         self.last_date = pd.to_datetime(settings['simulation']['last_date'])
+        self.report_df = pd.DataFrame()
 
         if settings['model']['name'] == 'Barbero4thOrder':
             self.model = ModelBarbero4thOrder(settings['model'])
@@ -1875,6 +1884,7 @@ class SolarFieldSimulation(object):
 
             if (naive_datetime < self.first_date or
                 naive_datetime > self.last_date):
+                self.datasource.dataframe.drop(row[0], axis=0)
                 pass
             else:
                 solarpos = self.site.get_solarposition(row)
@@ -1888,6 +1898,7 @@ class SolarFieldSimulation(object):
 
                 if self.simulation:
                     self.simulate_solarfield(solarpos, row)
+                    self.solarfield.set_thermal_power(self.htf, self.datatype)
                     self.gather_simulation_data(row)
 
                     str_data = ("SIMULATION: {0} " +
@@ -1903,6 +1914,7 @@ class SolarFieldSimulation(object):
 
                 if self.benchmark and self.datatype == 2:  # 2: Field Data File available
                     self.benchmark_solarfield(solarpos, row)
+                    self.solarfield.set_thermal_power(self.htf, self.datatype)
                     self.gather_benchmark_data(row)
 
                     str_data = ("BENCHMARK: {0} " +
@@ -2035,16 +2047,6 @@ class SolarFieldSimulation(object):
         self.solarfield.set_solarfield_values_from_subfields(self.htf)
 
 
-    def plantperformance(self, row):
-
-        self.solarfield.set_operation_mode()
-
-        if self.solarfield.operation_mode == "subfield_not_heating":
-            massflow_to_HE = 0
-        else:
-            massflow_to_HE = self.solarfield.massflow
-
-
     def store_values(self, row, values):
 
         for v in values:
@@ -2096,13 +2098,8 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'SF.x.qlbk'] = \
             self.solarfield.qlost_brackets
 
-        power_th = self.solarfield.massflow * \
-            (self.htf.get_deltaH(self.solarfield.tout,
-                            self.solarfield.pout) -
-             self.htf.get_deltaH(self.solarfield.tin,
-                            self.solarfield.pin))
-
-        self.datasource.dataframe.at[row[0], 'SF.x.pwr'] = power_th
+        self.datasource.dataframe.at[row[0], 'SF.x.pwr'] = \
+            self.solarfield.pwr
 
         if self.fastmode:
 
@@ -2162,27 +2159,16 @@ class SolarFieldSimulation(object):
             self.solarfield.tin
         self.datasource.dataframe.at[row[0], 'SF.a.tout'] = \
             self.solarfield.act_tout
+        self.datasource.dataframe.at[row[0], 'SF.a.pwr'] = \
+            self.solarfield.act_pwr
         self.datasource.dataframe.at[row[0], 'SF.b.tout'] = \
             self.solarfield.tout
         self.datasource.dataframe.at[row[0], 'SF.b.prth'] = \
             self.solarfield.pr
         self.datasource.dataframe.at[row[0], 'SF.b.prop'] = \
             self.solarfield.pr_opt
-
-        power_th = self.solarfield.massflow * \
-            (self.htf.get_deltaH(self.solarfield.tout,
-                                 self.solarfield.pout) -
-             self.htf.get_deltaH(self.solarfield.tin,
-                                 self.solarfield.pin))
-        self.datasource.dataframe.at[row[0], 'SF.b.pwr'] = power_th
-
-        act_power_th = self.solarfield.act_massflow * \
-            (self.htf.get_deltaH(self.solarfield.act_tout,
-                                 self.solarfield.act_pout) -
-             self.htf.get_deltaH(self.solarfield.act_tin,
-                                 self.solarfield.act_pin))
-        self.datasource.dataframe.at[row[0], 'SF.a.pwr'] = act_power_th
-
+        self.datasource.dataframe.at[row[0], 'SF.b.pwr'] = \
+            self.solarfield.pwr
         self.datasource.dataframe.at[row[0], 'SF.b.wpwr'] = \
             self.solarfield.wasted_power
         self.datasource.dataframe.at[row[0], 'SF.a.pin'] = \
@@ -2261,12 +2247,13 @@ class SolarFieldSimulation(object):
                     self.store_values(row, values)
 
 
-    def show_report(self, keys):
+    def show_report(self, keys= None):
 
         # from IPython.display import display, Math, Latex
         # display(Math(r'F(k) = \int_{-\infty}^{\infty} f(x) e^{2\pi i k} dx'))
 
-        self.datasource.dataframe[keys].plot(
+
+        self.report_df.plot(
                         figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
         pd.set_option('display.max_rows', None)
@@ -2275,20 +2262,38 @@ class SolarFieldSimulation(object):
 
     def save_results(self):
 
+        keys = ['DNI', 'SF.a.tin', 'SF.a.mf', 'SF.x.mf',
+                'SF.a.tout', 'SF.x.tout', 'SF.b.tout',
+                'SF.a.pwr', 'SF.x.pwr', 'SF.b.pwr', 'SF.x.prth', 'SF.b.prth']
+
+        self.report_df = self.datasource.dataframe[
+            (self.datasource.dataframe.index >= self.first_date) &
+            (self.datasource.dataframe.index <= self.last_date)]
+
+        self.report_df = self.report_df[keys]
+        self.report_df['SF.x.pwr']=self.report_df['SF.x.pwr'] / 1000000
+        self.report_df['SF.a.pwr']=self.report_df['SF.a.pwr'] / 1000000
+        self.report_df['SF.b.pwr']=self.report_df['SF.b.pwr'] / 1000000
+
         try:
             initialdir = "./simulations_outputs/"
-            prefix = datetime.today().strftime("%Y%m%d %H%M%S")
-            filename = str(self.ID) + "_" + str(self.datatype)
+            prefix = datetime.today().strftime("%Y%m%d %H%M%S ")
+            filename_complete = str(self.ID) + "_COMPLETE"
+            filename_report = str(self.ID) + "_REPORT"
             sufix = ".csv"
 
-            path = initialdir + prefix + filename + sufix
+            path_complete = initialdir + prefix + filename_complete + sufix
+            path_report = initialdir + prefix + filename_report + sufix
 
-            self.datasource.dataframe.to_csv(path, sep=';', decimal = ',')
+            self.datasource.dataframe.to_csv(
+                path_complete, sep=';', decimal = ',')
+            self.report_df.to_csv(path_report, sep=';', decimal = ',')
 
         except Exception:
             raise
             print('Error saving results, unable to save file: %r', path)
 
+        self.show_report(keys)
 
     def testgeo(self):
 

@@ -7,8 +7,8 @@
   "fastmode": true,
   "filename": "DATOS PLANTA 2016.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2016/03/01 00:00",
-  "last_date": "2016/03/02 00:00"
+  "first_date": "2016/08/31 00:00",
+  "last_date": "2016/09/03 00:00"
  },
  "model": {
   "name": "Barbero1stOrder",
