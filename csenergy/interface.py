@@ -446,9 +446,6 @@ class Interface(object):
         cfg['HCE']['Min Reynolds'] = self.varhceminreynolds.get()
         cfg['HCE']['Inner surface roughness'] = self.varhceinnerroughness.get()
         cfg['HCE']['Envelope transmittance'] = self.varhcetransmittance.get()
-        cfg['HCE']['absorptance'] = self.varhceabsorptance.get()
-        cfg['HCE']['coating'] = self.varcoating.get()
-        cfg['HCE']['annulus'] = self.varannulus.get()
         cfg['HCE']['Absorber emittance factor A0'] = self.varhceemittanceA0.get()
         cfg['HCE']['Absorber emittance factor A1'] = self.varhceemittanceA1.get()
         cfg['HCE']['Absorber absorptance'] = self.varhceabsorptance.get()
@@ -915,6 +912,9 @@ class Interface(object):
             columns_names.append(['Wspd','',''])
             columns_names.append(['DryBulb','',''])
             columns_names.append(['Pressure','',''])
+            columns_names.append(['GrossPower','',''])
+            columns_names.append(['AuxPower','',''])
+            columns_names.append(['NetPower','',''])
 
         if self.varbenchmark.get():
 
@@ -1300,12 +1300,12 @@ class Interface(object):
         with open(path) as cfg_file:
             cfg = json.load(cfg_file, parse_float= float, parse_int= int)
 
-        cp_coefs = [[]]*7
-        rho_coefs = [[]]*7
-        mu_coefs  = [[]]*7
-        kt_coefs  = [[]]*7
-        h_coefs = [[]]*7
-        t_coefs = [[]]*7
+        cp_coefs = [[]]*10
+        rho_coefs = [[]]*10
+        mu_coefs  = [[]]*10
+        kt_coefs  = [[]]*10
+        h_coefs = [[]]*10
+        t_coefs = [[]]*10
 
         temp_cp = ['cp']
         temp_rho = ['rho']
@@ -1315,7 +1315,7 @@ class Interface(object):
         temp_t = ['t']
 
         grades = ['Factor']
-        grades.extend([0, 1, 2, 3, 4, 5])
+        grades.extend([0, 1, 2, 3, 4, 5, 6, 7, 8])
 
         temp_cp.extend(list(cfg['hot_fluid']['cp']))
         temp_rho.extend(list(cfg['hot_fluid']['rho']))
@@ -1326,22 +1326,22 @@ class Interface(object):
 
         for index in range(len(temp_cp)):
             cp_coefs[index] = temp_cp[index]
-        cp_coefs[1:] = [float(s) for s in cp_coefs[1:]]
+        cp_coefs[1:] = [Decimal(s) for s in cp_coefs[1:]]
         for index in range(len(temp_rho)):
             rho_coefs[index] = temp_rho[index]
-        rho_coefs[1:] = [float(s) for s in rho_coefs[1:]]
+        rho_coefs[1:] = [Decimal(s) for s in rho_coefs[1:]]
         for index in range(len(temp_mu)):
             mu_coefs[index] = temp_mu[index]
-        mu_coefs[1:] = [float(s) for s in mu_coefs[1:]]
+        mu_coefs[1:] = [Decimal(s) for s in mu_coefs[1:]]
         for index in range(len(temp_kt)):
             kt_coefs[index] = temp_kt[index]
-        kt_coefs[1:] = [float(s) for s in kt_coefs[1:]]
+        kt_coefs[1:] = [Decimal(s) for s in kt_coefs[1:]]
         for index in range(len(temp_h)):
             h_coefs[index] = temp_h[index]
-        h_coefs[1:] = [float(s) for s in h_coefs[1:]]
+        h_coefs[1:] = [Decimal(s) for s in h_coefs[1:]]
         for index in range(len(temp_t)):
             t_coefs[index] = temp_t[index]
-        t_coefs[1:] = [float(s) for s in t_coefs[1:]]
+        t_coefs[1:] = [Decimal(s) for s in t_coefs[1:]]
 
         datarow = []
         datarow.append(cp_coefs)
@@ -1482,7 +1482,9 @@ class Interface(object):
                 ['Parameter',
                  '         A x^0', '         B x^1',
                  '         C x^2', '         D x^3',
-                 '         E x^4', '         F x^5'],
+                 '         E x^4', '         F x^5',
+                 '         G x^6', '         H x^7',
+                 '         I x^8'],
                 row_numbers=True,
                 stripped_rows = ('white','#f2f2f2'),
                 select_mode = 'none',
@@ -1765,8 +1767,8 @@ class Interface(object):
         self.varhcetransmittance = tk.DoubleVar(self.fr_hce)
         self.varhceemittanceA0 = tk.DoubleVar(self.fr_hce)
         self.varhceemittanceA1 = tk.DoubleVar(self.fr_hce)
-        self.varcoating = tk.StringVar(self.fr_hce)
-        self.varannulus = tk.StringVar(self.fr_hce)
+        # self.varcoating = tk.StringVar(self.fr_hce)
+        # self.varannulus = tk.StringVar(self.fr_hce)
         self.varhcebrackets = tk.DoubleVar(self.fr_hce)
 
         self.lbhcename = ttk.Label(
@@ -1894,32 +1896,32 @@ class Interface(object):
             textvariable = self.varhceemittanceA1).grid(
                 row = 11, column = 1, sticky='W', padx=2, pady=5)
 
-        self.lbcoating = ttk.Label(
-            self.fr_hce,
-            text= 'Coating').grid(
-                row = 12, column = 0,  sticky='W', padx=2, pady=5)
-        self.encoating = ttk.Entry(
-            self.fr_hce,
-            textvariable = self.varcoating).grid(
-                row = 12, column = 1, sticky='W', padx=2, pady=5)
+        # self.lbcoating = ttk.Label(
+        #     self.fr_hce,
+        #     text= 'Coating').grid(
+        #         row = 12, column = 0,  sticky='W', padx=2, pady=5)
+        # self.encoating = ttk.Entry(
+        #     self.fr_hce,
+        #     textvariable = self.varcoating).grid(
+        #         row = 12, column = 1, sticky='W', padx=2, pady=5)
 
-        self.lbannulus = ttk.Label(
-            self.fr_hce,
-            text= 'Annulus').grid(
-                row = 13, column = 0,  sticky='W', padx=2, pady=5)
-        self.enannulus = ttk.Entry(
-            self.fr_hce,
-            textvariable = self.varannulus).grid(
-                row = 13, column = 1, sticky='W', padx=2, pady=5)
+        # self.lbannulus = ttk.Label(
+        #     self.fr_hce,
+        #     text= 'Annulus').grid(
+        #         row = 13, column = 0,  sticky='W', padx=2, pady=5)
+        # self.enannulus = ttk.Entry(
+        #     self.fr_hce,
+        #     textvariable = self.varannulus).grid(
+        #         row = 13, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbbrackets = ttk.Label(
             self.fr_hce,
             text= 'Brackets spacing').grid(
-                row = 14, column = 0,  sticky='W', padx=2, pady=5)
+                row = 12, column = 0,  sticky='W', padx=2, pady=5)
         self.enbrackets = ttk.Entry(
             self.fr_hce,
             textvariable = self.varhcebrackets).grid(
-                row = 14, column = 1, sticky='W', padx=2, pady=5)
+                row = 12, column = 1, sticky='W', padx=2, pady=5)
 
 
 

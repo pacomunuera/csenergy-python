@@ -47,38 +47,41 @@
   "Track Twist": 0.99,
   "Geom.Accuracy": 0.98,
   "Reflectance": 0.935,
-  "Cleanliness": 0.97,
+  "Cleanliness": 0.9,
   "Factor": 1.0,
-  "Availability": 1.0
+  "Availability": 0.99
  },
  "HCE": {
   "Name": "Solel UVAC 2",
-  "Length": 4.05,
+  "Length": 3.88,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,
   "Glass envelope outer diameter": 0.121,
   "Min Reynolds": 30000.0,
   "Inner surface roughness": 4.5e-05,
-  "Envelope transmittance": 0.965,
-  "absorptance": 0.97,
+  "Envelope transmittance": 0.96,
+  "absorptance": 0.96,
   "coating": "",
   "annulus": "",
   "Absorber emittance factor A0": 0.101,
   "Absorber emittance factor A1": 0.000131,
-  "Absorber absorptance": 0.97,
+  "Absorber absorptance": 0.96,
   "Brackets": 4.05
  },
  "HTF": {
   "source": "table",
   "name": "DOWTHERM A",
   "mu": [
-   0.34013,
-   -0.00337267,
-   1.33042e-05,
-   -2.60139e-08,
-   2.51799e-11,
-   -9.6475e-15
+   5.1346826,
+   -0.08395359,
+   0.0005971,
+   -2.4e-06,
+   6.0292345e-09,
+   -9.5788095e-12,
+   9.4330297e-15,
+   -5.2644e-18,
+   1.3e-21
   ],
   "rho": [
    1492.4628,
@@ -86,7 +89,10 @@
    0.012479716,
    -2.9684039e-05,
    3.4437643e-08,
-   -1.6215295e-11
+   -1.6215295e-11,
+   0,
+   0,
+   0
   ],
   "kt": [
    0.18560707,
@@ -94,7 +100,10 @@
    5.9133304e-12,
    0.0,
    0.0,
-   0.0
+   0.0,
+   0,
+   0,
+   0
   ],
   "h": [
    -651130.67,
@@ -102,7 +111,10 @@
    -12.345938,
    0.027710651,
    -2.7764463e-05,
-   1.1056661e-08
+   1.1056661e-08,
+   0,
+   0,
+   0
   ],
   "t": [
    285.344,
@@ -110,24 +122,26 @@
    -1.82158e-10,
    -1.42322e-16,
    3.31588e-22,
-   -1.75256e-28
+   -1.75256e-28,
+   0,
+   0,
+   0
   ],
   "cp": [
-   -2.3634842,
+   -2363.4842,
    39.461021,
    -0.17024546,
    0.0003903868,
    -4.421524e-07,
-   1.9792489e-10
+   1.9792489e-10,
+   0,
+   0,
+   0
   ],
   "tmax": 670.0,
   "tmin": 288.0
  },
  "subfields": [
-  {
-   "name": "SE",
-   "loops": 34
-  },
   {
    "name": "NO",
    "loops": 31
@@ -139,10 +153,13 @@
   {
    "name": "SO",
    "loops": 27
+  },
+  {
+   "name": "SE",
+   "loops": 34
   }
  ],
  "tags": {
-  "SB.SE.a.tin": "1310-TT-1810",
   "SB.SE.a.tout": "1310-TT-1808",
   "SB.SE.a.pin": "1310-PT-1810",
   "SB.SE.a.pout": "1310-PT-1808",
@@ -165,6 +182,7 @@
   "Wspd": "1300-AXT-1871R",
   "DryBulb": "1300-AXT-1873R",
   "Pressure": "1300-AXT-1883R",
-  "SB.SE.a.mf": "1310-FX-1810"
+  "SB.SE.a.mf": "1310-FX-1810",
+  "SB.SE.a.tin": "1310-TT-1810"
  }
 }

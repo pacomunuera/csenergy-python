@@ -8,6 +8,7 @@ import numpy as np
 import scipy as sc
 from scipy import constants
 import math as mt
+from decimal import Decimal
 from CoolProp.CoolProp import PropsSI
 import CoolProp.CoolProp as CP
 import copy
@@ -343,14 +344,16 @@ class ModelBarbero1stOrder(Model):
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
-        #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
-
         #  Thermal power lost througth  bracktets
         qlost_brackets = hce.get_qlost_brackets(tf, text)
 
+        #  Thermal power lost. Eq. 3.23 Barbero2016
+        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
+            qlost_brackets
+
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
-        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
+        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text) + \
+            qlost_brackets
 
         #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
         ucrit = 4 * sigma * eext * tf**3 + hext
@@ -367,7 +370,7 @@ class ModelBarbero1stOrder(Model):
             hce.pr = ((1 - (qcrit / qabs)) *
                   (1 / (NTUperd * x)) *
                   (1 - np.exp(-NTUperd * fcrit * x)))
-            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+            # hce.pr = hce.pr * (1 - qlost_brackets / qabs)
         else:
             hce.pr = 0.0
 
@@ -508,7 +511,7 @@ class HCE(object):
 
     def set_tout(self, htf):
 
-        hin = htf.get_deltaH(self.tin, self.sca.loop.pin)
+        # hin = htf.get_deltaH(self.tin, self.sca.loop.pin)
 
         # if self.pr > 0:
 
@@ -529,10 +532,7 @@ class HCE(object):
 
             q = (self.qabs * self.parameters['Length'] * np.pi *
                  self.parameters['Absorber tube outer diameter'] * self.pr)
-            # dh -= (self.qlost_brackets *
-            #       self.parameters['Length'] * np.pi *
-            #       self.parameters['Absorber tube outer diameter'])
-# + self.qlost_brackets
+
         else:
             q =  ( -1 * (self.qlost) *
                   self.parameters['Length'] * np.pi *
@@ -597,9 +597,9 @@ class HCE(object):
               (np.pi*self.parameters['Absorber tube outer diameter']))
 
         pr_geo = self.get_pr_geo(aoi)
-        pr_shadows = self.get_pr_shadows(solarpos)
+        pr_borders = self.get_pr_borders(solarpos)
         #  Ec. 3.20 Barbero
-        self.qabs = self.pr_opt * cg * dni * pr_geo * pr_shadows
+        self.qabs = self.pr_opt * cg * dni * pr_geo * pr_borders
 
     def get_krec(self, t):
 
@@ -681,7 +681,7 @@ class HCE(object):
         return pr_geo
 
 
-    def get_pr_shadows(self, solarpos):
+    def get_pr_borders(self, solarpos):
 
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
         # Sombras debidas a otros lazos
@@ -697,13 +697,13 @@ class HCE(object):
         if solarpos['elevation'][0] < 0:
             shadowing = 1.0
 
-        pr_shadows = 1 - shadowing
+        pr_borders = 1 - shadowing
 
 
-        if  pr_shadows > 1 or  pr_shadows < 0:
-            print("ERROR",  pr_shadows)
+        if  pr_borders > 1 or  pr_borders < 0:
+            print("ERROR",  pr_borders)
 
-        return pr_shadows
+        return pr_borders
 
 
     def get_hext(self, wspd):
@@ -715,30 +715,63 @@ class HCE(object):
     def get_hint(self, t, p, fluid):
 
 
+        # #  Prandtl number
+        # prf = fluid.get_prandtl(t, p)
+
+        # kf = fluid.get_thermal_conductivity(t, p)
+
+        # mu = fluid.get_dynamic_viscosity(t, p)
+
+        # dri = self.parameters['Absorber tube inner diameter']
+
+        # #  Reynolds number for absorber tube inner diameter, dri
+        # redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
+
+        # #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
+        # nudb = 0.023 * redri**0.8 * prf** 0.4
+
+        # #  Internal transmission coefficient.
+        # hint = kf * nudb / dri
+
+        # if self.hce_order == len(self.sca.hces) -1:
+        #     print('hint', hint, 'nudb', nudb, 'redri', redri, 'kf', kf, 'prf', prf)
+
+        # return hint
+
+        kf = fluid.get_thermal_conductivity(t, p)
+        dri = self.parameters['Absorber tube inner diameter']
+
         #  Prandtl number
         prf = fluid.get_prandtl(t, p)
 
-        kf = fluid.get_thermal_conductivity(t, p)
-
-        mu = fluid.get_dynamic_viscosity(t, p)
-
-        dri = self.parameters['Absorber tube inner diameter']
-
         #  Reynolds number for absorber tube inner diameter, dri
-        redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
+        redri = fluid.get_Reynolds(dri, t, p, self.sca.loop.massflow)
 
-        #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
-        nudb = 0.023 * redri**0.8 * prf** 0.4
+        # We supose inner wall temperature is equal to fluid temperature
+        prri = prf
+
+        #  Skin friction coefficient
+        cf = np.power(1.58 * np.log(redri) - 3.28, -2)
+
+        #  Gnielinski correlation. Eq. 4.15 Barbero2016
+
+        redri = 30000
+        nug = ((0.5 * cf * prf * (redri - 1000)) /
+               (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
+                   np.power(prf / prri, 0.11)
 
         #  Internal transmission coefficient.
-        hint = kf * nudb / dri
+        hint = kf * nug / dri
+
+        # print('t', t, 'redri', redri, 'hint', hint, 'nug', nug, 'mu', mu, 'prf', prf, )
 
         return hint
+
 
     def get_emittance(self, tro, wspd):
 
 
-        #  Eq. 5.2 Barbero
+        #  Eq. 5.2 Barbero. Parameters given in Pg. 245
         eext = (self.parameters['Absorber emittance factor A0'] +
                 self.parameters['Absorber emittance factor A1'] *
                 (tro - 273.15))
@@ -814,14 +847,10 @@ class SCA(object):
             solarfraction = 0.0
         elif self.status == 'focused':
 
-            # faltaría: factor de forma del Sol, dependiente de solpos, geometría
-            # absorbedor, sca y atmósfera.
-            # Factor: se puede usar para tasa de espejos rotos, por ejemplo
-            # Availability: podría ser un valor binario 0 o 1
-
-            solarfraction = (self.parameters['Reflectance'] *
-                             self.parameters['Geom.Accuracy'] *
+            #  Cleanliness two times because it affects mirror and envelope
+            solarfraction = (self.parameters['Geom.Accuracy'] *
                              self.parameters['Track Twist'] *
+                             self.parameters['Cleanliness'] *
                              self.parameters['Cleanliness'] *
                              self.parameters['Factor'] *
                              self.parameters['Availability'])
@@ -834,29 +863,33 @@ class SCA(object):
         return solarfraction
 
 
-    def get_IAM(self, theta):
+    def get_IAM(self, aoi):
 
         F0 = self.parameters['IAM Coefficient F0']
         F1 = self.parameters['IAM Coefficient F1']
         F2 = self.parameters['IAM Coefficient F2']
 
+        if (aoi > 0 and aoi < 80):
+            kiam = (F0 + (F1 * np.radians(aoi) + F2 * np.radians(aoi)**2) /
+                    np.cos(np.radians(aoi)))
 
-        if (theta > 0 and theta < 80):
-            kiam = (F0 + (F1 * np.radians(theta) + F2 * np.radians(theta)**2) /
-                    np.cos(np.radians(theta)))
-
-            if kiam > 1:
-                kiam = 2 - kiam
-
-            if kiam < 0:
-                kiam = 0.0
-
+            if kiam > 1.0:
+                kiam = 1.0
         else:
             kiam = 0.0
 
-        if  kiam > 1 or  kiam < 0:
-            print("ERROR",  kiam, theta)
+        if  kiam > 1.0 or  kiam < 0.0:
+            print("ERROR",  kiam, aoi)
 
+
+        # if (aoi > 0 and aoi < 80):
+        #     aoi = np.radians(aoi)
+        #     kiam = (1- 2.23073E-4 * aoi - 1.1E-4 * aoi**2 +
+        #             3.18596E-6 * aoi**3 - 4.85509E-8 * aoi**4)
+        # else:
+        #     kiam = 0
+
+        # print('aoi', aoi, 'kiam', kiam)
         return kiam
 
 
@@ -1222,7 +1255,7 @@ class BaseLoop(__Loop__):
         return pr_geo
 
 
-    def get_pr_shadows(self, solarpos):
+    def get_pr_borders(self, solarpos):
 
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
         # Sombras debidas a otros lazos
@@ -1238,18 +1271,19 @@ class BaseLoop(__Loop__):
         if solarpos['elevation'][0] < 0:
             shadowing = 1.0
 
-        pr_shadows = 1 - shadowing
+        pr_borders = 1 - shadowing
 
-        if pr_shadows > 1 or pr_shadows < 0:
-            print("ERROR",  pr_shadows)
+        if pr_borders > 1 or pr_borders < 0:
+            print("ERROR",  pr_borders)
 
-        return pr_shadows
+        return pr_borders
 
     def get_solar_fraction(self):
 
-        solarfraction = (self.parameters_sca['Reflectance'] *
-                         self.parameters_sca['Geom.Accuracy'] *
+        #  Cleanliness two times because it affects mirror and envelope
+        solarfraction = (self.parameters_sca['Geom.Accuracy'] *
                          self.parameters_sca['Track Twist'] *
+                         self.parameters_sca['Cleanliness'] *
                          self.parameters_sca['Cleanliness'] *
                          self.parameters_sca['Factor'] *
                          self.parameters_sca['Availability'])
@@ -1259,26 +1293,35 @@ class BaseLoop(__Loop__):
 
         return solarfraction
 
-    def get_IAM(self, theta):
+    def get_IAM(self, aoi):
 
         F0 = self.parameters_sca['IAM Coefficient F0']
         F1 = self.parameters_sca['IAM Coefficient F1']
         F2 = self.parameters_sca['IAM Coefficient F2']
 
-        if (theta > 0 and theta < 80):
-            kiam = (F0 + (F1 * np.radians(theta) + F2 * np.radians(theta)**2) /
-                    np.cos(np.radians(theta)))
-            if kiam > 1:
-                kiam = 2 - kiam
-            if kiam < 0:
-                kiam = 0.0
+        if (aoi > 0 and aoi < 80):
+            kiam = (F0 + (F1 * np.radians(aoi) + F2 * np.radians(aoi)**2) /
+                    np.cos(np.radians(aoi)))
+
+            if kiam > 1.0:
+                kiam = 1.0
         else:
             kiam = 0.0
-        if kiam > 1 or kiam < 0:
-            print("ERROR kiam={0:.4f} for angle of incidence {1:.4f}".format(
-                kiam, theta))
 
+        if  kiam > 1.0 or  kiam < 0.0:
+            print("ERROR",  kiam, aoi)
+
+
+        # if (aoi > 0 and aoi < 80):
+        #     aoi = np.radians(aoi)
+        #     kiam = (1- 2.23073E-4 * aoi - 1.1E-4 * aoi**2 +
+        #             3.18596E-6 * aoi**3 - 4.85509E-8 * aoi**4)
+        # else:
+        #     kiam = 0
+
+        # print('aoi', aoi, 'kiam', kiam)
         return kiam
+
 
     def get_aoi(self, solarpos):
 
@@ -1785,11 +1828,14 @@ class SolarField(object):
             htf.get_deltaH(self.tout, self.pout) -
             htf.get_deltaH(self.tin, self.pin))
 
+        self.pwr /= 1000000
+
         if datatype == 2:
             self.act_pwr = self.act_massflow * (
                 htf.get_deltaH(self.act_tout, self.act_pout) -
                 htf.get_deltaH(self.act_tin, self.act_pin))
 
+            self.act_pwr /= 1000000
 
     def print(self):
 
@@ -1884,9 +1930,10 @@ class SolarFieldSimulation(object):
 
             if (naive_datetime < self.first_date or
                 naive_datetime > self.last_date):
-                self.datasource.dataframe.drop(row[0], axis=0)
                 pass
+
             else:
+                print("simulando ...", naive_datetime)
                 solarpos = self.site.get_solarposition(row)
 
                 self.gather_general_data(row, solarpos)
@@ -2007,7 +2054,6 @@ class SolarFieldSimulation(object):
                             l.calc_loop_pr_for_tout(
                                 row, solarpos, self.htf, self.model)
 
-        #
         for s in self.solarfield.subfields:
             s.set_subfield_values_from_loops(self.htf)
 
@@ -2066,8 +2112,8 @@ class SolarFieldSimulation(object):
             self.base_loop.get_IAM(aoi)
         self.datasource.dataframe.at[row[0], 'pr_geo'] = \
             self.base_loop.get_pr_geo(aoi)
-        self.datasource.dataframe.at[row[0], 'pr_shadows'] = \
-            self.base_loop.get_pr_shadows(solarpos)
+        self.datasource.dataframe.at[row[0], 'pr_borders'] = \
+            self.base_loop.get_pr_borders(solarpos)
         self.datasource.dataframe.at[row[0], 'pr_opt_peak'] = \
             self.base_loop.get_pr_opt_peak()
         self.datasource.dataframe.at[row[0], 'solar_fraction'] = \
@@ -2097,9 +2143,14 @@ class SolarFieldSimulation(object):
             self.solarfield.qlost
         self.datasource.dataframe.at[row[0], 'SF.x.qlbk'] = \
             self.solarfield.qlost_brackets
-
         self.datasource.dataframe.at[row[0], 'SF.x.pwr'] = \
             self.solarfield.pwr
+
+        if row[1]['GrossPower']>0:
+            self.datasource.dataframe.at[row[0], 'SF.x.globalpr'] = \
+                row[1]['GrossPower'] / self.solarfield.pwr
+        else:
+            self.datasource.dataframe.at[row[0], 'SF.x.globalpr'] = 0
 
         if self.fastmode:
 
@@ -2184,6 +2235,17 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'SF.b.qlbk'] = \
             self.solarfield.qlost_brackets
 
+        if row[1]['GrossPower']>0:
+            self.datasource.dataframe.at[row[0], 'SF.a.globalpr'] = \
+                row[1]['GrossPower'] / self.solarfield.act_pwr
+        else:
+            self.datasource.dataframe.at[row[0], 'SF.a.globalpr'] = 0
+
+        if row[1]['GrossPower']>0:
+            self.datasource.dataframe.at[row[0], 'SF.b.globalpr'] = \
+                row[1]['GrossPower'] / self.solarfield.pwr
+        else:
+            self.datasource.dataframe.at[row[0], 'SF.a.globalpr'] = 0
 
         for s in self.solarfield.subfields:
 
@@ -2271,9 +2333,9 @@ class SolarFieldSimulation(object):
             (self.datasource.dataframe.index <= self.last_date)]
 
         self.report_df = self.report_df[keys]
-        self.report_df['SF.x.pwr']=self.report_df['SF.x.pwr'] / 1000000
-        self.report_df['SF.a.pwr']=self.report_df['SF.a.pwr'] / 1000000
-        self.report_df['SF.b.pwr']=self.report_df['SF.b.pwr'] / 1000000
+        self.report_df['SF.x.pwr']=self.report_df['SF.x.pwr']
+        self.report_df['SF.a.pwr']=self.report_df['SF.a.pwr']
+        self.report_df['SF.b.pwr']=self.report_df['SF.b.pwr']
 
         try:
             initialdir = "./simulations_outputs/"
@@ -2587,9 +2649,6 @@ class Fluid:
 
     def get_Reynolds(self, dri, t, p, massflow):
 
-        if t > self.tmax:
-            t= self.tmax
-
         return (4 * massflow /
                 (np.pi * dri * self.get_dynamic_viscosity(t,p)))
 
@@ -2617,10 +2676,11 @@ class Fluid:
         #  Fluid thermal diffusivity
         alpha = kf / (rho * cp)
 
-        #  Prandtl number
-        prf = mu / alpha
+        # #  Prandtl number
+        # prandtl = mu / alpha
+        prandtl = cp * mu / kf
 
-        return prf
+        return prandtl
 
 class FluidCoolProp(Fluid):
 
@@ -2713,80 +2773,116 @@ class FluidTabular(Fluid):
         self.tmax = settings['tmax']
         self.tmin = settings['tmin']
 
-        self.cp += [0.] * (6 - len(self.cp))
-        self.rho += [0.] * (6 - len(self.rho))
-        self.mu += [0.] * (6 - len(self.mu))
-        self.kt += [0.] * (6 - len(self.kt))
+        self.cp += [0.] * (9 - len(self.cp))
+        self.rho += [0.] * (9 - len(self.rho))
+        self.mu += [0.] * (9 - len(self.mu))
+        self.kt += [0.] * (9 - len(self.kt))
 
 
     def get_density(self, t, p):
 
         # Dowtherm A.pdf, 2.2 Single Phase Liquid Properties. pg. 8.
+        # rho0, rho1, rho2, rho3, rho4, rho5 = tuple(self.rho)
 
-        rho0, rho1, rho2, rho3, rho4, rho5 = tuple(self.rho)
+        # return (rho0 + rho1 * t + rho2 * t**2 + rho3 * t**3 +
+        #         rho4 * t**4 + rho5 * t**5) * (p* 1.0e-4)**1.0e-3
 
-        return (rho0 + rho1 * t + rho2 * t**2 + rho3 * t**3 +
-                rho4 * t**4 + rho5 * t**5) * (p* 1.0e-4)**1.0e-3
-
-    def get_dynamic_viscosity(self, t, p):
-
-        mu0, mu1, mu2, mu3, mu4, mu5 = tuple(self.mu)
-
+        poly = np.polynomial.polynomial.Polynomial(self.rho)
         if t > self.tmax:
             t= self.tmax
 
-        return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 +
-                mu4 * t**4 + mu5 * t**5)
+        return poly(t) * (p* 1.0e-4)**1.0e-3
+
+
+    def get_dynamic_viscosity(self, t, p):
+
+        poly = np.polynomial.polynomial.Polynomial(self.mu)
+
+        # if t > self.tmax:
+        #     t= self.tmax
+
+        return poly(t)
+
+        # mu0, mu1, mu2, mu3, mu4, mu5, mu6, mu7, mu8 = tuple(self.mu)
+
+        # return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 +
+        #         mu4 * t**4 + mu5 * t**5 + mu6 * t**6 + mu7 * t**7 + mu8 * t**8)
+
 
     def get_cp(self, t, p):
 
-        cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
+        # cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
 
-        return (cp0 + cp1 * t + cp2 * t**2 + cp3 * t**3 +
-                cp4 * t**4 + cp5 * t**5)
+        # return (cp0 + cp1 * t + cp2 * t**2 + cp3 * t**3 +
+        #         cp4 * t**4 + cp5 * t**5)
+
+        poly = np.polynomial.polynomial.Polynomial(self.cp)
+        if t > self.tmax:
+            t= self.tmax
+
+        return poly(t)
 
 
     def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
 
-        kt0, kt1, kt2, kt3, kt4, kt5 = tuple(self.kt)
+        # kt0, kt1, kt2, kt3, kt4, kt5 = tuple(self.kt)
 
-        kt =(kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
-                kt4 * t**4 + kt5 * t**5)
+        # kt =(kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
+        #         kt4 * t**4 + kt5 * t**5)
 
-        if kt < 0:
-            kt = 0
+        # if kt < 0:
+        #     kt = 0
 
-        return kt
+        # return kt
 
+        poly = np.polynomial.polynomial.Polynomial(self.kt)
+        if t > self.tmax:
+            t= self.tmax
+
+        return poly(t)
 
     def get_deltaH(self, t, p):
 
-        h0, h1, h2, h3, h4, h5 = tuple(self.h)
+        # h0, h1, h2, h3, h4, h5 = tuple(self.h)
 
-        href =(h0 + h1 *self._T_REF + h2 *self._T_REF**2 + h3 *self._T_REF**3 +
-               h4 *self._T_REF**4 + h5 *self._T_REF**5)
+        # href =(h0 + h1 *self._T_REF + h2 *self._T_REF**2 + h3 *self._T_REF**3 +
+        #        h4 *self._T_REF**4 + h5 *self._T_REF**5)
 
-        h = (h0 + h1 * t + h2 * t**2 + h3 * t**3 + h4 * t**4 + h5 * t**5)
-        return (h - href)
+        # h = (h0 + h1 * t + h2 * t**2 + h3 * t**3 + h4 * t**4 + h5 * t**5)
+        # return (h - href)
+
+        poly = np.polynomial.polynomial.Polynomial(self.h)
+
+        # if t > self.tmax:
+        #     t= self.tmax
+
+        return poly(t) - poly(self._T_REF)
 
     def get_T(self, h, p):
 
-        t0, t1, t2, t3, t4, t5 = tuple(self.t)
+        # t0, t1, t2, t3, t4, t5 = tuple(self.t)
 
-        return (t0 + t1 * h + t2 * h**2 + t3 * h**3 +
-                t4 * h**4 + t5 * h**5)
+        # return (t0 + t1 * h + t2 * h**2 + t3 * h**3 +
+        #         t4 * h**4 + t5 * h**5)
+
+
+        poly = np.polynomial.polynomial.Polynomial(self.t)
+
+        return poly(h)
 
     def get_T2(self, tin, h, mf=None, p=None):
 
-        cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
+        cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8 = tuple(self.cp)
 
         tout = tin
 
         a0 = (h/mf + cp0 * tin + cp1 * tin**2 / 2 + cp2 * tin**3 / 3 +
-             cp3 * tin**4 / 4 + cp4 * tin**5 / 5 + cp5 * tin**6 / 6)
+             cp3 * tin**4 / 4 + cp4 * tin**5 / 5 + cp5 * tin**6 / 6 +
+             cp6 * tin**7 / 7 + cp7 * tin**8 / 8 + cp8 * tin**9 / 9)
 
-        factors = [a0, -cp0, -cp1 / 2, -cp2 / 3, -cp3 / 4, -cp4 / 5, -cp5 / 6]
+        factors = [a0, -cp0, -cp1 / 2, -cp2 / 3, -cp3 / 4, -cp4 / 5, -cp5 / 6,
+                   -cp6 / 7, -cp7 / 8, -cp8 / 9]
 
         poly = np.polynomial.polynomial.Polynomial(factors)
 
@@ -2928,11 +3024,24 @@ class Weather(object):
         #         "altitude": self.site['altitude']}
 
 class FieldData(object):
+            # if self.datatype == 1:  # Because tmy format include TZ info
+            #     naive_datetime = datetime.strptime(
+            #     row[0].strftime('%Y/%m/%d %H:%M'), "%Y/%m/%d %H:%M")
+            # else:
+            #     naive_datetime = row[0]
+
+            # if (naive_datetime < self.first_date or
+            #     naive_datetime > self.last_date):
+            #     self.datasource.dataframe.drop(row[0], axis=0)
+
+
 
     def __init__(self, settings, tags = None):
         self.filename = settings['filename']
         self.filepath = settings['filepath']
         self.file = self.filepath + self.filename
+        self.first_date = pd.to_datetime(settings['first_date'])
+        self.last_date = pd.to_datetime(settings['last_date'])
         self.tags = tags
         self.dataframe = None
 
@@ -2946,8 +3055,10 @@ class FieldData(object):
         '''
         fielddata
         '''
-        #dateparse = lambda x: pd.datetime.strptime(x, '%YYYY/%m/%d %H:%M')
 
+        rows_list =[]
+        index_count = 1  # Skip fist row in skiprows: it has got columns names
+        #dateparse = lambda x: pd.datetime.strptime(x, '%YYYY/%m/%d %H:%M')
         try:
             if path is None:
                 root = Tk()
@@ -2958,38 +3069,40 @@ class FieldData(object):
                                                 ("all files","*.*")))
                 root.update()
                 root.destroy()
-                if path is None:
-                    return
-                else:
-                    strfilename, strext = os.path.splitext(path)
-                    if  strext == ".csv":
-                        self.dataframe = pd.read_csv(path, sep=';',
-                                                     decimal= ',',
-                                                     dayfirst=True,
-                                                     index_col=0)
-                        self.file = path
-                    elif strext == ".xls":
-
-                        self.dataframe = pd.read_excel(path)
-                        self.file = path
-                    else:
-                        print("unknow extension ", strext)
-                        return
+            if path is None:
+                return
             else:
                 strfilename, strext = os.path.splitext(path)
-
                 if  strext == ".csv":
-                    self.dataframe = pd.read_csv(path, sep=';',
-                                                 decimal= ',',
-                                                 dayfirst=True,
-                                                 index_col=0)
+                    df = pd.read_csv(
+                        path, sep=';',
+                        decimal= ',',
+                        #dayfirst=True,
+                        #index_col=0,
+                        usecols=[0])
+
+                    df = pd.to_datetime(
+                        df['date'], format = "%d/%m/%Y %H:%M")
+
+                    for row in df:
+                        if (row < self.first_date or
+                            row > self.last_date):
+                            rows_list.append(index_count)
+                        index_count += 1
+
+                    self.dataframe = pd.read_csv(
+                        path, sep=';',
+                        decimal= ',',
+                        dayfirst=True,
+                        index_col=0,
+                        skiprows=rows_list)
+
                     self.file = path
-                elif strext == ".xls":
-                    self.dataframe = pd.read_excel(path)
-                    self.file = path
+
                 else:
                     print("unknow extension ", strext)
                     return
+
         except Exception:
             raise
             txMessageBox.showerror('Error loading FieldData File',
@@ -2997,6 +3110,64 @@ class FieldData(object):
 
         self.dataframe.index = pd.to_datetime(self.dataframe.index,
                                               format= "%d/%m/%Y %H:%M")
+
+
+
+
+
+        # try:
+        #     if path is None:
+        #         root = Tk()
+        #         root.withdraw()
+        #         path = askopenfilename(initialdir = ".fielddata_files/",
+        #                            title = "choose your file",
+        #                            filetypes = (("csv files","*.csv"),
+        #                                         ("all files","*.*")))
+        #         root.update()
+        #         root.destroy()
+        #         if path is None:
+        #             return
+        #         else:
+        #             strfilename, strext = os.path.splitext(path)
+        #             if  strext == ".csv":
+        #                 self.dataframe = pd.read_csv(
+        #                     path, sep=';',
+        #                     decimal= ',',
+        #                     dayfirst=True,
+        #                     index_col=0)
+
+        #                 self.file = path
+        #             elif strext == ".xls":
+
+        #                 self.dataframe = pd.read_excel(path)
+        #                 self.file = path
+        #             else:
+        #                 print("unknow extension ", strext)
+        #                 return
+        #     else:
+        #         strfilename, strext = os.path.splitext(path)
+
+        #         if  strext == ".csv":
+        #             self.dataframe = pd.read_csv(
+        #                 path, sep=';',
+        #                 decimal= ',',
+        #                 dayfirst=True,
+        #                 index_col=0)
+
+        #             self.file = path
+        #         elif strext == ".xls":
+        #             self.dataframe = pd.read_excel(path)
+        #             self.file = path
+        #         else:
+        #             print("unknow extension ", strext)
+        #             return
+        # except Exception:
+        #     raise
+        #     txMessageBox.showerror('Error loading FieldData File',
+        #                            'Unable to open file: %r', self.file)
+
+        # self.dataframe.index = pd.to_datetime(self.dataframe.index,
+        #                                       format= "%d/%m/%Y %H:%M")
 
     def change_units(self):
 
@@ -3018,7 +3189,6 @@ class FieldData(object):
 
 
         # Remove unnecessary columns
-
         columns_to_drop = []
         for c in  self.dataframe.columns:
             if c not in self.tags.keys():
@@ -3194,9 +3364,152 @@ class SCAScatterMask(object):
                         s.parameters[k] *= float(self.matrix[sf.name][l.loop_order][s.sca_order][k])
 
 
+class Test(object):
+    '''
+    Definimos la clase simulacion para representar las diferentes
+    pruebas que lancemos, variando el archivo TMY, la configuracion del
+    site, la planta, el modo de operacion o el modelo empleado.
+    '''
+
+    def __init__(self, settings):
+
+        self.ID =  settings['simulation']['ID']
+        self.simulation = settings['simulation']['simulation']
+        self.benchmark = settings['simulation']['benchmark']
+        self.datatype = settings['simulation']['datatype']
+        self.fastmode = settings['simulation']['fastmode']
+        self.tracking = True
+        self.solarfield = None
+        self.powersystem = None
+        self.htf = None
+        self.coldfluid = None
+        self.site = None
+        self.datasource = None
+        self.powercycle = None
+        self.parameters = settings
+        self.first_date = pd.to_datetime(settings['simulation']['first_date'])
+        self.last_date = pd.to_datetime(settings['simulation']['last_date'])
+        self.report_df = pd.DataFrame()
+
+        if settings['model']['name'] == 'Barbero4thOrder':
+            self.model = ModelBarbero4thOrder(settings['model'])
+        elif settings['model']['name'] == 'Barbero1stOrder':
+            self.model = ModelBarbero1stOrder(settings['model'])
+        elif settings['model']['name'] == 'BarberoSimplified':
+            self.model = ModelBarberoSimplified(settings['model'])
+
+        if self.datatype == 1:
+            self.datasource = Weather(settings['simulation'])
+        elif self.datatype == 2:
+            self.datasource = FieldData(settings['simulation'],
+                                        settings['tags'])
+        elif self.datatype ==3:
+            self.datasource = TableData(settings['simulation'])
+
+        if not hasattr(self.datasource, 'site'):
+            self.site = Site(settings['site'])
+        else:
+            self.site = Site(self.datasource.site_to_dict())
 
 
+        if settings['HTF']['source'] == "CoolProp":
+            if settings['HTF']['CoolPropID'] not in Fluid._COOLPROP_FLUIDS:
+                print("Not CoolPropID valid")
+                sys.exit()
+            else:
+                self.htf = FluidCoolProp(settings['HTF'])
 
+        else:
+            self.htf = FluidTabular(settings['HTF'])
+
+        self.solarfield = SolarField(settings['subfields'],
+                                   settings['loop'],
+                                   settings['SCA'],
+                                   settings['HCE'])
+
+        self.base_loop = BaseLoop(settings['loop'],
+                                  settings['SCA'],
+                                  settings['HCE'])
+
+
+    def run_test(self):
+
+        print('running test')
+
+        print(self.datasource)
+
+        for row in self.datasource.dataframe.iterrows():
+
+            self.base_loop.massflow = row[1]['mf']
+            kf = self.htf.get_thermal_conductivity(
+                row[1]['tin'], row[1]['pin'])
+            dri = self.base_loop.parameters_hce['Absorber tube inner diameter']
+
+            #  Prandtl number
+            prf = self.htf.get_prandtl(row[1]['tin'], row[1]['pin'])
+            mu = self.htf.get_dynamic_viscosity(row[1]['tin'], row[1]['pin'])
+
+            #  Reynolds number for absorber tube inner diameter, dri
+            redri = self.htf.get_Reynolds(dri, row[1]['tin'], row[1]['pin'],
+                                          row[1]['mf'])
+            cp = self.htf.get_cp(row[1]['tin'], row[1]['pin'])
+            rho = self.htf.get_density(row[1]['tin'], row[1]['pin'])
+            # We supose inner wall temperature is equal to fluid temperature
+            prri = prf
+            dro = self.base_loop.parameters_hce['Absorber tube outer diameter']
+
+
+            #  HCE wall thermal conductivity
+            krec = self.base_loop.scas[0].hces[0].get_krec(row[1]['tin'])
+            hint = self.base_loop.scas[0].hces[0].get_hint(
+                    row[1]['tin'], row[1]['pin'], self.htf)
+            urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+            #  Skin friction coefficient
+            cf = np.power(1.58 * np.log(redri) - 3.28, -2)
+
+            #  Gnielinski correlation. Eq. 4.15 Barbero2016
+            nug = ((0.5 * cf * prf * (redri - 1000)) /
+                   (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
+                       np.power(prf / prri, 0.11)
+
+            self.datasource.dataframe.at[row[0], 'h_int'] = \
+                self.base_loop.scas[0].hces[0].get_hint(
+                    row[1]['tin'], row[1]['pin'], self.htf)
+            self.datasource.dataframe.at[row[0], 'krec'] = \
+                self.base_loop.scas[0].hces[0].get_krec(
+                    row[1]['tin'])
+            self.datasource.dataframe.at[row[0], 'urec'] = urec
+            self.datasource.dataframe.at[row[0], 'krec'] = krec
+            self.datasource.dataframe.at[row[0], 'qloss'] = \
+                self.base_loop.scas[0].hces[0].get_qlost_brackets(
+                    row[1]['tin'], row[1]['DryBulb'])
+            self.datasource.dataframe.at[row[0], 'mu'] = mu
+            self.datasource.dataframe.at[row[0], 'cp'] = cp
+            self.datasource.dataframe.at[row[0], 'rho'] = rho
+            self.datasource.dataframe.at[row[0], 'nug'] = nug
+            self.datasource.dataframe.at[row[0], 'cf'] = cf
+            self.datasource.dataframe.at[row[0], 'redri'] = redri
+            self.datasource.dataframe.at[row[0], 'prf'] = prf
+            self.datasource.dataframe.at[row[0], 'kf'] = kf
+            self.datasource.dataframe.at[row[0], 'pr_opt_peak'] = \
+                self.base_loop.get_pr_opt_peak()
+            self.datasource.dataframe.at[row[0], 'solar_fraction'] = \
+                self.base_loop.get_solar_fraction()
+
+        try:
+            initialdir = "./simulations_outputs/"
+            prefix = datetime.today().strftime("%Y%m%d %H%M%S ")
+            filename_test = str(self.ID) + "_TEST"
+            sufix = ".csv"
+
+            path_complete = initialdir + prefix + filename_test + sufix
+
+            self.datasource.dataframe.to_csv(
+                path_complete, sep=';', decimal = ',')
+
+        except Exception:
+            raise
+            print('Error saving results, unable to save file: %r', path)
 
 # if __name__=='__main__':
 

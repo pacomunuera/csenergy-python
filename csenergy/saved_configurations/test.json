@@ -1,0 +1,188 @@
+{
+ "simulation": {
+  "ID": "ASTE 1B",
+  "datatype": 3,
+  "simulation": true,
+  "benchmark": true,
+  "fastmode": true,
+  "filename": "serie_tin.csv",
+  "filepath": "C:/Users/paco/0_TFG/csenergy/data_files/",
+  "first_date": "2019/01/01 00:00",
+  "last_date": "2019/12/31 23:00"
+ },
+ "model": {
+  "name": "Barbero1stOrder",
+  "max_err_t": 0.1,
+  "max_err_tro": 0.1,
+  "max_err_pr": 0.01
+ },
+ "site": {
+  "name": "Alcázar de San Juan",
+  "latitude": 39.1,
+  "longitude": -3.16,
+  "altitude": 651.0
+ },
+ "loop": {
+  "scas": 4,
+  "hces": 36,
+  "rated_tin": 566.15,
+  "rated_tout": 666.15,
+  "rated_pin": 2000000.0,
+  "rated_pout": 1600000.0,
+  "tmin": 288.0,
+  "tmax": 670.0,
+  "rated_massflow": 4.0,
+  "min_massflow": 2.0,
+  "row_spacing": 16.25,
+  "Tracking Type": 1
+ },
+ "SCA": {
+  "Name": "SenerTrough-1 (SNT-1)",
+  "SCA Length": 148.5,
+  "Aperture": 5.77,
+  "Focal Len": 2.1,
+  "IAM Coefficient F0": 1.0,
+  "IAM Coefficient F1": 0.0506,
+  "IAM Coefficient F2": -0.1763,
+  "Track Twist": 0.99,
+  "Geom.Accuracy": 0.98,
+  "Reflectance": 0.935,
+  "Cleanliness": 0.98,
+  "Factor": 1,
+  "Availability": 0.99
+ },
+ "HCE": {
+  "Name": "Solel UVAC 2",
+  "Length": 3.88,
+  "Absorber tube inner diameter": 0.066,
+  "Absorber tube outer diameter": 0.07,
+  "Glass envelope inner diameter": 0.115,
+  "Glass envelope outer diameter": 0.121,
+  "Min Reynolds": 30000.0,
+  "Inner surface roughness": 4.5e-05,
+  "Envelope transmittance": 0.965,
+  "absorptance": 0.96,
+  "coating": "",
+  "annulus": "",
+  "Absorber emittance factor A0": 0.101,
+  "Absorber emittance factor A1": 0.000131,
+  "Absorber absorptance": 0.96,
+  "Brackets": 4.05
+ },
+ "HTF": {
+  "source": "table",
+  "name": "DOWTHERM A",
+  "cp": [
+   -2363.4842,
+   39.461021,
+   -0.17024546,
+   0.0003903868,
+   -4.421524e-07,
+   1.9792489e-10,
+   0,
+   0,
+   0
+  ],
+  "rho": [
+   1492.4628,
+   -3.331716,
+   0.012479716,
+   -2.9684039e-05,
+   3.4437643e-08,
+   -1.6215295e-11,
+   0,
+   0,
+   0
+  ],
+  "kt": [
+   0.18560707,
+   -0.000160008,
+   5.9133304e-12,
+   0.0,
+   0.0,
+   0.0,
+   0,
+   0,
+   0
+  ],
+  "h": [
+   -651130.67,
+   4121.3664,
+   -12.345938,
+   0.027710651,
+   -2.7764463e-05,
+   1.1056661e-08,
+   0,
+   0,
+   0
+  ],
+  "t": [
+   285.344,
+   0.000620726,
+   -1.82158e-10,
+   -1.42322e-16,
+   3.31588e-22,
+   -1.75256e-28,
+   0,
+   0,
+   0
+  ],
+  "mu": [
+   5.1346826,
+   -0.08395359,
+   0.00059705155,
+   -2.4092211e-06,
+   6.0292345e-09,
+   -9.5788095e-12,
+   9.4330297e-15,
+   -5.2643677e-18,
+   1.274782e-21
+  ],
+  "tmax": 670.0,
+  "tmin": 288.0
+ },
+ "subfields": [
+  {
+   "name": "NO",
+   "loops": 31
+  },
+  {
+   "name": "NE",
+   "loops": 28
+  },
+  {
+   "name": "SO",
+   "loops": 27
+  },
+  {
+   "name": "SE",
+   "loops": 34
+  }
+ ],
+ "tags": {
+  "SB.NO.a.tin": "1310-TT-1800",
+  "SB.NO.a.tout": "1310-TT-1802",
+  "SB.NO.a.pin": "1310-PT-1800",
+  "SB.NO.a.pout": "1310-PT-1802",
+  "SB.NE.a.mf": "1310-FX-1801",
+  "SB.NE.a.tin": "1310-TT-1801",
+  "SB.NE.a.tout": "1310-TT-1803",
+  "SB.NE.a.pin": "1310-PT-1801",
+  "SB.NE.a.pout": "1310-PT-1803",
+  "SB.SO.a.mf": "1310-FX-1809",
+  "SB.SO.a.tin": "1310-TT-1809",
+  "SB.SO.a.tout": "1310-TT-1807",
+  "SB.SO.a.pin": "1310-PT-1809",
+  "SB.SO.a.pout": "1310-PT-1807",
+  "DNI": "1300-AXT-1877R",
+  "Wspd": "1300-AXT-1871R",
+  "DryBulb": "1300-AXT-1873R",
+  "Pressure": "1300-AXT-1883R",
+  "SB.SE.a.mf": "1310-FX-1810",
+  "SB.SE.a.tin": "1310-TT-1810",
+  "SB.SE.a.tout": "1310-TT-1808",
+  "SB.SE.a.pin": "1310-PT-1810",
+  "SB.SE.a.pout": "1310-PT-1808",
+  "SB.NO.a.mf": "1310-FX-1800"
+ }
+}
