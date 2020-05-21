@@ -1421,7 +1421,7 @@ class Subfield(object):
         self.massflow = np.sum(massflow_list)
         self.pr = np.sum(pr_list) / self.massflow
         self.pr_opt = np.sum(pr_opt_list) / self.massflow
-        self.wasted_power = np.sum(wasted_power_list)
+        self.wasted_power = np.sum(wasted_power_list) / 1000000
         self.pout = np.sum(pout_list) / self.massflow
         self.tout = htf.get_T(np.sum(enthalpy_list) /
                               self.massflow, self.pout)
@@ -1452,7 +1452,7 @@ class Subfield(object):
         for l in self.loops:
             wasted_power += l.wasted_power
 
-        self.wasted_power = wasted_power
+        self.wasted_power = wasted_power / 1000000
 
     def set_pr_req_massflow(self):
 
@@ -2234,6 +2234,8 @@ class SolarFieldSimulation(object):
             self.solarfield.qlost
         self.datasource.dataframe.at[row[0], 'SF.b.qlbk'] = \
             self.solarfield.qlost_brackets
+        self.datasource.dataframe.at[row[0], 'SF.a.prth'] = \
+            10e6 * self.solarfield.act_pwr / self.solarfield.qabs
 
         if row[1]['GrossPower']>0:
             self.datasource.dataframe.at[row[0], 'SF.a.globalpr'] = \
@@ -2324,18 +2326,20 @@ class SolarFieldSimulation(object):
 
     def save_results(self):
 
-        keys = ['DNI', 'SF.a.tin', 'SF.a.mf', 'SF.x.mf',
-                'SF.a.tout', 'SF.x.tout', 'SF.b.tout',
-                'SF.a.pwr', 'SF.x.pwr', 'SF.b.pwr', 'SF.x.prth', 'SF.b.prth']
+        keys = ['DNI','elevation','zenith','azimuth','aoi','IAM',
+                'pr_geo','pr_borders','pr_opt_peak','solar_fraction',
+                'SF.a.tin','NetPower','AuxPower','GrossPower','SF.b.wpwr',
+                'SF.a.mf','SF.a.tout','SF.a.pwr','SF.a.prth','SF.a.globalpr',
+                'SF.x.mf','SF.x.tout', 'SF.x.pwr','SF.x.prth','SF.x.globalpr',
+                'SF.b.tout','SF.b.pwr','SF.b.prth','SF.b.globalpr']
+
 
         self.report_df = self.datasource.dataframe[
             (self.datasource.dataframe.index >= self.first_date) &
             (self.datasource.dataframe.index <= self.last_date)]
 
         self.report_df = self.report_df[keys]
-        self.report_df['SF.x.pwr']=self.report_df['SF.x.pwr']
-        self.report_df['SF.a.pwr']=self.report_df['SF.a.pwr']
-        self.report_df['SF.b.pwr']=self.report_df['SF.b.pwr']
+
 
         try:
             initialdir = "./simulations_outputs/"
