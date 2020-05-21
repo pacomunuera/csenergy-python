@@ -2,13 +2,13 @@
  "simulation": {
   "ID": "ASTE 1B",
   "datatype": 2,
-  "simulation": true,
+  "simulation": false,
   "benchmark": true,
   "fastmode": true,
   "filename": "DATOS PLANTA 2016.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2016/09/04 12:00",
-  "last_date": "2016/09/04 13:00"
+  "first_date": "2016/09/01 00:00",
+  "last_date": "2016/09/01 23:00"
  },
  "model": {
   "name": "Barbero4thOrder",

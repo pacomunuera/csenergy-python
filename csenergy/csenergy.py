@@ -103,8 +103,17 @@ class ModelBarbero4thOrder(Model):
             qabs = hce.qabs
 
         tin = hce.tin
-        tf = hce.tin  # HTF bulk temperature
-        tri = hce.tin  #  Absorber tube inner surface temperature
+
+        #  If the hce is the first one in the loop tf = tin, else
+        #  tf equals tin plus half the jump of temperature in the previous hce
+
+        if hce.hce_order == 0:
+            tf = hce.tin  # HTF bulk temperature
+        else:
+            tf = hce.tin + 0.5 * (hce.sca.hces[hce.hce_order - 1].tout -
+                                  hce.sca.hces[hce.hce_order - 1].tin)
+
+        tri = tf  #  Absorber tube inner surface temperature
         massflow = hce.sca.loop.massflow
         wspd = row[1]['Wspd']  #  Wind speed
         text = row[1]['DryBulb']  #  Dry bulb ambient temperature
@@ -118,18 +127,20 @@ class ModelBarbero4thOrder(Model):
         x = 1 #  Calculation grid fits hce longitude
 
         #  HCE wall thermal conductivity
-        krec = hce.get_krec(tf)
+        # krec = hce.get_krec(tf)
 
         #  Specific Capacity
         cp = htf.get_cp(tf, hce.pin)
 
         #  Internal transmission coefficient.
-        hint = hce.get_hint(tf, hce.pin, htf)
+        # hint = hce.get_hint(tf, hce.pin, htf)
 
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
-
-        #  We suppose thermal performance, pr = 1, at first
+        # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+        urec = hce.get_urec(tf, hce.pin, htf)
+        #  We suppose thermal performance, pr = 1, at first if  the hce is
+        #  the first one in the loop or pr_j = pr_j-1 if there is a previous
+        #  HCE in the loop.
         pr = hce.get_previous_pr()
         tro = tf + qabs * pr / urec
 
@@ -228,16 +239,17 @@ class ModelBarbero4thOrder(Model):
                 tf = 0.5 * (hce.tin + hce.tout)
 
                 #  HCE wall thermal conductivity
-                krec = hce.get_krec(tf)
+                # krec = hce.get_krec(tf)
 
                 #  Specific Capacity
                 cp = htf.get_cp(tf, hce.pin)
 
                 #  Internal transmission coefficient.
-                hint = hce.get_hint(tf, hce.pin, htf)
+                # hint = hce.get_hint(tf, hce.pin, htf)
 
                 #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-                urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+                # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+                urec = hce.get_urec(tf, hce.pin, htf)
 
                 #  HCE emittance
                 eext = hce.get_emittance(tro, wspd)
@@ -309,8 +321,15 @@ class ModelBarbero1stOrder(Model):
             qabs = hce.qabs
 
         tin = hce.tin
-        tf = hce.tin  # HTF bulk temperature
-        tri = hce.tin  #  Absorber tube inner surface temperature
+
+        #  If the hce is the first one in the loop tf = tin, else
+        #  tf equals tin plus half the jump of temperature in the previous hce
+        if hce.hce_order == 0:
+            tf = hce.tin  # HTF bulk temperature
+        else:
+            tf = hce.tin + 0.5 * (hce.sca.hces[hce.hce_order - 1].tout -
+                                  hce.sca.hces[hce.hce_order - 1].tin)
+        tri = tf  #  Absorber tube inner surface temperature
         massflow = hce.sca.loop.massflow
         wspd = row[1]['Wspd']  #  Wind speed
         text = row[1]['DryBulb']  #  Dry bulb ambient temperature
@@ -324,17 +343,17 @@ class ModelBarbero1stOrder(Model):
         x = 1 #  Calculation grid fits hce longitude
 
         #  HCE wall thermal conductivity
-        krec = hce.get_krec(tf)
+        # krec = hce.get_krec(tf)
 
         #  Specific Capacity
         cp = htf.get_cp(tf, hce.pin)
 
         #  Internal transmission coefficient.
-        hint = hce.get_hint(tf, hce.pin, htf)
+        # hint = hce.get_hint(tf, hce.pin, htf)
 
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
-
+        # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+        urec = hce.get_urec(tf, hce.pin, htf)
         #  We suppose performance, pr = 1, at first
         pr = 1.0
         tro = tf + qabs * pr / urec
@@ -392,8 +411,16 @@ class ModelBarberoSimplified(Model):
             qabs = hce.qabs
 
         tin = hce.tin
-        tf = hce.tin  # HTF bulk temperature
-        tri = hce.tin  #  Absorber tube inner surface temperature
+        #  If the hce is the first one in the loop tf = tin, else
+        #  tf equals tin plus half the jump of temperature in the previous hce
+        if hce.hce_order == 0:
+            tf = hce.tin  # HTF bulk temperature
+        else:
+            tf = hce.tin + 0.5 * (hce.sca.hces[hce.hce_order - 1].tout -
+                                  hce.sca.hces[hce.hce_order - 1].tin)
+
+
+        tri = tf  #  Absorber tube inner surface temperature
         massflow = hce.sca.loop.massflow
         wspd = row[1]['Wspd']  #  Wind speed
         text = row[1]['DryBulb']  #  Dry bulb ambient temperature
@@ -407,16 +434,17 @@ class ModelBarberoSimplified(Model):
         x = 1 #  Calculation grid fits hce longitude
 
         #  HCE wall thermal conductivity
-        krec = hce.get_krec(tf)
+        # krec = hce.get_krec(tf)
 
         #  Specific Capacity
         cp = htf.get_cp(tf, hce.pin)
 
         #  Internal transmission coefficient.
-        hint = hce.get_hint(tf, hce.pin, htf)
+        # hint = hce.get_hint(tf, hce.pin, htf)
 
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+        # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+        urec = hce.get_urec(tf, hce.pin, htf)
 
         #  We suppose performance, pr = 1, at first
         pr = 1.0
@@ -427,11 +455,12 @@ class ModelBarberoSimplified(Model):
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
-        #  Thermal power loss. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
-
         #  Thermal power lost througth  bracktets
         qlost_brackets = hce.get_qlost_brackets(tf, text)
+
+        #  Thermal power loss. Eq. 3.23 Barbero2016
+        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
+            qlost_brackets
 
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
         qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -446,8 +475,6 @@ class ModelBarberoSimplified(Model):
         if qabs > qcrit:
 
             hce.pr = fcrit * (1 - (qcrit / qabs))
-
-            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
 
         else:
             hce.pr = 0
@@ -587,7 +614,7 @@ class HCE(object):
 
         IAM = self.sca.get_IAM(aoi)
         pr_opt_peak = self.get_pr_opt_peak()
-        self.pr_opt = pr_opt_peak * IAM
+        self.pr_opt = pr_opt_peak * IAM * np.cos(np.radians(aoi))
 
     def set_qabs(self, aoi, solarpos, row):
         ''' Total solar power that reach de absorber tube per longitude unit'''
@@ -596,19 +623,38 @@ class HCE(object):
         cg = (self.sca.parameters['Aperture'] /
               (np.pi*self.parameters['Absorber tube outer diameter']))
 
-        pr_geo = self.get_pr_geo(aoi)
-        pr_borders = self.get_pr_borders(solarpos)
+        pr_shadows = self.get_pr_shadows(solarpos)
+        pr_borders = self.get_pr_borders(aoi)
         #  Ec. 3.20 Barbero
-        self.qabs = self.pr_opt * cg * dni * pr_geo * pr_borders
+        self.qabs = self.pr_opt * cg * dni * pr_borders * pr_shadows
 
     def get_krec(self, t):
 
+        # From Choom S. Kim for A
+        #  kt = 100*(0.1241+0.00003279*t)
+
         # Ec. 4.22 Conductividad para el acero 321H, ver otras opciones.
-        return  0.0153 * (t - 273.15) + 14.77
+        kt = 0.0153 * (t - 273.15) + 14.77
+
+        return kt
 
     def get_urec(self, t, p, htf):
 
-        pass
+        #  HCE wall thermal conductivity
+        krec = self.get_krec(t)
+
+        #  Specific Capacity
+        cp = htf.get_cp(t, p)
+
+        #  Internal transmission coefficient.
+        hint = self.get_hint(t, p, htf)
+
+        #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
+        return (1 / ((1 / hint) + (
+            self.parameters['Absorber tube outer diameter'] *
+            np.log(self.parameters['Absorber tube outer diameter'] /
+                   self.parameters['Absorber tube inner diameter'])) /
+            (2 * krec)))
 
     def get_previous_pr(self):
 
@@ -650,10 +696,10 @@ class HCE(object):
         return pr_opt_peak
 
 
-    def get_pr_geo(self, aoi):
+    def get_pr_borders(self, aoi):
 
         if aoi > 90:
-            pr_geo = 0.0
+            pr_borders = 0.0
 
         else:
             # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
@@ -667,43 +713,61 @@ class HCE(object):
                                   self.parameters["Length"])
 
             if self.hce_order < unused_hces:
-                pr_geo = 0.0
+                pr_borders = 0.0
 
             elif self.hce_order == unused_hces:
-                pr_geo = 1 - ((sca_unused_length % self.parameters["Length"]) /
+                pr_borders = 1 - ((sca_unused_length % self.parameters["Length"]) /
                                   self.parameters["Length"])
             else:
-                pr_geo = 1.0
+                pr_borders = 1.0
 
-            if pr_geo > 1.0 or pr_geo < 0.0:
-                print("ERROR pr_geo out of limits", pr_geo)
+            if pr_borders > 1.0 or pr_borders < 0.0:
+                print("ERROR pr_bordes out of limits", pr_borders)
 
-        return pr_geo
+        return pr_borders
 
 
-    def get_pr_borders(self, solarpos):
+    def get_pr_shadows(self, solarpos):
 
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
         # Sombras debidas a otros lazos
 
-        shadowing = (1 -
-                     np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+        # shadowing = (1 -
+        #              np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+        #              self.sca.loop.parameters['row_spacing'] /
+        #              self.sca.parameters['Aperture'])
+
+        # if shadowing < 0.0 or shadowing > 1.0:
+        #     shadowing = 0.0
+
+        # if solarpos['elevation'][0] < 0:
+        #     shadowing = 1.0
+
+        # pr_borders = 1 - shadowing
+
+
+        # if  pr_borders > 1 or  pr_borders < 0:
+        #     print("ERROR",  pr_borders)
+
+        if solarpos['elevation'][0] < 0:
+            shadowing = 1
+
+        else:
+            shadowing = 1 - (np.sin(np.radians(abs(solarpos['elevation'][0]))) *
                      self.sca.loop.parameters['row_spacing'] /
                      self.sca.parameters['Aperture'])
 
         if shadowing < 0.0 or shadowing > 1.0:
             shadowing = 0.0
 
-        if solarpos['elevation'][0] < 0:
-            shadowing = 1.0
 
-        pr_borders = 1 - shadowing
+        shadowing = 1 - shadowing
 
 
-        if  pr_borders > 1 or  pr_borders < 0:
-            print("ERROR",  pr_borders)
+        if  shadowing > 1 or  shadowing < 0:
+            print("ERROR shadowing",  shadowing)
 
-        return pr_borders
+        return shadowing
 
 
     def get_hext(self, wspd):
@@ -755,15 +819,12 @@ class HCE(object):
 
         #  Gnielinski correlation. Eq. 4.15 Barbero2016
 
-        redri = 30000
         nug = ((0.5 * cf * prf * (redri - 1000)) /
                (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
                    np.power(prf / prri, 0.11)
 
         #  Internal transmission coefficient.
         hint = kf * nug / dri
-
-        # print('t', t, 'redri', redri, 'hint', hint, 'nug', nug, 'mu', mu, 'prf', prf, )
 
         return hint
 
@@ -1236,47 +1297,68 @@ class BaseLoop(__Loop__):
         return pr_opt_peak
 
 
-    def get_pr_geo(self, aoi):
+    def get_pr_borders(self, aoi):
 
         if aoi > 90:
-            pr_geo = 0.0
+            pr_borders = 0.0
 
         else:
             # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
             sca_unused_length = (self.parameters_sca["Focal Len"] *
                                  np.tan(np.radians(aoi)))
 
-            pr_geo = 1 - sca_unused_length / (self.parameters['hces'] * \
+            pr_borders = 1 - sca_unused_length / (self.parameters['hces'] * \
                                               self.parameters_hce["Length"])
 
-            if pr_geo > 1.0 or pr_geo < 0.0:
-                print("ERROR pr_geo out of limits", pr_geo)
+            if pr_borders > 1.0 or pr_borders < 0.0:
+                print("ERROR pr_geo out of limits", pr_borders)
 
-        return pr_geo
+        return pr_borders
 
 
-    def get_pr_borders(self, solarpos):
+    def get_pr_shadows(self, solarpos):
 
         # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
         # Sombras debidas a otros lazos
 
-        shadowing = (1 -
-                     np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+        # shadowing = (1 -
+        #              np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+        #              self.parameters['row_spacing'] /
+        #              self.parameters_sca['Aperture'])
+
+        # if shadowing < 0.0 or shadowing > 1.0:
+        #     shadowing = 0.0
+
+        # if solarpos['elevation'][0] < 0:
+        #     shadowing = 1.0
+
+        # pr_borders = 1 - shadowing
+
+        # if pr_borders > 1 or pr_borders < 0:
+        #     print("ERROR",  pr_borders)
+
+        # return pr_borders
+
+        if solarpos['elevation'][0] < 0:
+            shadowing = 1
+
+        else:
+            shadowing = 1 - (np.sin(np.radians(abs(solarpos['elevation'][0]))) *
                      self.parameters['row_spacing'] /
                      self.parameters_sca['Aperture'])
 
         if shadowing < 0.0 or shadowing > 1.0:
             shadowing = 0.0
 
-        if solarpos['elevation'][0] < 0:
-            shadowing = 1.0
 
-        pr_borders = 1 - shadowing
+        shadowing = 1 - shadowing
 
-        if pr_borders > 1 or pr_borders < 0:
-            print("ERROR",  pr_borders)
 
-        return pr_borders
+        if  shadowing > 1 or  shadowing < 0:
+            print("ERROR shadowing",  shadowing)
+
+        return shadowing
+
 
     def get_solar_fraction(self):
 
@@ -2110,10 +2192,10 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'aoi'] = aoi
         self.datasource.dataframe.at[row[0], 'IAM'] = \
             self.base_loop.get_IAM(aoi)
-        self.datasource.dataframe.at[row[0], 'pr_geo'] = \
-            self.base_loop.get_pr_geo(aoi)
+        self.datasource.dataframe.at[row[0], 'pr_shadows'] = \
+            self.base_loop.get_pr_shadows(solarpos)
         self.datasource.dataframe.at[row[0], 'pr_borders'] = \
-            self.base_loop.get_pr_borders(solarpos)
+            self.base_loop.get_pr_borders(aoi)
         self.datasource.dataframe.at[row[0], 'pr_opt_peak'] = \
             self.base_loop.get_pr_opt_peak()
         self.datasource.dataframe.at[row[0], 'solar_fraction'] = \
@@ -2234,8 +2316,12 @@ class SolarFieldSimulation(object):
             self.solarfield.qlost
         self.datasource.dataframe.at[row[0], 'SF.b.qlbk'] = \
             self.solarfield.qlost_brackets
-        self.datasource.dataframe.at[row[0], 'SF.a.prth'] = \
-            10e6 * self.solarfield.act_pwr / self.solarfield.qabs
+
+        if self.solarfield.qabs > 0:
+            self.datasource.dataframe.at[row[0], 'SF.a.prth'] = \
+                10e6 * self.solarfield.act_pwr / self.solarfield.qabs
+        else:
+            self.datasource.dataframe.at[row[0], 'SF.a.prth'] = 0
 
         if row[1]['GrossPower']>0:
             self.datasource.dataframe.at[row[0], 'SF.a.globalpr'] = \
@@ -2317,7 +2403,7 @@ class SolarFieldSimulation(object):
         # display(Math(r'F(k) = \int_{-\infty}^{\infty} f(x) e^{2\pi i k} dx'))
 
 
-        self.report_df.plot(
+        self.report_df[keys].plot(
                         figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
         pd.set_option('display.max_rows', None)
@@ -2327,12 +2413,42 @@ class SolarFieldSimulation(object):
     def save_results(self):
 
         keys = ['DNI','elevation','zenith','azimuth','aoi','IAM',
-                'pr_geo','pr_borders','pr_opt_peak','solar_fraction',
-                'SF.a.tin','NetPower','AuxPower','GrossPower','SF.b.wpwr',
-                'SF.a.mf','SF.a.tout','SF.a.pwr','SF.a.prth','SF.a.globalpr',
-                'SF.x.mf','SF.x.tout', 'SF.x.pwr','SF.x.prth','SF.x.globalpr',
-                'SF.b.tout','SF.b.pwr','SF.b.prth','SF.b.globalpr']
+                'pr_shadows','pr_borders','pr_opt_peak','solar_fraction']
 
+        keys_graphics_power = ['DNI']
+        keys_graphics_temp = ['DNI']
+
+        keys_a = ['NetPower','AuxPower','GrossPower',
+                  'SF.a.mf','SF.a.tin', 'SF.a.tout',
+                  'SF.a.pwr','SF.a.prth','SF.a.globalpr']
+        keys_graphics_power_a = ['NetPower','AuxPower','GrossPower',
+                                 'SF.a.pwr']
+        keys_graphics_temp_a = ['SF.a.mf','SF.a.tin', 'SF.a.tout']
+
+        keys_x = ['SF.x.mf','SF.x.tin','SF.x.tout', 'SF.x.pwr',
+                  'SF.x.prth','SF.x.globalpr']
+        keys_graphics_power_x = ['SF.x.pwr']
+        keys_graphics_temp_x = ['SF.x.mf', 'SF.x.tout']
+
+        keys_b = ['SF.b.tout','SF.b.pwr', 'SF.b.wpwr',
+                  'SF.b.prth','SF.b.globalpr']
+        keys_graphics_power_b = ['SF.b.pwr']
+        keys_graphics_temp_b = ['SF.b.tout']
+
+        if self.datatype == 2:
+            keys += keys_a
+            keys_graphics_power += keys_graphics_power_a
+            keys_graphics_temp += keys_graphics_temp_a
+
+        if self.simulation == True:
+            keys += keys_x
+            keys_graphics_power += keys_graphics_power_x
+            keys_graphics_temp += keys_graphics_temp_x
+
+        if self.benchmark == True:
+            keys += keys_b
+            keys_graphics_power += keys_graphics_power_b
+            keys_graphics_temp += keys_graphics_temp_b
 
         self.report_df = self.datasource.dataframe[
             (self.datasource.dataframe.index >= self.first_date) &
@@ -2359,7 +2475,9 @@ class SolarFieldSimulation(object):
             raise
             print('Error saving results, unable to save file: %r', path)
 
-        self.show_report(keys)
+        self.show_report(keys_graphics_power)
+        self.show_report(keys_graphics_temp)
+
 
     def testgeo(self):
 
