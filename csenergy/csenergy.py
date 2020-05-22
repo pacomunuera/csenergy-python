@@ -167,7 +167,7 @@ class ModelBarbero4thOrder(Model):
         NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
         #  if qabs > qcrit:
-        if qabs > 0:
+        if qabs > 1.1 * qcrit:
 
             #  We use Barbero2016's simplified model aproximation
             #  Eq. 3.63 Barbero2016
@@ -180,10 +180,10 @@ class ModelBarbero4thOrder(Model):
             errpr = 1.
             step = 0
 
-            while (errtro > self.max_err_tro or errpr > self.max_err_pr):
+            while ((errtro > self.max_err_tro or errpr > self.max_err_pr) and
+                   step < 1000):
 
                 step += 1
-                flag_1 = datetime.now()
 
                 #  Eq. 3.32 Barbero2016
                 f0 = qabs / (urec * (tf - text))
@@ -194,11 +194,8 @@ class ModelBarbero4thOrder(Model):
                 f3 = 4 * text * (sigma * eext / urec) * ((qabs / urec)**2)
                 f4 = (sigma * eext / urec) * ((qabs / urec)**3)
 
-
-                #  We solve Eq. 3.36 Barbero2016 in order to find the performance
-                #  of the first section of the HCE (at entrance)
-
                 pr0 = pr
+
                 fx = lambda pr0: (1 - pr0 -
                                   f1 * (pr0 + (1 / f0)) -
                                   f2 * ((pr0 + (1 / f0))**2) -
@@ -279,6 +276,10 @@ class ModelBarbero4thOrder(Model):
                 #  Transmission Units Number, Ec. 3.30 Barbero2016
                 NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
+
+            if step == 1000:
+                print('No se alcanzó convergencia. HCE', hce.get_index())
+                print(qabs, qcrit, urec, ucrit)
             # hce.pr = hce.pr * (1 - qlost_brackets / qabs)
             hce.qlost = qlost
             hce.qlost_brackets = qlost_brackets
@@ -1115,6 +1116,7 @@ class __Loop__(object):
 
         max_error = model.max_err_t  # % desviation tolerance
         search = True
+        step = 0
 
         while search:
 
@@ -1122,8 +1124,8 @@ class __Loop__(object):
 
             err = abs(self.tout-self.parameters['rated_tout'])
 
-            if err > max_error:
-
+            if err > max_error and step <1000:
+                step += 1
                 if self.tout >= self.parameters['rated_tout']:
                     self.massflow *= (1 + err / self.parameters['rated_tout'])
                     search = True
@@ -1140,6 +1142,8 @@ class __Loop__(object):
                     search = False
             else:
                 search = False
+                if step>=1000:
+                    print("Massflow convergence failed")
 
         self.tout = self.scas[-1].hces[-1].tout
         self.pout = self.scas[-1].hces[-1].pout
@@ -2015,10 +2019,11 @@ class SolarFieldSimulation(object):
                 pass
 
             else:
-                print("simulando ...", naive_datetime)
+
                 solarpos = self.site.get_solarposition(row)
 
                 self.gather_general_data(row, solarpos)
+
 
                 if solarpos['zenith'][0] < 90:
                     self.tracking = True
@@ -2228,9 +2233,12 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'SF.x.pwr'] = \
             self.solarfield.pwr
 
-        if row[1]['GrossPower']>0:
-            self.datasource.dataframe.at[row[0], 'SF.x.globalpr'] = \
-                row[1]['GrossPower'] / self.solarfield.pwr
+        if  self.datatype == 2:
+            if row[1]['GrossPower']>0:
+                self.datasource.dataframe.at[row[0], 'SF.x.globalpr'] = \
+                    row[1]['GrossPower'] / self.solarfield.pwr
+            else:
+                self.datasource.dataframe.at[row[0], 'SF.x.globalpr'] = 0
         else:
             self.datasource.dataframe.at[row[0], 'SF.x.globalpr'] = 0
 
@@ -2450,11 +2458,13 @@ class SolarFieldSimulation(object):
             keys_graphics_power += keys_graphics_power_b
             keys_graphics_temp += keys_graphics_temp_b
 
-        self.report_df = self.datasource.dataframe[
-            (self.datasource.dataframe.index >= self.first_date) &
-            (self.datasource.dataframe.index <= self.last_date)]
+        self.report_df = self.datasource.dataframe
 
-        self.report_df = self.report_df[keys]
+        # self.report_df = self.datasource.dataframe[
+        #     (self.datasource.dataframe.index >= self.first_date) &
+        #     (self.datasource.dataframe.index <= self.last_date)]
+
+        # self.report_df = self.report_df[keys]
 
 
         try:
@@ -2475,8 +2485,8 @@ class SolarFieldSimulation(object):
             raise
             print('Error saving results, unable to save file: %r', path)
 
-        self.show_report(keys_graphics_power)
-        self.show_report(keys_graphics_temp)
+        # self.show_report(keys_graphics_power)
+        # self.show_report(keys_graphics_temp)
 
 
     def testgeo(self):
@@ -3075,30 +3085,14 @@ class Weather(object):
                 root.update()
                 root.destroy()
 
-                if path is None:
-                    return
-                else:
-                    strfilename, strext = os.path.splitext(path)
-
-                    if  strext == ".csv":
-                        self.weatherdata = pvlib.iotools.tmy.read_tmy3(path)
-                        self.file = path
-                    elif (strext == ".tm2" or strext == ".tmy"):
-                        self.weatherdata = pvlib.iotools.tmy.read_tmy2(path)
-                        self.file = path
-                    elif strext == ".xls":
-                        pass
-                    else:
-                        print("unknow extension ", strext)
-                        return
-
+            if path is None:
+                return
             else:
                 strfilename, strext = os.path.splitext(path)
 
                 if  strext == ".csv":
                     self.weatherdata = pvlib.iotools.tmy.read_tmy3(path)
                     self.file = path
-
                 elif (strext == ".tm2" or strext == ".tmy"):
                     self.weatherdata = pvlib.iotools.tmy.read_tmy2(path)
                     self.file = path
@@ -3107,6 +3101,7 @@ class Weather(object):
                 else:
                     print("unknow extension ", strext)
                     return
+
         except Exception:
             raise
             txMessageBox.showerror('Error loading Weather Data File',

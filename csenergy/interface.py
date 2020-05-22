@@ -1163,20 +1163,6 @@ class Interface(object):
             self.varsitealt.set(weatherdata[1]['altitude'])
 
 
-    # def dataSaveDialog(self, title, labeltext = '' ):
-
-    #     #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-    #     f = asksaveasfile(initialdir = self._DIR['site_files'],
-    #                            title = 'choose your file name',
-    #                            filetypes = [('JSON files', '*.json')],
-    #                            defaultextension = 'json')
-
-    #     f.write(json.dumps(cfg_settings['weather']))
-    #     f.close()
-
-
-    #  Fluid contruction Tab
-
     def select_fluid_from_csv(self):
 
         # abre una ventana de seleccón de csv.

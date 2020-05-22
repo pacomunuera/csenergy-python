@@ -2,7 +2,7 @@
  "simulation": {
   "ID": "ASTE 1B",
   "datatype": 2,
-  "simulation": false,
+  "simulation": true,
   "benchmark": true,
   "fastmode": true,
   "filename": "DATOS PLANTA 2016.csv",
@@ -53,12 +53,12 @@
  },
  "HCE": {
   "Name": "Solel UVAC 2",
-  "Length": 3.88,
+  "Length": 3.76,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,
   "Glass envelope outer diameter": 0.121,
-  "Min Reynolds": 30000.0,
+  "Min Reynolds": 3000.0,
   "Inner surface roughness": 4.5e-05,
   "Envelope transmittance": 0.965,
   "Absorber emittance factor A0": 0.101,
