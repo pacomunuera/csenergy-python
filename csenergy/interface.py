@@ -109,6 +109,8 @@ class Interface(object):
         self.buildHCEFrame()
         self.buildSCAFrame()
 
+        self.simulation_open(self._DIR['saved_configurations']+'template.json')
+
     def simulation_new(self):
 
         # for att in inspect.getmembers(self):
@@ -213,9 +215,10 @@ class Interface(object):
         self.fr_simulation.update()
 
 
-    def simulation_open(self):
+    def simulation_open(self, path=None):
 
-        path = askopenfilename(initialdir=self._DIR['saved_configurations'],
+        if path == None:
+            path = askopenfilename(initialdir=self._DIR['saved_configurations'],
                                title='choose your file',
                                filetypes=[('JSON files', '*.json')])
 
@@ -339,6 +342,8 @@ class Interface(object):
         self.varhcedgi.set(cfg['HCE']['Glass envelope inner diameter'])
         self.varhcedgo.set(cfg['HCE']['Glass envelope outer diameter'])
         self.varhcelength.set(cfg['HCE']['Length'])
+        self.varbellowsratio.set(cfg['HCE']['Bellows ratio'])
+        self.varshieldshadowing.set(cfg['HCE']['Shield shadowing'])
         self.varhceemittanceA0.set(cfg['HCE']['Absorber emittance factor A0'])
         self.varhceemittanceA1.set(cfg['HCE']['Absorber emittance factor A1'])
         self.varhceabsorptance.set(cfg['HCE']['Absorber absorptance'])
@@ -411,6 +416,7 @@ class Interface(object):
 
             for r in parameters_table:
                 param_name = r[0]
+                param_values = r[1:]
                 param_values = list(map(self.to_number, r[1:]))
                 cfg['HTF'].update(dict({param_name : param_values}))
 
@@ -439,6 +445,8 @@ class Interface(object):
         # HCE configuration
         cfg['HCE']['Name'] = self.varhcename.get()
         cfg['HCE']['Length'] = self.varhcelength.get()
+        cfg['HCE']['Bellows ratio'] = self.varbellowsratio.get()
+        cfg['HCE']['Shield shadowing'] = self.varshieldshadowing.get()
         cfg['HCE']['Absorber tube inner diameter'] = self.varhcedri.get()
         cfg['HCE']['Absorber tube outer diameter'] = self.varhcedro.get()
         cfg['HCE']['Glass envelope inner diameter'] = self.varhcedgi.get()
@@ -1264,11 +1272,9 @@ class Interface(object):
 
         datarow = []
 
-        for parameter in self.fluid_config['coefficients']:
-            coeff_list = list(parameter.keys())
-            for coeff in parameter.values():
-                coeff_list.extend([*coeff.values()])
-            datarow.append(coeff_list)
+        for parameter in self.fluid_config.keys():
+            if parameter in ['cp','mu','rho','kt','h','t']:
+                datarow.append([parameter] + self.fluid_config[parameter])
 
         self.fluid_table.table_data = datarow
 
@@ -1488,6 +1494,7 @@ class Interface(object):
 
         self.checkfluid()
 
+
     # SCA Construction tab
     def load_sca_library(self):
 
@@ -1701,11 +1708,12 @@ class Interface(object):
         self.varhcebrackets.set(self.hce_config['Brackets'])
         self.updateHCEperSCA()
 
-    def load_hce_library(self):
+    def load_hce_library(self, path = None):
 
-        path = askopenfilename(initialdir = self._DIR['hce_files'],
-                               title = 'choose your file',
-                               filetypes = [('JSON files', '*.json')])
+        if path is None:
+            path = askopenfilename(initialdir = self._DIR['hce_files'],
+                           title = 'choose your file',
+                           filetypes = [('JSON files', '*.json')])
 
         with open(path) as cfg_file:
             cfg = json.load(cfg_file, parse_float= float, parse_int= int)
@@ -1755,13 +1763,14 @@ class Interface(object):
         self.varhceemittanceA1 = tk.DoubleVar(self.fr_hce)
         # self.varcoating = tk.StringVar(self.fr_hce)
         # self.varannulus = tk.StringVar(self.fr_hce)
+        self.varbellowsratio = tk.DoubleVar(self.fr_hce)
+        self.varshieldshadowing = tk.DoubleVar(self.fr_hce)
         self.varhcebrackets = tk.DoubleVar(self.fr_hce)
 
         self.lbhcename = ttk.Label(
             self.fr_hce,
             text= 'HCE base name').grid(
                 row = 0, column = 0, sticky='W', padx=2, pady=5)
-
         self.enhcename = ttk.Entry(
             self.fr_hce,
             textvariable = self.varhcename ).grid(
@@ -1810,7 +1819,7 @@ class Interface(object):
                 row = 4, column = 0,  sticky='W', padx=2, pady=5)
         self.enhcedgo = ttk.Entry(
             self.fr_hce,
-            textvariable = self.varhcedgo ).grid(
+            textvariable = self.varhcedgo).grid(
                 row = 4, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbhcelong = ttk.Label(
@@ -1821,93 +1830,115 @@ class Interface(object):
             self.fr_hce,
             textvariable = self.varhcelength)
         self.enhcelong.bind('<Key>', lambda event: self.updateHCEperSCA())
-        self.enhcelong.grid(
-                row = 5, column = 1, sticky='W', padx=2, pady=5)
+        self.enhcelong.grid(row = 5, column = 1, sticky='W', padx=2, pady=5)
+
         self.lbhcepersca = ttk.Label(
             self.fr_hce,
             textvariable = self.varhceperscatext).grid(
                 row = 5, column = 2, sticky='W', padx=2, pady=5)
 
-        self.lbhceinnerroughness = ttk.Label(
+
+        self.lbbellowsratio = ttk.Label(
             self.fr_hce,
-            text= 'HCE inner roughness [ ]').grid(
+            text= 'Bellows ratio  [ ]').grid(
                 row = 6, column = 0,  sticky='W', padx=2, pady=5)
-        self.enhceinnerroughness = ttk.Entry(
+        self.enbellowsratio = ttk.Entry(
             self.fr_hce,
-            textvariable = self.varhceinnerroughness).grid(
+            textvariable = self.varbellowsratio).grid(
                 row = 6, column = 1, sticky='W', padx=2, pady=5)
 
-        self.lbhceminreynolds = ttk.Label(
+        self.lbshieldshadowing = ttk.Label(
             self.fr_hce,
-            text= 'HCE minimum Reynolds Number [ ]').grid(
+            text= 'Shield shadowing  [ ]').grid(
                 row = 7, column = 0,  sticky='W', padx=2, pady=5)
-        self.enhceminreynolds = ttk.Entry(
+        self.enshieldshadowing = ttk.Entry(
             self.fr_hce,
-            textvariable = self.varhceminreynolds).grid(
+            textvariable = self.varshieldshadowing).grid(
                 row = 7, column = 1, sticky='W', padx=2, pady=5)
-
-        self.lbhceabsorptance = ttk.Label(
-            self.fr_hce,
-            text= 'Absorptance [ ]').grid(
-                row = 8, column = 0,  sticky='W', padx=2, pady=5)
-        self.enhceabsorptance = ttk.Entry(
-            self.fr_hce,
-            textvariable = self.varhceabsorptance).grid(
-                row = 8, column = 1, sticky='W', padx=2, pady=5)
-
-        self.lbhcetransmittance = ttk.Label(
-            self.fr_hce,
-            text= 'Transmittance [ ]').grid(
-                row = 9, column = 0,  sticky='W', padx=2, pady=5)
-        self.enhcetransmittance = ttk.Entry(
-            self.fr_hce,
-            textvariable = self.varhcetransmittance).grid(
-                row = 9, column = 1, sticky='W', padx=2, pady=5)
-
-        self.lbemittanceA0 = ttk.Label(
-            self.fr_hce,
-            text= 'Emittance Factor A0 [ ]').grid(
-                row = 10, column = 0,  sticky='W', padx=2, pady=5)
-        self.enemittanceA0 = ttk.Entry(
-            self.fr_hce,
-            textvariable = self.varhceemittanceA0).grid(
-                row = 10, column = 1, sticky='W', padx=2, pady=5)
-
-        self.lbemittanceA1 = ttk.Label(
-            self.fr_hce,
-            text= 'Emittance Factor A1  [ ]').grid(
-                row = 11, column = 0,  sticky='W', padx=2, pady=5)
-        self.enemittanceA1 = ttk.Entry(
-            self.fr_hce,
-            textvariable = self.varhceemittanceA1).grid(
-                row = 11, column = 1, sticky='W', padx=2, pady=5)
-
-        # self.lbcoating = ttk.Label(
-        #     self.fr_hce,
-        #     text= 'Coating').grid(
-        #         row = 12, column = 0,  sticky='W', padx=2, pady=5)
-        # self.encoating = ttk.Entry(
-        #     self.fr_hce,
-        #     textvariable = self.varcoating).grid(
-        #         row = 12, column = 1, sticky='W', padx=2, pady=5)
-
-        # self.lbannulus = ttk.Label(
-        #     self.fr_hce,
-        #     text= 'Annulus').grid(
-        #         row = 13, column = 0,  sticky='W', padx=2, pady=5)
-        # self.enannulus = ttk.Entry(
-        #     self.fr_hce,
-        #     textvariable = self.varannulus).grid(
-        #         row = 13, column = 1, sticky='W', padx=2, pady=5)
 
         self.lbbrackets = ttk.Label(
             self.fr_hce,
             text= 'Brackets spacing').grid(
-                row = 12, column = 0,  sticky='W', padx=2, pady=5)
+                row = 8, column = 0,  sticky='W', padx=2, pady=5)
         self.enbrackets = ttk.Entry(
             self.fr_hce,
             textvariable = self.varhcebrackets).grid(
+                row = 8, column = 1, sticky='W', padx=2, pady=5)
+
+
+        self.lbhceinnerroughness = ttk.Label(
+            self.fr_hce,
+            text= 'HCE inner roughness [ ]').grid(
+                row = 10, column = 0,  sticky='W', padx=2, pady=5)
+        self.enhceinnerroughness = ttk.Entry(
+            self.fr_hce,
+            textvariable = self.varhceinnerroughness).grid(
+                row = 10, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbhceminreynolds = ttk.Label(
+            self.fr_hce,
+            text= 'HCE minimum Reynolds Number [ ]').grid(
+                row = 11, column = 0,  sticky='W', padx=2, pady=5)
+        self.enhceminreynolds = ttk.Entry(
+            self.fr_hce,
+            textvariable = self.varhceminreynolds).grid(
+                row = 11, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbhceabsorptance = ttk.Label(
+            self.fr_hce,
+            text= 'Absorptance [ ]').grid(
+                row = 12, column = 0,  sticky='W', padx=2, pady=5)
+        self.enhceabsorptance = ttk.Entry(
+            self.fr_hce,
+            textvariable = self.varhceabsorptance).grid(
                 row = 12, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbhcetransmittance = ttk.Label(
+            self.fr_hce,
+            text= 'Transmittance [ ]').grid(
+                row = 13, column = 0,  sticky='W', padx=2, pady=5)
+        self.enhcetransmittance = ttk.Entry(
+            self.fr_hce,
+            textvariable = self.varhcetransmittance).grid(
+                row = 13, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbemittanceA0 = ttk.Label(
+            self.fr_hce,
+            text= 'Emittance Factor A0 [ ]').grid(
+                row = 14, column = 0,  sticky='W', padx=2, pady=5)
+        self.enemittanceA0 = ttk.Entry(
+            self.fr_hce,
+            textvariable = self.varhceemittanceA0).grid(
+                row = 14, column = 1, sticky='W', padx=2, pady=5)
+
+        self.lbemittanceA1 = ttk.Label(
+            self.fr_hce,
+            text= 'Emittance Factor A1  [ ]').grid(
+                row = 15, column = 0,  sticky='W', padx=2, pady=5)
+        self.enemittanceA1 = ttk.Entry(
+            self.fr_hce,
+            textvariable = self.varhceemittanceA1).grid(
+                row = 15, column = 1, sticky='W', padx=2, pady=5)
+
+        # self.lbcoating = ttk.Label(
+        #     self.fr_hce,
+        #     text= 'Coating').grid(
+        #         row = 17, column = 0,  sticky='W', padx=2, pady=5)
+        # self.encoating = ttk.Entry(
+        #     self.fr_hce,
+        #     textvariable = self.varcoating).grid(
+        #         row = 17, column = 1, sticky='W', padx=2, pady=5)
+
+        # self.lbannulus = ttk.Label(
+        #     self.fr_hce,
+        #     text= 'Annulus').grid(
+        #         row = 18, column = 0,  sticky='W', padx=2, pady=5)
+        # self.enannulus = ttk.Entry(
+        #     self.fr_hce,
+        #     textvariable = self.varannulus).grid(
+        #         row = 18, column = 1, sticky='W', padx=2, pady=5)
+
+
 
 
 

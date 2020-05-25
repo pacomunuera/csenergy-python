@@ -122,7 +122,8 @@ class ModelBarbero4thOrder(Model):
         dri = hce.parameters['Absorber tube inner diameter']
         dgo = hce.parameters['Glass envelope outer diameter']
         dgi = hce.parameters['Glass envelope inner diameter']
-        L = hce.parameters['Length']
+        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
+            hce.parameters['Shield shadowing'])
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
 
@@ -339,7 +340,8 @@ class ModelBarbero1stOrder(Model):
         dri = hce.parameters['Absorber tube inner diameter']
         dgo = hce.parameters['Glass envelope outer diameter']
         dgi = hce.parameters['Glass envelope inner diameter']
-        L = hce.parameters['Length']
+        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
+            hce.parameters['Shield shadowing'])
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
 
@@ -386,7 +388,7 @@ class ModelBarbero1stOrder(Model):
         Aext = np.pi * dro * x  # Pendiente de confirmar
         NTUperd = ucrit * Aext / (massflow * cp)
 
-        if qabs > qcrit:
+        if qabs > 1.1 * qcrit:
             hce.pr = ((1 - (qcrit / qabs)) *
                   (1 / (NTUperd * x)) *
                   (1 - np.exp(-NTUperd * fcrit * x)))
@@ -430,7 +432,8 @@ class ModelBarberoSimplified(Model):
         dri = hce.parameters['Absorber tube inner diameter']
         dgo = hce.parameters['Glass envelope outer diameter']
         dgi = hce.parameters['Glass envelope inner diameter']
-        L = hce.parameters['Length']
+        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
+            hce.parameters['Shield shadowing'])
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
 
@@ -473,7 +476,7 @@ class ModelBarberoSimplified(Model):
         ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
         fcrit = 1 / (1 + (ucrit / urec))
 
-        if qabs > qcrit:
+        if qabs > 1.1 * qcrit:
 
             hce.pr = fcrit * (1 - (qcrit / qabs))
 
@@ -539,31 +542,19 @@ class HCE(object):
 
     def set_tout(self, htf):
 
-        # hin = htf.get_deltaH(self.tin, self.sca.loop.pin)
-
-        # if self.pr > 0:
-
-        #     dh = (self.qabs * self.parameters['Length'] * np.pi *
-        #          self.parameters['Absorber tube outer diameter'] * self.pr  /
-        #          self.sca.loop.massflow)
-        #     dh -= (self.qlost_brackets *
-        #           self.parameters['Length'] * np.pi *
-        #           self.parameters['Absorber tube outer diameter'] /
-        #           self.sca.loop.massflow)
-
-        # else:
-        #     dh =  ( -1 * (self.qlost + self.qlost_brackets ) *
-        #           self.parameters['Length'] * np.pi *
-        #           self.parameters['Absorber tube outer diameter'] /
-        #           self.sca.loop.massflow)
         if self.pr > 0:
 
-            q = (self.qabs * self.parameters['Length'] * np.pi *
-                 self.parameters['Absorber tube outer diameter'] * self.pr)
+            q = (self.qabs * np.pi * self.pr *
+                 self.parameters['Length'] *
+                 self.parameters['Bellows ratio'] *
+                 self.parameters['Shield shadowing'] *
+                 self.parameters['Absorber tube outer diameter'])
 
         else:
-            q =  ( -1 * (self.qlost) *
-                  self.parameters['Length'] * np.pi *
+            q =  ( -1 * (self.qlost) * np.pi *
+                  self.parameters['Length'] *
+                  self.parameters['Bellows ratio'] *
+                  self.parameters['Shield shadowing'] *
                   self.parameters['Absorber tube outer diameter'])
 
         self.tout = htf.get_T2(self.tin, q, self.sca.loop.massflow, self.pin)
@@ -574,42 +565,43 @@ class HCE(object):
         # TO-DO CÁLCULLO PERDIDA DE CARGA:
         # Ec. Colebrook-White para el cálculo del factor de fricción de Darcy
 
-        re_turbulent = 4000
+        # re_turbulent = 2300
 
-        k = self.parameters['Inner surface roughness']
-        D = self.parameters['Absorber tube inner diameter']
-        re = htf.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
+        # k = self.parameters['Inner surface roughness']
+        # D = self.parameters['Absorber tube inner diameter']
+        # re = htf.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
 
 
-        if re < re_turbulent:
-            darcy_factor = 64 / re
+        # if re < re_turbulent:
+        #     darcy_factor = 64 / re
 
-        else:
-            # a = (k /  D) / 3.7
-            a = k / 3.7
-            b = 2.51 / re
-            x = 1
+        # else:
+        #     # a = (k /  D) / 3.7
+        #     a = k / 3.7
+        #     b = 2.51 / re
+        #     x = 1
 
-            fx = lambda x: x + 2 * np.log10(a + b * x )
+        #     fx = lambda x: x + 2 * np.log10(a + b * x )
 
-            dfx = lambda x: 1 + (2 * b) / (np.log(10) * (a + b * x))
+        #     dfx = lambda x: 1 + (2 * b) / (np.log(10) * (a + b * x))
 
-            root = sc.optimize.newton(fx,
-                                      x,
-                                      fprime=dfx,
-                                      maxiter=10000)
+        #     root = sc.optimize.newton(fx,
+        #                               x,
+        #                               fprime=dfx,
+        #                               maxiter=10000)
 
-            darcy_factor = 1 / (root**2)
+        #     darcy_factor = 1 / (root**2)
 
-        rho = htf.get_density(self.tin, self.pin)
-        v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
-        g = sc.constants.g
+        # rho = htf.get_density(self.tin, self.pin)
+        # v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
+        # g = sc.constants.g
 
-        # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
-        deltap_mcl = darcy_factor * (self.parameters['Length'] / D) * \
-            (v**2 / (2 * g))
-        deltap = deltap_mcl * rho * g
-        self.pout = self.pin - deltap
+        # # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
+        # deltap_mcl = darcy_factor * (self.parameters['Length'] / D) * \
+        #     (v**2 / (2 * g))
+        # deltap = deltap_mcl * rho * g
+        # self.pout = self.pin - deltap
+        self.pout = self.pin
 
     def set_pr_opt(self, aoi):
 
@@ -779,53 +771,40 @@ class HCE(object):
 
     def get_hint(self, t, p, fluid):
 
+        #  Prandtl number
+        prf = fluid.get_prandtl(t, p)
+        kf = fluid.get_thermal_conductivity(t, p)
+        mu = fluid.get_dynamic_viscosity(t, p)
+        dri = self.parameters['Absorber tube inner diameter']
+        #  Reynolds number for absorber tube inner diameter, dri
+        redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
+        #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
+        nudb = 0.023 * redri**0.8 * prf** 0.4
+        #  Internal transmission coefficient.
+        hint = kf * nudb / dri
+
+
+        # #  Gnielinski correlation. Eq. 4.15 Barbero2016
+        # kf = fluid.get_thermal_conductivity(t, p)
+        # dri = self.parameters['Absorber tube inner diameter']
 
         # #  Prandtl number
         # prf = fluid.get_prandtl(t, p)
 
-        # kf = fluid.get_thermal_conductivity(t, p)
-
-        # mu = fluid.get_dynamic_viscosity(t, p)
-
-        # dri = self.parameters['Absorber tube inner diameter']
-
         # #  Reynolds number for absorber tube inner diameter, dri
-        # redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
+        # redri = fluid.get_Reynolds(dri, t, p, self.sca.loop.massflow)
 
-        # #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
-        # nudb = 0.023 * redri**0.8 * prf** 0.4
+        # # We supose inner wall temperature is equal to fluid temperature
+        # prri = prf
+
+        # #  Skin friction coefficient
+        # cf = np.power(1.58 * np.log(redri) - 3.28, -2)
+        # nug = ((0.5 * cf * prf * (redri - 1000)) /
+        #        (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
+        #            np.power(prf / prri, 0.11)
 
         # #  Internal transmission coefficient.
-        # hint = kf * nudb / dri
-
-        # if self.hce_order == len(self.sca.hces) -1:
-        #     print('hint', hint, 'nudb', nudb, 'redri', redri, 'kf', kf, 'prf', prf)
-
-        # return hint
-
-        kf = fluid.get_thermal_conductivity(t, p)
-        dri = self.parameters['Absorber tube inner diameter']
-
-        #  Prandtl number
-        prf = fluid.get_prandtl(t, p)
-
-        #  Reynolds number for absorber tube inner diameter, dri
-        redri = fluid.get_Reynolds(dri, t, p, self.sca.loop.massflow)
-
-        # We supose inner wall temperature is equal to fluid temperature
-        prri = prf
-
-        #  Skin friction coefficient
-        cf = np.power(1.58 * np.log(redri) - 3.28, -2)
-
-        #  Gnielinski correlation. Eq. 4.15 Barbero2016
-
-        nug = ((0.5 * cf * prf * (redri - 1000)) /
-               (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
-                   np.power(prf / prri, 0.11)
-
-        #  Internal transmission coefficient.
-        hint = kf * nug / dri
+        # hint = kf * nug / dri
 
         return hint
 
@@ -2540,15 +2519,16 @@ class SolarFieldSimulation(object):
             print("HTF form table:", self.parameters['HTF']['name'])
         elif self.parameters['HTF']['source'] == 'CoolProp':
             print("HTF form CoolProp:", self.parameters['HTF']['CoolPropID'])
-        print("-------------------------------------------------------------")
+        print("--------------------------------------------------------------")
 
 
 class LoopSimulation(object):
-    '''
+    """
     Definimos la clase simulacion para representar las diferentes
     pruebas que lancemos, variando el archivo TMY, la configuracion del
     site, la planta, el modo de operacion o el modelo empleado.
-    '''
+
+    """
 
     def __init__(self, settings):
 
@@ -2739,7 +2719,7 @@ class Air(object):
 
 class Fluid:
 
-    _T_REF = 285.856
+    _T_REF = 285.856  # K, T_REF= 12.706 K
     _COOLPROP_FLUIDS = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
     def test_fluid(self, tmax, tmin, p):
@@ -2840,12 +2820,14 @@ class FluidCoolProp(Fluid):
         if t > self.tmax:
             t = self.tmax
 
+        #p = 1600000
         return  PropsSI('V','T',t,'P', p, self.coolpropID)
 
     def get_cp(self, t, p):
 
         if t > self.tmax:
             t = self.tmax
+
         return PropsSI('C','T',t,'P', p, self.coolpropID)
 
     def get_thermal_conductivity(self, t, p):
@@ -2875,13 +2857,13 @@ class FluidCoolProp(Fluid):
 
         return temperature
 
-    def get_T2(self, tin,  q, mf = None, p = None):
+    def get_T2(self, t,  q, mf = None, p = None):
 
-        if tin > 670:
-            tin = 670
+        if t > self.tmax:
+            t = self.tmax
 
         CP.set_reference_state(self.coolpropID,'ASHRAE')
-        hin = PropsSI('H', 'T', tin,  'P', p, self.coolpropID)
+        hin = PropsSI('H', 'T', t,  'P', p, self.coolpropID)
         try:
             temperature = PropsSI('T', 'H', hin  + q/mf, 'P', p, self.coolpropID)
         except:
@@ -2905,41 +2887,32 @@ class FluidTabular(Fluid):
         self.tmax = settings['tmax']
         self.tmin = settings['tmin']
 
-        self.cp += [0.] * (9 - len(self.cp))
-        self.rho += [0.] * (9 - len(self.rho))
-        self.mu += [0.] * (9 - len(self.mu))
-        self.kt += [0.] * (9 - len(self.kt))
-
 
     def get_density(self, t, p):
 
         # Dowtherm A.pdf, 2.2 Single Phase Liquid Properties. pg. 8.
-        # rho0, rho1, rho2, rho3, rho4, rho5 = tuple(self.rho)
-
-        # return (rho0 + rho1 * t + rho2 * t**2 + rho3 * t**3 +
-        #         rho4 * t**4 + rho5 * t**5) * (p* 1.0e-4)**1.0e-3
 
         poly = np.polynomial.polynomial.Polynomial(self.rho)
-        if t > self.tmax:
-            t= self.tmax
 
-        return poly(t) * (p* 1.0e-4)**1.0e-3
+        # if t > self.tmax:
+        #     t= self.tmax
+
+        return poly(t) * (p * 1.0e-4)**1.0e-3
 
 
     def get_dynamic_viscosity(self, t, p):
 
         poly = np.polynomial.polynomial.Polynomial(self.mu)
 
-        # if t > self.tmax:
-        #     t= self.tmax
+        # if t > 750:
+        #     mu_  = 0.0000989049999999998
+        # else:
+        #     mu_ = poly(t)
+        # mu_ = 0.00012
+        mu_ = poly(t)
+        return mu_
 
-        return poly(t)
-
-        # mu0, mu1, mu2, mu3, mu4, mu5, mu6, mu7, mu8 = tuple(self.mu)
-
-        # return (mu0 + mu1 * t + mu2 * t**2 + mu3 * t**3 +
-        #         mu4 * t**4 + mu5 * t**5 + mu6 * t**6 + mu7 * t**7 + mu8 * t**8)
-
+        # return mu_
 
     def get_cp(self, t, p):
 
@@ -2958,31 +2931,13 @@ class FluidTabular(Fluid):
     def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
 
-        # kt0, kt1, kt2, kt3, kt4, kt5 = tuple(self.kt)
-
-        # kt =(kt0 + kt1 * t + kt2 * t**2 + kt3 * t**3 +
-        #         kt4 * t**4 + kt5 * t**5)
-
-        # if kt < 0:
-        #     kt = 0
-
-        # return kt
-
         poly = np.polynomial.polynomial.Polynomial(self.kt)
-        if t > self.tmax:
-            t= self.tmax
+        # if t > self.tmax:
+        #     t= self.tmax
 
         return poly(t)
 
     def get_deltaH(self, t, p):
-
-        # h0, h1, h2, h3, h4, h5 = tuple(self.h)
-
-        # href =(h0 + h1 *self._T_REF + h2 *self._T_REF**2 + h3 *self._T_REF**3 +
-        #        h4 *self._T_REF**4 + h5 *self._T_REF**5)
-
-        # h = (h0 + h1 * t + h2 * t**2 + h3 * t**3 + h4 * t**4 + h5 * t**5)
-        # return (h - href)
 
         poly = np.polynomial.polynomial.Polynomial(self.h)
 
@@ -2991,13 +2946,8 @@ class FluidTabular(Fluid):
 
         return poly(t) - poly(self._T_REF)
 
+
     def get_T(self, h, p):
-
-        # t0, t1, t2, t3, t4, t5 = tuple(self.t)
-
-        # return (t0 + t1 * h + t2 * h**2 + t3 * h**3 +
-        #         t4 * h**4 + t5 * h**5)
-
 
         poly = np.polynomial.polynomial.Polynomial(self.t)
 
@@ -3005,9 +2955,9 @@ class FluidTabular(Fluid):
 
     def get_T2(self, tin, h, mf=None, p=None):
 
-        cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8 = tuple(self.cp)
 
-        tout = tin
+        #tout = tin
+        cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8 = tuple(self.cp)
 
         a0 = (h/mf + cp0 * tin + cp1 * tin**2 / 2 + cp2 * tin**3 / 3 +
              cp3 * tin**4 / 4 + cp4 * tin**5 / 5 + cp5 * tin**6 / 6 +
@@ -3017,30 +2967,29 @@ class FluidTabular(Fluid):
                    -cp6 / 7, -cp7 / 8, -cp8 / 9]
 
         poly = np.polynomial.polynomial.Polynomial(factors)
-
         roots = poly.roots()
+
+        tout_bigger = tin
+        tout_smaller = tin
         for r in roots:
-            if r.imag == 0 and r.real >= 0:
-                tout = r.real
+            if r.imag == 0.0:
+                if r.real >= tin:
+                    tout_bigger = r.real
+                else:
+                    tout_smaller = r.real
+        if h > 0:
+            tout = tout_bigger
+        elif h<0:
+            tout = tout_smaller
+        else:
+            tout = tin
 
-        # fx = lambda tout: (h/mf +
-        #                    (cp0 * tin + cp1 * tin**2 / 2 + cp2 * tin**3 / 3 +
-        #                     cp3 * tin**4 / 4 + cp4 * tin**5 / 5 +
-        #                     cp5 * tin**6 / 6) -
-        #                    (cp0 * tout + cp1 * tout**2 / 2 + cp2 * tout**3 / 3 +
-        #                     cp3 * tout**4 / 4 + cp4 * tout**5 / 5 +
-        #                     cp5 * tout**6 / 6))
+        # for r in roots:
+        #     if r.imag == 0 and r.real >= 0:
+        #         tout = r.real
 
-        # dfx = lambda tout: (cp0 + cp1 * tout + cp2 * tout**2 + cp3 * tout**3 +
-        #                     cp4 * tout**4 + cp5 * tout**5)
-
-        # root = sc.optimize.newton(fx,
-        #                           tout,
-        #                           fprime=dfx,
-        #                           maxiter=100000)
-
-        # tout = root
         return tout
+
 
 class Weather(object):
 
@@ -3060,14 +3009,11 @@ class Weather(object):
         else:
             self.openWeatherDataFile()
 
-
-
         self.dataframe = self.weatherdata[0]
         self.site = self.weatherdata[1]
 
         self.change_units()
         self.filter_columns()
-
 
 
     def openWeatherDataFile(self, path = None):
