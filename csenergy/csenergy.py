@@ -36,7 +36,6 @@ class Model:
         pass
 
     def get_hext_eext(self, hce, reext, tro, wind):
-
         eext = 0.
         hext = 0.
 
@@ -772,39 +771,39 @@ class HCE(object):
     def get_hint(self, t, p, fluid):
 
         #  Prandtl number
-        prf = fluid.get_prandtl(t, p)
-        kf = fluid.get_thermal_conductivity(t, p)
-        mu = fluid.get_dynamic_viscosity(t, p)
-        dri = self.parameters['Absorber tube inner diameter']
-        #  Reynolds number for absorber tube inner diameter, dri
-        redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
-        #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
-        nudb = 0.023 * redri**0.8 * prf** 0.4
-        #  Internal transmission coefficient.
-        hint = kf * nudb / dri
-
-
-        # #  Gnielinski correlation. Eq. 4.15 Barbero2016
-        # kf = fluid.get_thermal_conductivity(t, p)
-        # dri = self.parameters['Absorber tube inner diameter']
-
-        # #  Prandtl number
         # prf = fluid.get_prandtl(t, p)
-
+        # kf = fluid.get_thermal_conductivity(t, p)
+        # mu = fluid.get_dynamic_viscosity(t, p)
+        # dri = self.parameters['Absorber tube inner diameter']
         # #  Reynolds number for absorber tube inner diameter, dri
-        # redri = fluid.get_Reynolds(dri, t, p, self.sca.loop.massflow)
-
-        # # We supose inner wall temperature is equal to fluid temperature
-        # prri = prf
-
-        # #  Skin friction coefficient
-        # cf = np.power(1.58 * np.log(redri) - 3.28, -2)
-        # nug = ((0.5 * cf * prf * (redri - 1000)) /
-        #        (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
-        #            np.power(prf / prri, 0.11)
-
+        # redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
+        # #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
+        # nudb = 0.023 * redri**0.8 * prf** 0.4
         # #  Internal transmission coefficient.
-        # hint = kf * nug / dri
+        # hint = kf * nudb / dri
+
+
+        #  Gnielinski correlation. Eq. 4.15 Barbero2016
+        kf = fluid.get_thermal_conductivity(t, p)
+        dri = self.parameters['Absorber tube inner diameter']
+
+        #  Prandtl number
+        prf = fluid.get_prandtl(t, p)
+
+        #  Reynolds number for absorber tube inner diameter, dri
+        redri = fluid.get_Reynolds(dri, t, p, self.sca.loop.massflow)
+
+        # We supose inner wall temperature is equal to fluid temperature
+        prri = prf
+
+        #  Skin friction coefficient
+        cf = np.power(1.58 * np.log(redri) - 3.28, -2)
+        nug = ((0.5 * cf * prf * (redri - 1000)) /
+                (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
+                    np.power(prf / prri, 0.11)
+
+        #  Internal transmission coefficient.
+        hint = kf * nug / dri
 
         return hint
 
@@ -1044,11 +1043,24 @@ class __Loop__(object):
         for s in self.scas:
             for h in s.hces:
                 pr_list.append(h.pr)
-                qabs_list.append(h.qabs)
-                qlost_brackets_list.append(h.qlost_brackets)
-                qlost_list.append(h.qlost)
+                qabs_list.append(
+                    h.qabs *
+                    np.pi *
+                    h.parameters['Length'] *
+                    h.parameters['Bellows ratio'] *
+                    h.parameters['Shield shadowing'] *
+                    h.parameters['Absorber tube outer diameter'])
+                qlost_brackets_list.append(
+                    h.qlost_brackets *
+                    np.pi *
+                    h.parameters['Length'] *
+                    h.parameters['Absorber tube outer diameter'])
+                qlost_list.append(
+                    h.qlost *
+                    np.pi *
+                    h.parameters['Length'] *
+                    h.parameters['Absorber tube outer diameter'])
                 pr_opt_list.append(h.pr_opt)
-
         self.pr = np.mean(pr_list)
         self.qabs = np.sum(qabs_list)
         self.qlost_brackets = np.sum(qlost_brackets_list)

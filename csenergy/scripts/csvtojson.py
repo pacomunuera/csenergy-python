@@ -7,6 +7,8 @@ Created on Mon Feb 10 12:42:52 2020
 
 import csv
 import sys
+import os.path
+from tkinter.filedialog import askopenfilename
 import pandas as pd
 #
 #with open("sam_sca_physical.csv") as archivocsv:
@@ -16,6 +18,15 @@ import pandas as pd
 #        output.append(dict(r))
 #
 #print(json.dump(output, open('sam_sca_physical.json','w'), indent=4, sort_keys=False))
+
+if len(sys.argv) == 0:
+            path = askopenfilename(initialdir='simulation_outputs',
+                               title='choose SAM RESULTS',
+                               filetypes=[('CSV', '*.csv')])
+
+            head, tail = os.path.split(path)
+            filename = path
+
 
 
 with open("sam_hce_physical.csv") as archivocsv:

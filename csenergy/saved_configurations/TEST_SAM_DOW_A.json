@@ -11,7 +11,7 @@
   "last_date": "2007/12/31 23:00"
  },
  "model": {
-  "name": "Barbero4thOrder",
+  "name": "Barbero1stOrder",
   "max_err_t": 1.0,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01
