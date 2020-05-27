@@ -122,7 +122,7 @@ class ModelBarbero4thOrder(Model):
         dgo = hce.parameters['Glass envelope outer diameter']
         dgi = hce.parameters['Glass envelope inner diameter']
         L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
-            hce.parameters['Shield shadowing'])
+            hce.parameters['Shield shading'])
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
 
@@ -145,7 +145,7 @@ class ModelBarbero4thOrder(Model):
         tro = tf + qabs * pr / urec
 
         #  HCE emittance
-        eext = hce.get_emittance(tro, wspd)
+        eext = hce.get_eext(tro, wspd)
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
@@ -340,7 +340,7 @@ class ModelBarbero1stOrder(Model):
         dgo = hce.parameters['Glass envelope outer diameter']
         dgi = hce.parameters['Glass envelope inner diameter']
         L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
-            hce.parameters['Shield shadowing'])
+            hce.parameters['Shield shading'])
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
 
@@ -361,7 +361,7 @@ class ModelBarbero1stOrder(Model):
         tro = tf + qabs * pr / urec
 
         #  HCE emittance
-        eext = hce.get_emittance(tro, wspd)
+        eext = hce.get_eext(tro, wspd)
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
@@ -432,7 +432,7 @@ class ModelBarberoSimplified(Model):
         dgo = hce.parameters['Glass envelope outer diameter']
         dgi = hce.parameters['Glass envelope inner diameter']
         L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
-            hce.parameters['Shield shadowing'])
+            hce.parameters['Shield shading'])
         A = hce.sca.parameters['Aperture']
         x = 1 #  Calculation grid fits hce longitude
 
@@ -454,7 +454,7 @@ class ModelBarberoSimplified(Model):
         tro = tf + qabs * pr / urec
 
         #  HCE emittance
-        eext = hce.get_emittance(tro, wspd)
+        eext = hce.get_eext(tro, wspd)
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
@@ -546,14 +546,14 @@ class HCE(object):
             q = (self.qabs * np.pi * self.pr *
                  self.parameters['Length'] *
                  self.parameters['Bellows ratio'] *
-                 self.parameters['Shield shadowing'] *
+                 self.parameters['Shield shading'] *
                  self.parameters['Absorber tube outer diameter'])
 
         else:
             q =  ( -1 * (self.qlost) * np.pi *
                   self.parameters['Length'] *
                   self.parameters['Bellows ratio'] *
-                  self.parameters['Shield shadowing'] *
+                  self.parameters['Shield shading'] *
                   self.parameters['Absorber tube outer diameter'])
 
         self.tout = htf.get_T2(self.tin, q, self.sca.loop.massflow, self.pin)
@@ -721,45 +721,74 @@ class HCE(object):
 
     def get_pr_shadows(self, solarpos):
 
-        # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
-        # Sombras debidas a otros lazos
-
-        # shadowing = (1 -
-        #              np.sin(np.radians(abs(solarpos['elevation'][0]))) *
-        #              self.sca.loop.parameters['row_spacing'] /
-        #              self.sca.parameters['Aperture'])
-
-        # if shadowing < 0.0 or shadowing > 1.0:
-        #     shadowing = 0.0
-
-        # if solarpos['elevation'][0] < 0:
-        #     shadowing = 1.0
-
-        # pr_borders = 1 - shadowing
-
-
-        # if  pr_borders > 1 or  pr_borders < 0:
-        #     print("ERROR",  pr_borders)
-
         if solarpos['elevation'][0] < 0:
-            shadowing = 1
+            shading = 1
 
         else:
-            shadowing = 1 - (np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+            shading = 1 - (np.sin(np.radians(abs(solarpos['elevation'][0]))) *
                      self.sca.loop.parameters['row_spacing'] /
                      self.sca.parameters['Aperture'])
 
-        if shadowing < 0.0 or shadowing > 1.0:
-            shadowing = 0.0
+        if shading < 0.0 or shading > 1.0:
+            shading = 0.0
 
 
-        shadowing = 1 - shadowing
+        shading = 1 - shading
 
 
-        if  shadowing > 1 or  shadowing < 0:
-            print("ERROR shadowing",  shadowing)
+        if  shading > 1 or  shading < 0:
+            print("ERROR shading",  shading)
 
-        return shadowing
+        return shading
+
+    def get_pr_shadows2(self, solarpos):
+
+        sigmabeta = 0.0
+        beta0 = 0.0
+
+        if self.sca.loop.parameters['Tracking Type'] == 1:  # N-S single axis tracker
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90  # Surface facing east
+            else:
+                surface_azimuth = 270  # Surface facing west
+        elif self.sca.loop.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+            surface_azimuth = 180  # Surface facing the equator
+
+        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
+        #  pero hay que ver la posibilidad de modelar cierto error o desfase
+        beta0 = np.degrees(np.arctan(
+            np.tan(np.radians(solarpos['zenith'][0])) *
+            np.cos(np.radians(surface_azimuth -
+                              solarpos['azimuth'][0]))))
+        if beta0 >= 0:
+            sigmabeta = 0
+        else:
+            sigmabeta = 1
+
+        #  Surface tilt
+        beta = beta0 + 180 * sigmabeta
+        # aoi = pvlib.irradiance.aoi(beta,
+        #                            surface_azimuth,
+        #                            solarpos['zenith'][0],
+        #                            solarpos['azimuth'][0])
+
+        Hs = abs(self.sca.parameters['Aperture'] -
+               self.sca.loop.parameters['row_spacing'] *
+               np.cos(np.radians(90 - beta)))
+
+        Ls = abs(len(self.sca.loop.scas) * self.sca.parameters['SCA Length'] -
+                 abs(self.sca.loop.parameters['row_spacing'] *
+                     np.tan(np.radians(surface_azimuth -
+                                       solarpos['azimuth'][0]))))
+
+        shading = (Ls * Hs / (len(self.sca.loop.scas) *
+                                self.sca.parameters['SCA Length'] *
+                                self.sca.parameters['Aperture']))
+
+        return shading
+
+
+
 
 
     def get_hext(self, wspd):
@@ -808,7 +837,7 @@ class HCE(object):
         return hint
 
 
-    def get_emittance(self, tro, wspd):
+    def get_eext(self, tro, wspd):
 
 
         #  Eq. 5.2 Barbero. Parameters given in Pg. 245
@@ -1048,7 +1077,7 @@ class __Loop__(object):
                     np.pi *
                     h.parameters['Length'] *
                     h.parameters['Bellows ratio'] *
-                    h.parameters['Shield shadowing'] *
+                    h.parameters['Shield shading'] *
                     h.parameters['Absorber tube outer diameter'])
                 qlost_brackets_list.append(
                     h.qlost_brackets *
@@ -1197,10 +1226,19 @@ class __Loop__(object):
 
     def set_wasted_power(self, htf):
 
+        # if self.tout > self.parameters['tmax']:
+        #     HH = htf.get_deltaH(self.tout, self.pout)
+        #     HL = htf.get_deltaH(self.parameters['tmax'], self.pout)
+        #     self.wasted_power = self.massflow * (HH - HL)
+        # else:
+        #     self.wasted_power = 0.0
+
         if self.tout > self.parameters['tmax']:
-            HH = htf.get_deltaH(self.tout, self.pout)
-            HL = htf.get_deltaH(self.parameters['tmax'], self.pout)
-            self.wasted_power = self.massflow * (HH - HL)
+            self.wasted_power = htf.get_deltaH2(
+                self.tin,
+                self.tout,
+                self.massflow,
+                self.pin)
         else:
             self.wasted_power = 0.0
 
@@ -1313,47 +1351,71 @@ class BaseLoop(__Loop__):
 
     def get_pr_shadows(self, solarpos):
 
-        # Llamado "sombras" en Tesis. Pérdidas por sombras. ¿modelar sobre el SCA?
-        # Sombras debidas a otros lazos
-
-        # shadowing = (1 -
-        #              np.sin(np.radians(abs(solarpos['elevation'][0]))) *
-        #              self.parameters['row_spacing'] /
-        #              self.parameters_sca['Aperture'])
-
-        # if shadowing < 0.0 or shadowing > 1.0:
-        #     shadowing = 0.0
-
-        # if solarpos['elevation'][0] < 0:
-        #     shadowing = 1.0
-
-        # pr_borders = 1 - shadowing
-
-        # if pr_borders > 1 or pr_borders < 0:
-        #     print("ERROR",  pr_borders)
-
-        # return pr_borders
-
         if solarpos['elevation'][0] < 0:
-            shadowing = 1
+            shading = 1
 
         else:
-            shadowing = 1 - (np.sin(np.radians(abs(solarpos['elevation'][0]))) *
+            shading = 1 - (np.sin(np.radians(abs(solarpos['elevation'][0]))) *
                      self.parameters['row_spacing'] /
                      self.parameters_sca['Aperture'])
 
-        if shadowing < 0.0 or shadowing > 1.0:
-            shadowing = 0.0
+        if shading < 0.0 or shading > 1.0:
+            shading = 0.0
 
 
-        shadowing = 1 - shadowing
+        shading = 1 - shading
 
 
-        if  shadowing > 1 or  shadowing < 0:
-            print("ERROR shadowing",  shadowing)
+        if  shading > 1 or  shading < 0:
+            print("ERROR shading",  shading)
 
-        return shadowing
+        return shading
 
+    def get_pr_shadows2(self, solarpos):
+
+        sigmabeta = 0.0
+        beta0 = 0.0
+
+        if self.parameters['Tracking Type'] == 1:  # N-S single axis tracker
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90  # Surface facing east
+            else:
+                surface_azimuth = 270  # Surface facing west
+        elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+            surface_azimuth = 180  # Surface facing the equator
+
+        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
+        #  pero hay que ver la posibilidad de modelar cierto error o desfase
+        beta0 = np.degrees(np.arctan(
+            np.tan(np.radians(solarpos['zenith'][0])) *
+            np.cos(np.radians(surface_azimuth -
+                              solarpos['azimuth'][0]))))
+        if beta0 >= 0:
+            sigmabeta = 0
+        else:
+            sigmabeta = 1
+
+        #  Surface tilt
+        beta = beta0 + 180 * sigmabeta
+        # aoi = pvlib.irradiance.aoi(beta,
+        #                            surface_azimuth,
+        #                            solarpos['zenith'][0],
+        #                            solarpos['azimuth'][0])
+
+        Hs = abs(self.parameters_sca['Aperture'] -
+               self.parameters['row_spacing'] *
+               np.cos(np.radians(beta)))
+
+        Ls = abs(len(self.scas) * self.parameters_sca['SCA Length'] -
+                 abs(self.parameters['row_spacing'] *
+                     np.tan(np.radians(surface_azimuth -
+                                       solarpos['azimuth'][0]))))
+
+        shading = (Ls * Hs / (len(self.scas) *
+                                self.parameters_sca['SCA Length'] *
+                                self.parameters_sca['Aperture']))
+
+        return shading
 
     def get_solar_fraction(self):
 
@@ -1424,6 +1486,7 @@ class BaseLoop(__Loop__):
         else:
             sigmabeta = 1
 
+        #  Surface tilt
         beta = beta0 + 180 * sigmabeta
         aoi = pvlib.irradiance.aoi(beta,
                                    surface_azimuth,
@@ -2028,13 +2091,13 @@ class SolarFieldSimulation(object):
 
                     str_data = ("SIMULATION: {0} " +
                                 "DNI: {1:3.0f} W/m2 Qm: {2:4.1f}kg/s " +
-                                "Tin: {3:4.1f}K Tout: {4:4.1f}K")
+                                "Tin: {3:4.1f}° Tout: {4:4.1f}°C")
 
                     print(str_data.format(row[0],
                                           row[1]['DNI'],
                                           self.solarfield.massflow,
-                                          self.solarfield.tin,
-                                          self.solarfield.tout))
+                                          self.solarfield.tin - 273.15,
+                                          self.solarfield.tout - 273.15))
 
 
                 if self.benchmark and self.datatype == 2:  # 2: Field Data File available
@@ -2044,15 +2107,15 @@ class SolarFieldSimulation(object):
 
                     str_data = ("BENCHMARK: {0} " +
                                 "DNI: {1:3.0f} W/m2 act_Qm: {2:4.1f}kg/s " +
-                                "act_Tin: {3:4.1f}K act_Tout: {4:4.1f}K " +
-                                "Tout: {5:4.1f}K")
+                                "act_Tin: {3:4.1f}° act_Tout: {4:4.1f}° " +
+                                "Tout: {5:4.1f}°")
 
                     print(str_data.format(row[0],
                                           row[1]['DNI'],
                                           self.solarfield.act_massflow,
-                                          self.solarfield.act_tin,
-                                          self.solarfield.act_tout,
-                                          self.solarfield.tout))
+                                          self.solarfield.act_tin - 273.15,
+                                          self.solarfield.act_tout - 273.15,
+                                          self.solarfield.tout - 273.15))
 
         self.save_results()
 
@@ -2204,9 +2267,9 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'SF.x.mf'] = \
             self.solarfield.massflow
         self.datasource.dataframe.at[row[0], 'SF.x.tin'] = \
-            self.solarfield.tin
+            self.solarfield.tin - 273.15
         self.datasource.dataframe.at[row[0], 'SF.x.tout'] = \
-            self.solarfield.tout
+            self.solarfield.tout - 273.15
         self.datasource.dataframe.at[row[0], 'SF.x.pin'] = \
             self.solarfield.pin
         self.datasource.dataframe.at[row[0], 'SF.x.pout'] = \
@@ -2237,8 +2300,10 @@ class SolarFieldSimulation(object):
 
             values = {
                 self.base_loop.get_id() + '.x.mf': self.base_loop.massflow,
-                self.base_loop.get_id() + '.x.tin': self.base_loop.tin,
-                self.base_loop.get_id() + '.x.tout': self.base_loop.tout,
+                self.base_loop.get_id() + '.x.tin':
+                    self.base_loop.tin - 273.15,
+                self.base_loop.get_id() + '.x.tout':
+                    self.base_loop.tout  - 273.15,
                 self.base_loop.get_id() + '.x.pin': self.base_loop.pin,
                 self.base_loop.get_id() + '.x.pout': self.base_loop.pout,
                 self.base_loop.get_id() + '.x.prth': self.base_loop.pr,
@@ -2253,8 +2318,8 @@ class SolarFieldSimulation(object):
             #  Agretate data from subfields
             values = {
                 s.get_id() + '.x.mf': s.massflow,
-                s.get_id() + '.x.tin': s.tin,
-                s.get_id() + '.x.tout': s.tout,
+                s.get_id() + '.x.tin': s.tin  - 273.15,
+                s.get_id() + '.x.tout': s.tout - 273.15,
                 s.get_id() + '.x.pin': s.pin,
                 s.get_id() + '.x.pout': s.pout,
                 s.get_id() + '.x.prth': s.pr,
@@ -2270,8 +2335,8 @@ class SolarFieldSimulation(object):
                     #  Loop data
                     values = {
                         l.get_id() + '.x.mf':  l.massflow,
-                        l.get_id() + '.x.tin':  l.tin,
-                        l.get_id() + '.x.tout':  l.tout,
+                        l.get_id() + '.x.tin':  l.tin - 273.15,
+                        l.get_id() + '.x.tout':  l.tout - 273.15,
                         l.get_id() + '.x.pin':  l.pin,
                         l.get_id() + '.x.pout':  l.pout,
                         l.get_id() + '.x.prth':  l.pr,
@@ -2288,13 +2353,13 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'SF.a.mf'] = \
             self.solarfield.massflow
         self.datasource.dataframe.at[row[0], 'SF.a.tin'] = \
-            self.solarfield.tin
+            self.solarfield.tin - 273.15
         self.datasource.dataframe.at[row[0], 'SF.a.tout'] = \
-            self.solarfield.act_tout
+            self.solarfield.act_tout - 273.15
         self.datasource.dataframe.at[row[0], 'SF.a.pwr'] = \
             self.solarfield.act_pwr
         self.datasource.dataframe.at[row[0], 'SF.b.tout'] = \
-            self.solarfield.tout
+            self.solarfield.tout - 273.15
         self.datasource.dataframe.at[row[0], 'SF.b.prth'] = \
             self.solarfield.pr
         self.datasource.dataframe.at[row[0], 'SF.b.prop'] = \
@@ -2340,10 +2405,12 @@ class SolarFieldSimulation(object):
                 values = {
                     self.base_loop.get_id(s) + '.a.mf':
                         self.base_loop.massflow,
-                    self.base_loop.get_id(s) + '.a.tin': self.base_loop.tin,
+                    self.base_loop.get_id(s) + '.a.tin':
+                        self.base_loop.tin - 273.15,
                     self.base_loop.get_id(s) + '.a.tout':
-                        self.base_loop.act_tout,
-                    self.base_loop.get_id(s) + '.b.tout': self.base_loop.tout,
+                        self.base_loop.act_tout - 273.15,
+                    self.base_loop.get_id(s) + '.b.tout':
+                        self.base_loop.tout - 273.15,
                     self.base_loop.get_id(s) + '.a.pin': self.base_loop.pin,
                     self.base_loop.get_id(s) + '.b.pout': self.base_loop.pout,
                     self.base_loop.get_id(s) + '.b.prth': self.base_loop.pr,
@@ -2360,9 +2427,9 @@ class SolarFieldSimulation(object):
             #  Agretate data from subfields
             values = {
                 s.get_id() + '.a.mf': s.act_massflow,
-                s.get_id() + '.a.tin': s.act_tin,
-                s.get_id() + '.a.tout': s.act_tout,
-                s.get_id() + '.b.tout': s.tout,
+                s.get_id() + '.a.tin': s.act_tin - 273.15,
+                s.get_id() + '.a.tout': s.act_tout - 273.15,
+                s.get_id() + '.b.tout': s.tout - 273.15,
                 s.get_id() + '.a.pin': s.act_pin,
                 s.get_id() + '.a.pout': s.act_pout,
                 s.get_id() + '.b.pout': s.pout,
@@ -2380,9 +2447,9 @@ class SolarFieldSimulation(object):
                     #  Loop data
                     values = {
                         l.get_id() + '.a.mf':  l.act_massflow,
-                        l.get_id() + '.a.tin':  l.act_tin,
-                        l.get_id() + '.a.tout':  l.act_tout,
-                        l.get_id() + '.b.tout':  l.tout,
+                        l.get_id() + '.a.tin':  l.act_tin - 273.15,
+                        l.get_id() + '.a.tout':  l.act_tout - 273.15,
+                        l.get_id() + '.b.tout':  l.tout - 273.15,
                         l.get_id() + '.a.pin':  l.act_pin,
                         l.get_id() + '.a.pout':  l.act_pout,
                         l.get_id() + '.b.pout':  l.pout,
@@ -2879,8 +2946,7 @@ class FluidCoolProp(Fluid):
         try:
             temperature = PropsSI('T', 'H', hin  + q/mf, 'P', p, self.coolpropID)
         except:
-            print("error")
-            temperature = 670
+            temperature = self.tmax
         CP.set_reference_state(self.coolpropID, 'DEF')
 
         return temperature
@@ -2958,6 +3024,20 @@ class FluidTabular(Fluid):
 
         return poly(t) - poly(self._T_REF)
 
+    def get_deltaH2(self, t1, t2, mf=None, p=None):
+
+        cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8 = tuple(self.cp)
+
+        h = (mf * (
+            (cp0 * t2 + cp1 * t2**2 / 2 + cp2 * t2**3 / 3 +
+             cp3 * t2**4 / 4 + cp4 * t2**5 / 5 + cp5 * t2**6 / 6 +
+             cp6 * t2**7 / 7 + cp7 * t2**8 / 8 + cp8 * t2**9 / 9)
+            -
+            (cp0 * t1 + cp1 * t1**2 / 2 + cp2 * t1**3 / 3 +
+             cp3 * t1**4 / 4 + cp4 * t1**5 / 5 + cp5 * t1**6 / 6 +
+             cp6 * t1**7 / 7 + cp7 * t1**8 / 8 + cp8 * t1**9 / 9)))
+
+        return h
 
     def get_T(self, h, p):
 
@@ -3357,14 +3437,29 @@ class Site(object):
     def get_solarposition(self, row):
 
         solarpos = pvlib.solarposition.get_solarposition(
-                row[0] + timedelta(hours=0.5),
-                self.latitude,
-                self.longitude,
-                self.altitude,
-                pressure=row[1]['Pressure'],
-                temperature=row[1]['DryBulb'])
+            row[0] + timedelta(hours=0.5),
+            self.latitude,
+            self.longitude,
+            self.altitude,
+            pressure=row[1]['Pressure'],
+            temperature=row[1]['DryBulb'])
 
         return solarpos
+
+    # def get_hour_angle(self, row, equiation_of_time):
+
+    #     hour_angle = pvlib.solarposition.hour_angle(
+    #         row[0] + timedelta(hours=0.5),
+    #         self.longitude,
+    #         equation_of_time)
+
+    #     return hour_angle
+
+    # def get_equation_of_time(self, row):
+
+
+
+
 
 
 class HCEScatterMask(object):

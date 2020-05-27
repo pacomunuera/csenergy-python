@@ -8,7 +8,7 @@
   "filename": "2007 DATOS SAM VALIDACION.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
   "first_date": "2007/01/01 00:00",
-  "last_date": "2007/12/31 23:00"
+  "last_date": "2007/03/31 23:00"
  },
  "model": {
   "name": "Barbero1stOrder",
@@ -55,7 +55,7 @@
   "Name": "Solel UVAC 3",
   "Length": 72.9,
   "Bellows ratio": 0.96,
-  "Shield shadowing": 0.96,
+  "Shield shading": 0.96,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
   "Glass envelope inner diameter": 0.115,

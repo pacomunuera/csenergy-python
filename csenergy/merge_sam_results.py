@@ -45,8 +45,8 @@ import plotly.express as px
 #             root.destroy()
 # else:
 
-filename_sam = 'simulations_outputs/a.csv'
-filename_simulation = 'simulations_outputs/20200526 115428 ASTE 1B_COMPLETE.csv'
+filename_sam = 'simulations_outputs/results_SAM_VP1_VALIDACION_HCE_VACIO.csv'
+filename_simulation = 'simulations_outputs/20200526 175414 ASTE 1B_COMPLETE.csv'
 filename_columns = 'simulations_outputs/c.csv'
 
 with open(filename_simulation) as file_simulation:

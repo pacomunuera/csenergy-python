@@ -4,7 +4,10 @@ Created on Wed Feb  5 12:08:03 2020
 
 @author: fmunuera
 '''
+
+
 import sys
+sys.path.append('./libs')
 import os.path
 import CoolProp.CoolProp as CP
 import pvlib as pvlib
@@ -24,7 +27,6 @@ from decimal import Decimal
 from datetime import datetime
 import pandas as pd
 
-sys.path.append('./libs')
 
 
 class Interface(object):
@@ -321,7 +323,7 @@ class Interface(object):
         self.varhcedgo.set(cfg['HCE']['Glass envelope outer diameter'])
         self.varhcelength.set(cfg['HCE']['Length'])
         self.varbellowsratio.set(cfg['HCE']['Bellows ratio'])
-        self.varshieldshadowing.set(cfg['HCE']['Shield shadowing'])
+        self.varshieldshading.set(cfg['HCE']['Shield shading'])
         self.varhceemittanceA0.set(cfg['HCE']['Absorber emittance factor A0'])
         self.varhceemittanceA1.set(cfg['HCE']['Absorber emittance factor A1'])
         self.varhceabsorptance.set(cfg['HCE']['Absorber absorptance'])
@@ -426,7 +428,7 @@ class Interface(object):
         cfg['HCE']['Name'] = self.varhcename.get()
         cfg['HCE']['Length'] = self.varhcelength.get()
         cfg['HCE']['Bellows ratio'] = self.varbellowsratio.get()
-        cfg['HCE']['Shield shadowing'] = self.varshieldshadowing.get()
+        cfg['HCE']['Shield shading'] = self.varshieldshading.get()
         cfg['HCE']['Absorber tube inner diameter'] = self.varhcedri.get()
         cfg['HCE']['Absorber tube outer diameter'] = self.varhcedro.get()
         cfg['HCE']['Glass envelope inner diameter'] = self.varhcedgi.get()
@@ -1739,7 +1741,7 @@ class Interface(object):
         # self.varcoating = tk.StringVar(self.fr_hce)
         # self.varannulus = tk.StringVar(self.fr_hce)
         self.varbellowsratio = tk.DoubleVar(self.fr_hce)
-        self.varshieldshadowing = tk.DoubleVar(self.fr_hce)
+        self.varshieldshading = tk.DoubleVar(self.fr_hce)
         self.varhcebrackets = tk.DoubleVar(self.fr_hce)
 
         self.lbhcename = ttk.Label(
@@ -1821,13 +1823,13 @@ class Interface(object):
             textvariable=self.varbellowsratio).grid(
                 row=6, column=1, sticky='W', padx=2, pady=5)
 
-        self.lbshieldshadowing = ttk.Label(
+        self.lbshieldshading = ttk.Label(
             self.fr_hce,
-            text='Shield shadowing  [ ]').grid(
+            text='Shield shading  [ ]').grid(
                 row=7, column=0,  sticky='W', padx=2, pady=5)
-        self.enshieldshadowing = ttk.Entry(
+        self.enshieldshading = ttk.Entry(
             self.fr_hce,
-            textvariable=self.varshieldshadowing).grid(
+            textvariable=self.varshieldshading).grid(
                 row=7, column=1, sticky='W', padx=2, pady=5)
 
         self.lbbrackets = ttk.Label(
