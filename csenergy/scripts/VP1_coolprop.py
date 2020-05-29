@@ -13,6 +13,8 @@ from CoolProp.CoolProp import PropsSI
 import CoolProp.CoolProp as CP
 from datetime import datetime
 import os.path
+import numpy as np
+import matplotlib.pyplot as plt
 
 import pandas as pd                    ## Este proporciona una estructura similiar a los data.frame
 import statsmodels.api as sm           ## Este proporciona funciones para la estimación de muchos modelos estadísticos
@@ -81,7 +83,7 @@ rowcp = []
 rowmu = []
 rownu = []
 
-for temp in range(288,678,10):
+for temp in range(288,670,2):
     T.append(temp)
     rowH.append(get_deltaH(temp, pressure, 'INCOMP::TVP1'))
     rowkt.append(get_kt(temp, pressure, 'INCOMP::TVP1'))
@@ -99,8 +101,29 @@ datos = {'T': T, 'cp': rowcp,'rho': rowrho, 'mu': rowmu,
 # dt = pd.DataFrame(datos,
 #                   columns=['T', 'cp','rho', 'mu', 'nu', 'kt', 'Hcalc', 'Tcalc'])
 
-dt = pd.DataFrame(datos,
-                  columns=['mu'])
-dt.to_csv('t.csv',decimal='.', index=False, line_terminator=',')
+# dt = pd.DataFrame(datos,
+#                   columns=['mu'])
+# dt.to_csv('t.csv',decimal='.', index=False, line_terminator=',')
+
+
+
+sols = {}
+for grado in range(4,11):
+  z = np.polyfit(T, rowH, grado, full=True)
+  sols[grado] = z
+
+# Pintar datos
+plt.plot(T, rowH, 'o')
+
+# Pintar curvas de ajuste
+xp = np.linspace(rowT[0], rowT[-1]+100, 10000)
+for grado, sol in sols.items():
+  coefs, error, *_ = sol
+  p = np.poly1d(coefs)
+  plt.plot(xp, p(xp), "-", label="Gr: %s. Error %.30f" % (grado, error) )
+  lista = list(coefs)
+  lista.reverse()
+  print(lista)
+plt.legend()
 
 

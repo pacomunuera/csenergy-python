@@ -811,7 +811,6 @@ class HCE(object):
         # #  Internal transmission coefficient.
         # hint = kf * nudb / dri
 
-
         #  Gnielinski correlation. Eq. 4.15 Barbero2016
         kf = fluid.get_thermal_conductivity(t, p)
         dri = self.parameters['Absorber tube inner diameter']
@@ -859,18 +858,12 @@ class HCE(object):
 
     def get_absorptance(self):
 
-        #
-        alpha = self.parameters['Absorber absorptance']
-
-        return alpha
+        return  self.parameters['Absorber absorptance']
 
 
     def get_transmittance(self):
 
-        #dependiendo si hay vídrio y si hay vacío
-        tau = self.parameters['Envelope transmittance']
-
-        return tau
+        return self.parameters['Envelope transmittance']
 
 
     def get_reflectance(self):
@@ -2982,12 +2975,12 @@ class FluidTabular(Fluid):
 
         poly = np.polynomial.polynomial.Polynomial(self.mu)
 
-        # if t > 750:
-        #     mu_  = 0.0000989049999999998
-        # else:
-        #     mu_ = poly(t)
+        if t > self.tmax:
+            mu_  = poly(self.tmax)
+        else:
+            mu_ = poly(t)
         # mu_ = 0.00012
-        mu_ = poly(t)
+        # mu_ = poly(t)
         return mu_
 
         # return mu_
@@ -3061,18 +3054,19 @@ class FluidTabular(Fluid):
         poly = np.polynomial.polynomial.Polynomial(factors)
         roots = poly.roots()
 
-        tout_bigger = tin
-        tout_smaller = tin
+        tout_bigger = []
+        tout_smaller = []
+
         for r in roots:
             if r.imag == 0.0:
                 if r.real >= tin:
-                    tout_bigger = r.real
+                    tout_bigger.append(r.real)
                 else:
-                    tout_smaller = r.real
+                    tout_smaller.append(r.real)
         if h > 0:
-            tout = tout_bigger
+            tout = min(tout_bigger)
         elif h<0:
-            tout = tout_smaller
+            tout = max(tout_smaller)
         else:
             tout = tin
 
@@ -3456,9 +3450,6 @@ class Site(object):
     #     return hour_angle
 
     # def get_equation_of_time(self, row):
-
-
-
 
 
 
