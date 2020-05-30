@@ -98,22 +98,13 @@ for h in rowH:
 datos = {'T': T, 'cp': rowcp,'rho': rowrho, 'mu': rowmu,
          'nu': rownu, 'kt': rowkt, 'Hcalc': rowH, 'Tcalc': rowT}
 
-# dt = pd.DataFrame(datos,
-#                   columns=['T', 'cp','rho', 'mu', 'nu', 'kt', 'Hcalc', 'Tcalc'])
-
-# dt = pd.DataFrame(datos,
-#                   columns=['mu'])
-# dt.to_csv('t.csv',decimal='.', index=False, line_terminator=',')
-
-
-
 sols = {}
-for grado in range(4,11):
-  z = np.polyfit(T, rowH, grado, full=True)
+for grado in range(10,12):
+  z = np.polyfit(T, rowmu, grado, full=True)
   sols[grado] = z
 
 # Pintar datos
-plt.plot(T, rowH, 'o')
+plt.plot(T, rowmu, 'o')
 
 # Pintar curvas de ajuste
 xp = np.linspace(rowT[0], rowT[-1]+100, 10000)
@@ -124,6 +115,10 @@ for grado, sol in sols.items():
   lista = list(coefs)
   lista.reverse()
   print(lista)
+
 plt.legend()
 
+dt = pd.DataFrame(datos,
+                  columns=['T', 'cp','rho', 'mu', 'nu', 'kt', 'Hcalc', 'Tcalc'])
 
+dt.to_csv('t.csv',decimal=',', index=False, sep=';')

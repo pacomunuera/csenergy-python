@@ -14,39 +14,10 @@ from datetime import datetime, timedelta
 import time
 import pandas as pd
 import plotly.express as px
-# print(sys.argv)
 
-# if len(sys.argv) < 2:
-#             root = Tk()
-#             root.withdraw()
-#             path = askopenfilename(initialdir='simulation_outputs',
-#                                title='choose SAM RESULTS',
-#                                filetypes=[('CSV', '*.csv')])
 
-#             head, tail = os.path.split(path)
-#             filename_sam = path
-#             time.sleep(1)
-#             path = askopenfilename(initialdir='simulation_outputs',
-#                                title='choose SIMULATION RESULTS',
-#                                filetypes=[('CSV', '*.csv')])
-
-#             head, tail = os.path.split(path)
-#             filename_simulation = path
-#             time.sleep(1)
-
-#             path = askopenfilename(initialdir='simulation_outputs',
-#                                title='choose COLUMNS file',
-#                                filetypes=[('CSV', '*.csv')])
-
-#             head, tail = os.path.split(path)
-#             filename_columns = path
-
-#             root.update()
-#             root.destroy()
-# else:
-
-filename_sam = 'simulations_outputs/results_SAM_VP1_VALIDACION_HCE_VACIO.csv'
-filename_simulation = 'simulations_outputs/20200526 175414 ASTE 1B_COMPLETE.csv'
+filename_sam = 'simulations_outputs/results SAM_VP1_UVAC3_VACIO.csv'
+filename_simulation = 'simulations_outputs/20200530 154033 TEST SAM-VP1_COMPLETE.csv'
 filename_columns = 'simulations_outputs/c.csv'
 
 with open(filename_simulation) as file_simulation:
@@ -78,14 +49,9 @@ simulation_year = data_simulation.index[0].year
 data_sam.index = data_sam.index.map(
     lambda t: t.replace(year=simulation_year))
 
-# data_sam.index = data_sam.index.map(
-#     lambda t: t.replace(hour=t.hour-1))
-
 d = timedelta(hours=1)
 
 data_sam.index = data_sam.index - d
-# results_df = pd.DataFrame(index=data_simulation.index,
-#                           columns=columns_df.columns[1:])
 
 result = data_simulation.join(data_sam, how='left')
 
@@ -102,6 +68,3 @@ result.to_csv(
 
 
 
-
-# fig = px.line(result, x = 'date', y = 'DNI, title='DNI (2007)')
-# fig.show()

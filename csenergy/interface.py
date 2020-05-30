@@ -1336,6 +1336,8 @@ class Interface(object):
             self.enfluidtmax['state'] = 'normal'
             self.varfluidtmax.set('')
             self.varfluidtmin.set('')
+            self.varcoolproptmin.set('')
+            self.varcoolproptmax.set('')
         elif var == 2:  # Fluid from CoolProp
             self.varcoolproptmax.set('')
             self.varcoolproptmin.set('')
@@ -1346,6 +1348,10 @@ class Interface(object):
             self.btloadfluidcfg['state'] = 'disabled'
             self.enfluidtmin['state'] = 'disabled'
             self.enfluidtmax['state'] = 'disabled'
+            self.varfluidtmax.set('')
+            self.varfluidtmin.set('')
+            self.varcoolproptmin.set('')
+            self.varcoolproptmax.set('')
             self.fluid_table.table_data = []
         else:
             pass
@@ -1486,6 +1492,7 @@ class Interface(object):
         self.cmbscaname['values'] = [s['Name'] for s in cfg ]
         self.cmbscaname.current(0)
         self.load_sca_parameters()
+        self.checkfluid()
 
 
     def load_sca_parameters(self):

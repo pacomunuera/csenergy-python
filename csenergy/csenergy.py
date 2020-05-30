@@ -130,7 +130,7 @@ class ModelBarbero4thOrder(Model):
         # krec = hce.get_krec(tf)
 
         #  Specific Capacity
-        cp = htf.get_cp(tf, hce.pin)
+        cp = htf.get_specific_heat(tf, hce.pin)
 
         #  Internal transmission coefficient.
         # hint = hce.get_hint(tf, hce.pin, htf)
@@ -239,7 +239,7 @@ class ModelBarbero4thOrder(Model):
                 # krec = hce.get_krec(tf)
 
                 #  Specific Capacity
-                cp = htf.get_cp(tf, hce.pin)
+                cp = htf.get_specific_heat(tf, hce.pin)
 
                 #  Internal transmission coefficient.
                 # hint = hce.get_hint(tf, hce.pin, htf)
@@ -249,7 +249,7 @@ class ModelBarbero4thOrder(Model):
                 urec = hce.get_urec(tf, hce.pin, htf)
 
                 #  HCE emittance
-                eext = hce.get_emittance(tro, wspd)
+                eext = hce.get_eext(tro, wspd)
 
                 #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
@@ -292,7 +292,7 @@ class ModelBarbero4thOrder(Model):
                 #  tro = tf
                 tro = 0.5 * (hce.tin + hce.tout)
                 #  HCE emittance
-                eext = hce.get_emittance(tro, wspd)
+                eext = hce.get_eext(tro, wspd)
                 #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
 
@@ -348,7 +348,7 @@ class ModelBarbero1stOrder(Model):
         # krec = hce.get_krec(tf)
 
         #  Specific Capacity
-        cp = htf.get_cp(tf, hce.pin)
+        cp = htf.get_specific_heat(tf, hce.pin)
 
         #  Internal transmission coefficient.
         # hint = hce.get_hint(tf, hce.pin, htf)
@@ -440,7 +440,7 @@ class ModelBarberoSimplified(Model):
         # krec = hce.get_krec(tf)
 
         #  Specific Capacity
-        cp = htf.get_cp(tf, hce.pin)
+        cp = htf.get_specific_heat(tf, hce.pin)
 
         #  Internal transmission coefficient.
         # hint = hce.get_hint(tf, hce.pin, htf)
@@ -556,7 +556,8 @@ class HCE(object):
                   self.parameters['Shield shading'] *
                   self.parameters['Absorber tube outer diameter'])
 
-        self.tout = htf.get_T2(self.tin, q, self.sca.loop.massflow, self.pin)
+        self.tout = htf.get_temperature_by_integration(
+            self.tin, q, self.sca.loop.massflow, self.pin)
 
 
     def set_pout(self, htf):
@@ -636,7 +637,7 @@ class HCE(object):
         krec = self.get_krec(t)
 
         #  Specific Capacity
-        cp = htf.get_cp(t, p)
+        cp = htf.get_specific_heat(t, p)
 
         #  Internal transmission coefficient.
         hint = self.get_hint(t, p, htf)
@@ -647,31 +648,6 @@ class HCE(object):
             np.log(self.parameters['Absorber tube outer diameter'] /
                    self.parameters['Absorber tube inner diameter'])) /
             (2 * krec)))
-
-    def get_previous_pr(self):
-
-        if self.hce_order > 0:
-            previous_pr = self.sca.hces[self.hce_order-1].pr
-        elif self.sca.sca_order > 0:
-            previous_pr = self.sca.loop.scas[self.sca.sca_order-1].hces[-1].pr
-        else:
-            previous_pr = 1.0
-
-        return previous_pr
-
-    def get_index(self):
-
-        if hasattr(self.sca.loop, 'subfield'):
-            index = [self.sca.loop.subfield.name,
-                self.sca.loop.loop_order,
-                self.sca.sca_order,
-                self.hce_order]
-        else:
-            index = ['BL',
-                self.sca.sca_order,
-                self.hce_order]
-
-        return index
 
     def get_pr_opt_peak(self):
 
@@ -686,7 +662,6 @@ class HCE(object):
             print("ERROR", pr_opt_peak)
 
         return pr_opt_peak
-
 
     def get_pr_borders(self, aoi):
 
@@ -718,7 +693,6 @@ class HCE(object):
 
         return pr_borders
 
-
     def get_pr_shadows(self, solarpos):
 
         if solarpos['elevation'][0] < 0:
@@ -732,9 +706,7 @@ class HCE(object):
         if shading < 0.0 or shading > 1.0:
             shading = 0.0
 
-
         shading = 1 - shading
-
 
         if  shading > 1 or  shading < 0:
             print("ERROR shading",  shading)
@@ -787,14 +759,9 @@ class HCE(object):
 
         return shading
 
-
-
-
-
     def get_hext(self, wspd):
 
         #  TO-DO:
-
         return 0.0
 
     def get_hint(self, t, p, fluid):
@@ -835,7 +802,6 @@ class HCE(object):
 
         return hint
 
-
     def get_eext(self, tro, wspd):
 
 
@@ -855,21 +821,17 @@ class HCE(object):
 
         return eext
 
-
     def get_absorptance(self):
 
         return  self.parameters['Absorber absorptance']
-
 
     def get_transmittance(self):
 
         return self.parameters['Envelope transmittance']
 
-
     def get_reflectance(self):
 
         return self.sca.parameters['Reflectance']
-
 
     def get_qlost_brackets(self, tf, text):
 
@@ -887,6 +849,30 @@ class HCE(object):
 
         return n * (np.sqrt(pb * kb * acsb * hb) * (tbase - text)) / L
 
+    def get_previous_pr(self):
+
+        if self.hce_order > 0:
+            previous_pr = self.sca.hces[self.hce_order-1].pr
+        elif self.sca.sca_order > 0:
+            previous_pr = self.sca.loop.scas[self.sca.sca_order-1].hces[-1].pr
+        else:
+            previous_pr = 1.0
+
+        return previous_pr
+
+    def get_index(self):
+
+        if hasattr(self.sca.loop, 'subfield'):
+            index = [self.sca.loop.subfield.name,
+                self.sca.loop.loop_order,
+                self.sca.sca_order,
+                self.hce_order]
+        else:
+            index = ['BL',
+                self.sca.sca_order,
+                self.hce_order]
+
+        return index
 
 class SCA(object):
 
@@ -923,7 +909,6 @@ class SCA(object):
             print("ERROR",  solarfraction)
 
         return solarfraction
-
 
     def get_IAM(self, aoi):
 
@@ -1219,19 +1204,9 @@ class __Loop__(object):
 
     def set_wasted_power(self, htf):
 
-        # if self.tout > self.parameters['tmax']:
-        #     HH = htf.get_deltaH(self.tout, self.pout)
-        #     HL = htf.get_deltaH(self.parameters['tmax'], self.pout)
-        #     self.wasted_power = self.massflow * (HH - HL)
-        # else:
-        #     self.wasted_power = 0.0
-
         if self.tout > self.parameters['tmax']:
-            self.wasted_power = htf.get_deltaH2(
-                self.tin,
-                self.tout,
-                self.massflow,
-                self.pin)
+            self.wasted_power = self.massflow * htf.get_delta_enthalpy(
+                self.parameters['tmax'], self.tout, self.pin, self.pout)
         else:
             self.wasted_power = 0.0
 
@@ -1491,7 +1466,6 @@ class BaseLoop(__Loop__):
 class Subfield(object):
     '''
     Parabolic Trough Solar Field
-
     '''
 
     def __init__(self, solarfield, settings):
@@ -1530,91 +1504,52 @@ class Subfield(object):
 
     def set_subfield_values_from_loops(self, htf):
 
-        massflow_list = []
-        pr_list = []
-        pr_opt_list = []
-        wasted_power_list = []
-        pout_list = []
-        enthalpy_list = []
-        qlost_list = []
-        qabs_list = []
-        qlost_brackets_list = []
-
-        for l in self.loops:
-            massflow_list.append(l.massflow)
-            pr_list.append(l.pr * l.massflow)
-            pr_opt_list.append(l.pr_opt * l.massflow)
-            wasted_power_list.append(l.wasted_power)
-            pout_list.append(l.pout * l.massflow)
-            enthalpy_list.append(l.massflow * htf.get_deltaH(l.tout, l.pout))
-            qlost_list.append(l.qlost)
-            qabs_list.append(l.qabs)
-            qlost_brackets_list.append(l.qlost_brackets)
-
-        self.massflow = np.sum(massflow_list)
-        self.pr = np.sum(pr_list) / self.massflow
-        self.pr_opt = np.sum(pr_opt_list) / self.massflow
-        self.wasted_power = np.sum(wasted_power_list) / 1000000
-        self.pout = np.sum(pout_list) / self.massflow
-        self.tout = htf.get_T(np.sum(enthalpy_list) /
+        self.massflow = np.sum([l.massflow for l in self.loops])
+        self.pr = np.sum([l.pr * l.massflow for l in self.loops]) /  \
+            self.massflow
+        self.pr_opt = np.sum([l.pr_opt * l.massflow for l in self.loops]) / \
+            self.massflow
+        self.wasted_power = np.sum([l.wasted_power for l in self.loops]) / \
+            1000000  # From Watts to MW
+        self.pout = np.sum([l.pout * l.massflow for l in self.loops]) / \
+            self.massflow
+        self.tout = htf.get_temperature(
+            np.sum([l.massflow *
+                    htf.get_enthalpy(l.tout, l.pout) for l in self.loops]) /
                               self.massflow, self.pout)
-        self.qlost = np.sum(qlost_list)
-        self.qabs = np.sum(qabs_list)
-        self.qlost_brackets = np.sum(qlost_brackets_list)
+        self.qlost = np.sum([l.qlost for l in self.loops])
+        self.qabs = np.sum([l.qabs for l in self.loops])
+        self.qlost_brackets = np.sum([l.qlost_brackets for l in self.loops])
 
     def set_massflow(self):
 
-        mf = 0.0
-        for l in self.loops:
-            mf += l.massflow
-
-        self.massflow = mf
+        self.massflow = np.sum([l.massflow for l in self.loops])
 
     def set_req_massflow(self):
 
-        req_mf = 0.0
-        for l in self.loops:
-            req_mf += l.req_massflow
-
-        self.req_massflow = req_mf
-
+        self.req_massflow = np.sum([l.req_massflow for l in self.loops])
 
     def set_wasted_power(self):
 
-        wasted_power = 0.0
-        for l in self.loops:
-            wasted_power += l.wasted_power
-
-        self.wasted_power = wasted_power / 1000000
+        self.wasted_power = np.sum([l.wasted_power for l in self.loops]) / \
+            1000000  # From Watts to MW
 
     def set_pr_req_massflow(self):
 
-        loops_var = []
-
-        for l in self.loops:
-
-            loops_var.append(l.pr_req_massflow * l.req_massflow)
-
-        self.pr_req_massflow = np.sum(loops_var) / self.req_massflow
+        self.pr_req_massflow = np.sum(
+            [l.pr_req_massflow * l.req_massflow for l in self.loops]) / \
+            self.req_massflow
 
     def set_pr_act_massflow(self):
 
-        loops_var = []
-
-        for l in self.loops:
-            loops_var.append(l.pr_act_massflow * l.act_massflow)
-
-        self.pr_act_massflow =  np.sum(loops_var) / self.act_massflow
-
+        self.pr_act_massflow = np.sum(
+            [l.pr_act_massflow * l.act_massflow for l in self.loops]) / \
+            self.act_massflow
 
     def set_pout(self):
 
-        loops_var = []
-
-        for l in self.loops:
-            loops_var.append(l.pout * l.massflow)
-
-        self.pout = np.sum(loops_var) / self.massflow
+        self.pout = np.sum([l.pout * l.massflow for l in self.loops]) / \
+            self.massflow
 
     def set_tout(self, htf):
         '''
@@ -1622,27 +1557,9 @@ class Subfield(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-        # H = 0.0
-        # H2 = 0.0
-        dH = 0.0
-
-        for l in self.loops:
-            dH += l.massflow * htf.get_deltaH(l.tout, l.pout)
-
-        dH /= self.massflow
-        self.tout = htf.get_T(dH, self.pout)
-
-    def loops_avg_out(self):
-
-        tavg = 0.0
-        cont = 0
-
-        for l in self.loops:
-            cont += 1
-            tavg += l.tout
-
-        return tavg / cont
-
+        self.tout = htf.get_temperature(
+            np.sum([l.massflow * htf.get_enthalpy(l.tout, l.pout)
+                    for l in self.loops]) / self.massflow, self.pout)
 
     def initialize(self, source, values = None):
 
@@ -1669,7 +1586,6 @@ class Subfield(object):
             print('Select source [rated|actual|values]')
             sys.exit()
 
-
     def load_actual(self, row):
 
         self.act_massflow = row[1][self.get_id() +'.a.mf']
@@ -1678,7 +1594,6 @@ class Subfield(object):
         self.act_tout = row[1][self.get_id() +'.a.tout']
         self.act_pout = row[1][self.get_id() +'.a.pout']
 
-
     def get_id(self):
 
         return 'SB.' + self.name
@@ -1686,7 +1601,6 @@ class Subfield(object):
 class SolarField(object):
     '''
     Parabolic Trough Solar Field
-
     '''
 
     def __init__(self, subfield_settings, loop_settings, sca_settings, hce_settings):
@@ -1722,7 +1636,6 @@ class SolarField(object):
         self.rated_massflow = (loop_settings['rated_massflow'] *
                                self.total_loops)
 
-
         for sf in subfield_settings:
             self.total_loops += sf['loops']
             self.subfields.append(Subfield(self, sf))
@@ -1740,7 +1653,6 @@ class SolarField(object):
         # FUTURE WORK
         self.storage_available = False
         self.operation_mode = "subfield_heating"
-
 
     def initialize(self, source, values = None):
 
@@ -1767,139 +1679,84 @@ class SolarField(object):
             print('Select source [rated|actual|values]')
             sys.exit()
 
-
     def load_actual(self, htf):
 
-        massflow = 0.0
-        H_tin = 0.0
-        H_tout = 0.0
-        list_pin = []
-        list_pout = []
-
-        for sf in self.subfields:
-            massflow += sf.act_massflow
-            H_tin += (sf.act_massflow *
-                      htf.get_deltaH(sf.act_tin, sf.act_pin))
-            H_tout += (sf.act_massflow *
-                       htf.get_deltaH(sf.act_tout, sf.act_pout))
-            list_pin.append(sf.act_pin * sf.act_massflow)
-            list_pout.append(sf.act_pout * sf.act_massflow)
-
-        H_tin /= massflow
-        H_tout /= massflow
-
-        self.act_massflow = massflow
-        self.act_pin = np.sum(list_pin) / massflow
-        self.act_pout = np.sum(list_pout) / massflow
-        self.act_tin = htf.get_T(H_tin, self.act_pin)
-        self.act_tout = htf.get_T(H_tout, self.act_pout)
+        self.act_massflow = np.sum([sb.act_massflow for sb in self.subfields])
+        self.act_pin = np.sum(
+            [sb.act_pin * sb.act_massflow for sb in self.subfields]) / \
+            self.act_massflow
+        self.act_pout = np.sum(
+            [sb.act_pout * sb.act_massflow for sb in self.subfields]) / \
+            self.act_massflow
+        self.act_tin = htf.get_temperature(
+            np.sum([sb.act_massflow *
+                    htf.get_enthalpy(sb.act_tin, sb.act_pin)
+                    for sb in self.subfields]) / self.act_massflow,
+            self.act_pin)
+        self.act_tout = htf.get_temperature(
+            np.sum([sb.act_massflow *
+                    htf.get_enthalpy(sb.act_tout, sb.act_pout)
+                    for sb in self.subfields] / self.act_massflow),
+            self.act_pout)
 
     def set_solarfield_values_from_subfields(self, htf):
 
-        massflow_list = []
-        pr_list = []
-        pr_opt_list = []
-        wasted_power_list = []
-        pout_list = []
-        enthalpy_list = []
-        qlost_list = []
-        qabs_list = []
-        qlost_brackets_list = []
-
-        for s in self.subfields:
-            massflow_list.append(s.massflow)
-            pr_list.append(s.pr * s.massflow)
-            pr_opt_list.append(s.pr_opt * s.massflow)
-            wasted_power_list.append(s.wasted_power)
-            pout_list.append(s.pout * s.massflow)
-            enthalpy_list.append(s.massflow * htf.get_deltaH(s.tout, s.pout))
-            qlost_list.append(s.qlost)
-            qabs_list.append(s.qabs)
-            qlost_brackets_list.append(s.qlost_brackets)
-
-        self.massflow = np.sum(massflow_list)
-        self.pr = np.sum(pr_list) / self.massflow
-        self.pr_opt = np.sum(pr_opt_list) / self.massflow
-        self.wasted_power = np.sum(wasted_power_list)
-        self.pout = np.sum(pout_list) /self.massflow
-        self.tout = htf.get_T(np.sum(enthalpy_list) /
-                              self.massflow, self.pout)
-        self.qlost = np.sum(qlost_list)
-        self.qabs = np.sum(qabs_list)
-        self.qlost_brackets = np.sum(qlost_brackets_list)
+        self.massflow = np.sum([sb.massflow for sb in self.subfields])
+        self.pr = np.sum(
+            [sb.pr * sb.massflow for sb in self.subfields]) / self.massflow
+        self.pr_opt = np.sum(
+            [sb.pr_opt * sb.massflow for sb in self.subfields]) / self.massflow
+        self.wasted_power = np.sum([sb.wasted_power for sb in self.subfields])
+        self.pout = np.sum(
+            [sb.pout * sb.massflow for sb in self.subfields]) /self.massflow
+        self.tout = htf.get_temperature(
+            np.sum([sb.massflow * htf.get_enthalpy(sb.tout, sb.pout)
+                    for sb in self.subfields]) / self.massflow, self.pout)
+        self.qlost = np.sum([sb.qlost for sb in self.subfields])
+        self.qabs = np.sum([sb.qabs for sb in self.subfields])
+        self.qlost_brackets = np.sum(
+            [sb.qlost_brackets for sb in self.subfields])
 
     def set_massflow(self):
 
-        mf = 0.0
-        req_mf = 0.0
-
-        for sf in self.subfields:
-            mf += sf.massflow
-            req_mf += sf.req_massflow
-
-        self.massflow = mf
-        self.req_massflow = req_mf
-
+        self.massflow = np.sum([sb.massflow for sb in self.subfields])
+        self.req_massflow = np.sum([sb.req_massflow for sb in self.subfields])
 
     def set_req_massflow(self):
 
-        mf = 0.0
-
-        for sf in self.subfields:
-            mf += sf.req_massflow
-
-        self.req_massflow = mf
-
+        self.req_massflow = np.sum([sb.req_massflow for sb in self.subfields])
 
     def set_wasted_power(self):
 
-        wasted_power = 0.0
-        for s in self.subfields:
-            wasted_power += s.wasted_power
-
-        self.wasted_power = wasted_power
-
+        self.wasted_power = np.sum([sb.wasted_power for sb in self.subfields])
 
     def set_pr_req_massflow(self):
 
-        subfields_var = []
-        for s in self.subfields:
-            subfields_var.append(s.pr_req_massflow * s.req_massflow)
-
-        self.pr_req_massflow = np.sum(subfields_var) / self.req_massflow
-
+        self.pr_req_massflow = np.sum(
+            [sb.pr_req_massflow * sb.req_massflow for sb in self.subfields]) \
+            / self.req_massflow
 
     def set_pr_act_massflow(self):
 
-        subfields_var = []
-        for s in self.subfields:
-            subfields_var.append(s.pr_act_massflow * s.act_massflow)
-
-        self.pr_act_massflow = np.sum(subfields_var) / self.act_massflow
-
+         self.pr_act_massflow = np.sum(
+            [sb.pr_act_massflow * sb.act_massflow for sb in self.subfields]) \
+            / self.act_massflow
 
     def set_pout(self):
 
-        subfields_var = []
-
-        for sf in self.subfields:
-            subfields_var.append(sf.pout * sf.massflow)
-
-        self.pout = np.sum(subfields_var) / self.massflow
+        self.pout = np.sum(
+            [sb.pout * sb.massflow for sb in self.subfields]) \
+            / self.massflow
 
     def set_tout(self, htf):
         '''
         Calculates HTF output temperature throughout the solar plant as a
-        weighted average based on the enthalpy of the mass flow in each
-        loop of the solar field
+        weighted average based on the enthalpy of the mass flow in  each
+        subfield of the solar field
         '''
-        dH = 0.0
-
-        for sf in self.subfields:
-            dH += sf.massflow * htf.get_deltaH(sf.tout, sf.pout)
-
-        dH /= self.massflow
-        self.tout = htf.get_T(dH, self.pout)
+        self.tout = htf.get_temperature(
+            np.sum([sb.massflow * htf.get_enthalpy(sb.tout, sb.pout) for sb in
+             self.subfields]) / self.massflow, self.pout)
 
     def set_act_tout(self, htf):
         '''
@@ -1907,17 +1764,10 @@ class SolarField(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-
-        dH_actual = 0.0
-
-        for sf in self.subfields:
-
-            dH_actual += sf.act_massflow * htf.get_deltaH(sf.tout, sf.pout)
-            dH_actual += sf.act_massflow * htf.get_deltaH(sf.act_tout, sf.act_pout)
-
-        dH_actual /= self.act_massflow
-        self.act_tout = htf.get_T(dH_actual, self.act_pout)
-
+        self.act_tout = htf.get_temperature(
+            np.sum([sb.act_massflow *
+                    tf.get_enthalpy(sb.act_tout, sb.act_pout) for sb in
+             self.subfields]) / self.act_massflow, self.act_pout)
 
     def set_tin(self, htf):
         '''
@@ -1925,58 +1775,45 @@ class SolarField(object):
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
         '''
-        H = 0.0
-
-        for sf in self.subfields:
-
-            H += (htf.get_deltaH(sf.tin, sf.pin) * sf.massflow)
-
-        H /= self.massflow
-        self.tin = htf.get_T(H, self.rated_pin)
-
+        self.tin = tf.get_temperature(
+            np.sum([sb.massflow *
+                    tf.get_enthalpy(sb.tin, sb.pin) for sb in
+             self.subfields]) / self.massflow, self.pin)
 
     def set_pin(self):
 
-        subfields_var = []
-
-        for sf in self.subfields:
-            subfields_var.append(sf.pin * sf.massflow)
-
-        self.pin = np.sum(subfields_var) / self.massflow
-
+        self.pin = np.sum([sb.pin * sb.massflow for sb in self.subfields]) \
+            / self.massflow
 
     def set_act_pin(self):
 
-        subfields_var = []
-
-        for sf in self.subfields:
-            subfields_var.append(sf.act_pin * sf.act_massflow)
-
-        self.act_pin = np.sum(subfields_var) / self.act_massflow
-
+        self.act_pin = np.sum(
+            [sb.act_pin * sb.act_massflow for sb in self.subfields]) \
+            / self.massflow
 
     def set_thermal_power(self, htf, datatype):
 
-        self.pwr = self.massflow * (
-            htf.get_deltaH(self.tout, self.pout) -
-            htf.get_deltaH(self.tin, self.pin))
+        self.pwr = self.massflow * \
+            htf.get_delta_enthalpy(self.tin, self.tout, self.pin, self.pout)
 
+        #  From watts to MW
         self.pwr /= 1000000
 
         if datatype == 2:
-            self.act_pwr = self.act_massflow * (
-                htf.get_deltaH(self.act_tout, self.act_pout) -
-                htf.get_deltaH(self.act_tin, self.act_pin))
+            self.act_pwr = self.act_massflow * \
+                htf.get_delta_enthalpy(
+                    self.act_tin, self.act_tout, self.act_pin, self.act_pout)
 
+            #  From watts to MW
             self.act_pwr /= 1000000
 
     def print(self):
 
-        for sf in self.subfields:
-            for l in sf.loops:
+        for sb in self.subfields:
+            for l in sb.loops:
                 for s in l.scas:
                     for h in s.hces:
-                        print("subfield: ", sf.name,
+                        print("subfield: ", sb.name,
                               "Lazo: ",l.loop_order,
                               "SCA: ", s.sca_order,
                               "HCE: ", h.hce_order,
@@ -2252,7 +2089,6 @@ class SolarFieldSimulation(object):
             self.base_loop.get_pr_opt_peak()
         self.datasource.dataframe.at[row[0], 'solar_fraction'] = \
             self.base_loop.get_solar_fraction()
-
 
     def gather_simulation_data(self, row):
 
@@ -2599,15 +2435,12 @@ class LoopSimulation(object):
     Definimos la clase simulacion para representar las diferentes
     pruebas que lancemos, variando el archivo TMY, la configuracion del
     site, la planta, el modo de operacion o el modelo empleado.
-
     """
 
     def __init__(self, settings):
 
-
         self.tracking = True
         self.htf = None
-        self.coldfluid = None
         self.site = None
         self.datasource = None
         self.parameters = settings
@@ -2791,7 +2624,7 @@ class Air(object):
 
 class Fluid:
 
-    _T_REF = 285.856  # K, T_REF= 12.706 K
+    _T_REF = 285.856  # Kelvin, T_REF= 12.706 Celsius Degrees
     _COOLPROP_FLUIDS = ['Water', 'INCOMP::TVP1', 'INCOMP::S800']
 
     def test_fluid(self, tmax, tmin, p):
@@ -2801,16 +2634,16 @@ class Fluid:
         for tt in range(int(round(tmax)), int(round(tmin)), -5):
             data.append({'T': tt,
                          'P': p,
-                         'cp': self.get_cp(tt, p),
+                         'cp': self.get_specific_heat(tt, p),
                          'rho': self.get_density(tt, p),
                          'mu': self.get_dynamic_viscosity(tt, p),
                          'kt': self.get_thermal_conductivity(tt, p),
-                         'H': self.get_deltaH(tt, p),
-                         'T-H': self.get_T(self.get_deltaH(tt, p), p)})
+                         'H': self.get_enthalpy(tt, p),
+                         'T-H': self.get_temperature(self.get_enthalpy(tt, p), p)})
         df = pd.DataFrame(data)
         print(round(df, 6))
 
-    def get_cp(self, p, t):
+    def get_specific_heat(self, p, t):
         pass
 
     def get_density(self, p, t):
@@ -2819,13 +2652,13 @@ class Fluid:
     def get_thermal_conductivity(self, p, t):
         pass
 
-    def get_deltaH(self, p, t):
+    def get_enthalpy(self, p, t):
         pass
 
-    def get_T(self, h, p):
+    def get_temperature(self, h, p):
         pass
 
-    def get_T2(self, tin, q, mf=None, p=None):
+    def get_temperature_by_integration(self, tin, q, mf=None, p=None):
         pass
 
     def get_dynamic_viscosity(self, t, p):
@@ -2846,7 +2679,7 @@ class Fluid:
     def get_prandtl(self, t, p):
 
         #  Specific heat capacity
-        cp = self.get_cp(t, p)
+        cp = self.get_specific_heat(t, p)
 
         #  Fluid dynamic viscosity
         mu = self.get_dynamic_viscosity(t, p)
@@ -2895,7 +2728,7 @@ class FluidCoolProp(Fluid):
         #p = 1600000
         return  PropsSI('V','T',t,'P', p, self.coolpropID)
 
-    def get_cp(self, t, p):
+    def get_specific_heat(self, t, p):
 
         if t > self.tmax:
             t = self.tmax
@@ -2910,7 +2743,7 @@ class FluidCoolProp(Fluid):
 
         return PropsSI('L','T',t,'P', p, self.coolpropID)
 
-    def get_deltaH(self, t, p):
+    def get_enthalpy(self, t, p):
 
         if t > self.tmax:
             t = self.tmax
@@ -2921,7 +2754,16 @@ class FluidCoolProp(Fluid):
 
         return deltaH
 
-    def get_T(self, h, p):
+    def get_delta_enthalpy(self, t1, t2, p1, p2):
+
+        CP.set_reference_state(self.coolpropID,'ASHRAE')
+        h1 = PropsSI('H','T',t1 ,'P', p1, self.coolpropID)
+        h2 = PropsSI('H','T',t2 ,'P', p2, self.coolpropID)
+        CP.set_reference_state(self.coolpropID, 'DEF')
+
+        return mf * (h2-h1)
+
+    def get_temperature(self, h, p):
 
         CP.set_reference_state(self.coolpropID,'ASHRAE')
         temperature = PropsSI('T', 'H', h, 'P', p, self.coolpropID)
@@ -2929,7 +2771,7 @@ class FluidCoolProp(Fluid):
 
         return temperature
 
-    def get_T2(self, t,  q, mf = None, p = None):
+    def get_temperature_by_integration(self, t,  q, mf = None, p = None):
 
         if t > self.tmax:
             t = self.tmax
@@ -2965,80 +2807,64 @@ class FluidTabular(Fluid):
 
         poly = np.polynomial.polynomial.Polynomial(self.rho)
 
-        # if t > self.tmax:
-        #     t= self.tmax
-
-        return poly(t) * (p * 1.0e-4)**1.0e-3
-
+        # return poly(t) * (p * 1.0e-4)**1.0e-3
+        return poly(t)
 
     def get_dynamic_viscosity(self, t, p):
 
         poly = np.polynomial.polynomial.Polynomial(self.mu)
 
-        if t > self.tmax:
-            mu_  = poly(self.tmax)
-        else:
-            mu_ = poly(t)
+        # if t > self.tmax:
+        #     mu_  = poly(self.tmax)
+        # else:
+        #     mu_ = poly(t)
+
         # mu_ = 0.00012
-        # mu_ = poly(t)
+
+        mu_ = poly(t)
         return mu_
 
-        # return mu_
-
-    def get_cp(self, t, p):
-
-        # cp0, cp1, cp2, cp3, cp4, cp5 = tuple(self.cp)
-
-        # return (cp0 + cp1 * t + cp2 * t**2 + cp3 * t**3 +
-        #         cp4 * t**4 + cp5 * t**5)
+    def get_specific_heat(self, t, p):
 
         poly = np.polynomial.polynomial.Polynomial(self.cp)
-        if t > self.tmax:
-            t= self.tmax
 
         return poly(t)
-
 
     def get_thermal_conductivity(self, t, p):
         ''' Saturated Fluid conductivity at temperature t '''
 
         poly = np.polynomial.polynomial.Polynomial(self.kt)
-        # if t > self.tmax:
-        #     t= self.tmax
 
         return poly(t)
 
-    def get_deltaH(self, t, p):
+    def get_enthalpy(self, t, p):
 
         poly = np.polynomial.polynomial.Polynomial(self.h)
 
-        # if t > self.tmax:
-        #     t= self.tmax
+        return poly(t)
 
-        return poly(t) - poly(self._T_REF)
-
-    def get_deltaH2(self, t1, t2, mf=None, p=None):
+    def get_delta_enthalpy(self, t1, t2, p1, p2):
 
         cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8 = tuple(self.cp)
 
-        h = (mf * (
+        h = (
             (cp0 * t2 + cp1 * t2**2 / 2 + cp2 * t2**3 / 3 +
              cp3 * t2**4 / 4 + cp4 * t2**5 / 5 + cp5 * t2**6 / 6 +
              cp6 * t2**7 / 7 + cp7 * t2**8 / 8 + cp8 * t2**9 / 9)
             -
             (cp0 * t1 + cp1 * t1**2 / 2 + cp2 * t1**3 / 3 +
              cp3 * t1**4 / 4 + cp4 * t1**5 / 5 + cp5 * t1**6 / 6 +
-             cp6 * t1**7 / 7 + cp7 * t1**8 / 8 + cp8 * t1**9 / 9)))
+             cp6 * t1**7 / 7 + cp7 * t1**8 / 8 + cp8 * t1**9 / 9))
 
         return h
 
-    def get_T(self, h, p):
+    def get_temperature(self, h, p):
 
         poly = np.polynomial.polynomial.Polynomial(self.t)
 
         return poly(h)
 
-    def get_T2(self, tin, h, mf=None, p=None):
+    def get_temperature_by_integration(self, tin, h, mf=None, p=None):
 
 
         #tout = tin
@@ -3483,9 +3309,9 @@ class HCEScatterMask(object):
 
         self.matrix = dict()
 
-        for sf in solarfield_settings['subfields']:
+        for sb in solarfield_settings['subfields']:
             self.matrix[sf["name"]]=[]
-            for l in range(sf.get('loops')):
+            for l in range(sb.get('loops')):
                 self.matrix[sf["name"]].append([])
                 for s in range(solarfield_settings['loop']['scas']):
                     self.matrix[sf["name"]][-1].append([])
@@ -3494,12 +3320,12 @@ class HCEScatterMask(object):
 
     def applyMask(self, solarfield):
 
-        for sf in solarfield.subfields:
-            for l in sf.loops:
+        for sb in solarfield.subfields:
+            for l in sb.loops:
                 for s in l.scas:
                     for h in s.hces:
-                        for k in self.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order].keys():
-                            h.parameters[k] *= float(self.matrix[sf.name][l.loop_order][s.sca_order][h.hce_order][k])
+                        for k in self.matrix[sb.name][l.loop_order][s.sca_order][h.hce_order].keys():
+                            h.parameters[k] *= float(self.matrix[sb.name][l.loop_order][s.sca_order][h.hce_order][k])
 
 
 class SCAScatterMask(object):
@@ -3509,20 +3335,20 @@ class SCAScatterMask(object):
 
         self.matrix = dict()
 
-        for sf in solarfield_settings['subfields']:
+        for sb in solarfield_settings['subfields']:
             self.matrix[sf["name"]]=[]
-            for l in range(sf.get('loops')):
+            for l in range(sb.get('loops')):
                 self.matrix[sf["name"]].append([])
                 for s in range(solarfield_settings['loop']['scas']):
                     self.matrix[sf["name"]][-1].append(sca_mask_settings)
 
     def applyMask(self, solarfield):
 
-        for sf in solarfield.subfields:
-            for l in sf.loops:
+        for sb in solarfield.subfields:
+            for l in sb.loops:
                 for s in l.scas:
-                    for k in self.matrix[sf.name][l.loop_order][s.sca_order].keys():
-                        s.parameters[k] *= float(self.matrix[sf.name][l.loop_order][s.sca_order][k])
+                    for k in self.matrix[sb.name][l.loop_order][sb.sca_order].keys():
+                        s.parameters[k] *= float(self.matrix[sb.name][l.loop_order][s.sca_order][k])
 
 
 class Test(object):
@@ -3613,7 +3439,7 @@ class Test(object):
             #  Reynolds number for absorber tube inner diameter, dri
             redri = self.htf.get_Reynolds(dri, row[1]['tin'], row[1]['pin'],
                                           row[1]['mf'])
-            cp = self.htf.get_cp(row[1]['tin'], row[1]['pin'])
+            cp = self.htf.get_specific_heat(row[1]['tin'], row[1]['pin'])
             rho = self.htf.get_density(row[1]['tin'], row[1]['pin'])
             # We supose inner wall temperature is equal to fluid temperature
             prri = prf
