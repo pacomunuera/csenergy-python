@@ -13,7 +13,7 @@ from datetime import datetime
 import pandas as pd
 import csenergy as cs
 
-with open("./saved_configurations/TEST_SAM_VP_1.json") as simulation_file:
+with open("./saved_configurations/TEST_2007_IPH_VP1.json") as simulation_file:
     SIMULATION_SETTINGS = json.load(simulation_file)
 
 SIM = cs.SolarFieldSimulation(SIMULATION_SETTINGS)

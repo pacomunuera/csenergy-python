@@ -1,0 +1,37 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {spanish}{}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {1}Introducción}{1}{chapter.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.1}Objetivo}{1}{section.1.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.2}Estructura de la memoria}{1}{section.1.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.3}Modelado de concentradores cilindroparabólicos}{2}{section.1.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {2}Descripción de los modelos teóricos utilizados}{3}{chapter.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.1}Modelo de rendimiento térmico de 4º Orden para caracterización de un sistema de captación solar}{3}{section.2.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.2}Modelo de Primer Orden}{7}{section.2.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.3}Modelo simplificadol}{7}{section.2.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.4}Aplicabilidad de los modelos}{8}{section.2.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {3}Modelado del campo solar}{9}{chapter.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.1}Programación Orientada a Objetos para la simulación de sistemas físicos}{9}{section.3.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.2}Sistemas físicos y Clases para el modelado del campo solar}{9}{section.3.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Heat Collector Element, HCE}{12}{equation.3.2.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{Solar Collector Assambly, SCA}{17}{equation.3.2.15}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.3}Algoritmo de simulación}{21}{section.3.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.4}Validación y configuración del campo solar real}{24}{section.3.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3.5}Resultados de la validación}{35}{section.3.5}%
+\contentsfinish 

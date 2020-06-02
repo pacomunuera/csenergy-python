@@ -1,0 +1,11 @@
+[0] Config.pm:304> INFO - This is Biber 2.14
+[0] Config.pm:307> INFO - Logfile is 'TFG_rev01.blg'
+[112] biber-MSWIN64:322> INFO - === 
+[141] Biber.pm:415> INFO - Reading 'TFG_rev01.bcf'
+[315] Biber.pm:943> INFO - Found 15 citekeys in bib section 0
+[345] Biber.pm:4256> INFO - Processing section 0
+[345] Utils.pm:75> INFO - Globbing data source 'bibliography/bibliography'
+[360] Utils.pm:91> INFO - Globbed data source 'bibliography/bibliography' to bibliography/bibliography
+[385] Biber.pm:4455> INFO - Looking for bibtex format file 'bibliography/bibliography' for section 0
+[1001] Utils.pm:320> ERROR - Cannot find 'bibliography/bibliography'!
+[1002] Biber.pm:132> INFO - ERRORS: 1

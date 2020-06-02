@@ -1,0 +1,1328 @@
+% Definimos las características del documento y añadimos una serie de paquetes (\usepackage{package}) que agregan funcionalidades a LaTeX.
+
+\documentclass[12pt]{report} %fuente a 12pt
+
+% MÁRGENES: 2,5 cm sup. e inf.; 3 cm izdo. y dcho.
+\usepackage[
+a4paper,
+vmargin=2.5cm,
+hmargin=3cm
+]{geometry}
+
+
+% INTERLINEADO: Estrecho (6 ptos./interlineado 1,15) o Moderado (6 ptos./interlineado 1,5)
+\renewcommand{\baselinestretch}{1.5}
+\parskip=6pt
+
+% DEFINICIÓN DE COLORES para portada y listados de código
+\usepackage[table]{xcolor}
+\definecolor{azulUC3M}{RGB}{0,0,102}
+\definecolor{gray97}{gray}{.97}
+\definecolor{gray75}{gray}{.75}
+\definecolor{gray45}{gray}{.45}
+
+% Soporte para GENERAR PDF/A --es importante de cara a su inclusión en e-Archivo porque es el formato óptimo de preservación y a la generación de metadatos, tal y como se describe en http://uc3m.libguides.com/ld.php?content_id=31389625. En la carpeta incluímos el archivo plantilla_tfg_2017.xmpdata en el que puedes incluir los metadatos que se incorporarán al archivo PDF cuando lo compiles. Ese archivo debe llamarse igual que tu archivo .tex. Puedes ver un ejemplo en esta misma carpeta.
+\usepackage[a-1b]{pdfx}
+
+% ENLACES
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,
+	linkcolor=black, % enlaces a partes del documento (p.e. índice) en color negro
+	urlcolor=blue} % enlaces a recursos fuera del documento en azul
+
+% EXPRESIONES MATEMATICAS
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+
+\usepackage{txfonts} 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[spanish, es-tabla]{babel} % información sobre el paquete babel para español http://osl.ugr.es/CTAN/language/spanish/babel/base/spanish.pdf
+\usepackage[babel, spanish=spanish]{csquotes}
+\AtBeginEnvironment{quote}{\small}
+
+% diseño de PIE DE PÁGINA
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\rfoot{\thepage}
+\fancypagestyle{plain}{\pagestyle{fancy}}
+
+% DISEÑO DE LOS TÍTULOS de las partes del trabajo (capítulos y epígrafes o subcapítulos)
+\usepackage{titlesec}
+\usepackage{titletoc}
+\titleformat{\chapter}[block]
+{\large\bfseries\filcenter}
+{\thechapter.}
+{5pt}
+{\MakeUppercase}
+{}
+\titlespacing{\chapter}{0pt}{0pt}{*3}
+\titlecontents{chapter}
+[0pt]                                               
+{}
+{\contentsmargin{0pt}\thecontentslabel.\enspace\uppercase}
+{\contentsmargin{0pt}\uppercase}                        
+{\titlerule*[.7pc]{.}\contentspage}                 
+
+\titleformat{\section}
+{\bfseries}
+{\thesection.}
+{5pt}
+{}
+\titlecontents{section}
+[5pt]                                               
+{}
+{\contentsmargin{0pt}\thecontentslabel.\enspace}
+{\contentsmargin{0pt}}
+{\titlerule*[.7pc]{.}\contentspage}
+
+\titleformat{\subsection}
+{\normalsize\bfseries}
+{\thesubsection.}
+{5pt}
+{}
+\titlecontents{subsection}
+[10pt]                                               
+{}
+{\contentsmargin{0pt}                          
+	\thecontentslabel.\enspace}
+{\contentsmargin{0pt}}                        
+{\titlerule*[.7pc]{.}\contentspage}  
+
+
+% DISEÑO DE TABLAS. Puedes elegir entre el estilo para ingeniería o para ciencias sociales y humanidades. Por defecto, está activado el estilo de ingeniería. Si deseas utilizar el otro, comenta las líneas del diseño de ingeniería y descomenta las del diseño de ciencias sociales y humanidades
+\usepackage{multirow} % permite combinar celdas 
+\usepackage{caption} % para personalizar el título de tablas y figuras
+\usepackage{floatrow} % utilizamos este paquete y sus macros \ttabbox y \ffigbox para alinear los nombres de tablas y figuras de acuerdo con el estilo definido. Para su uso ver archivo de ejemplo 
+\usepackage{array} % con este paquete podemos definir en la siguiente línea un nuevo tipo de columna para tablas: ancho personalizado y contenido centrado
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\DeclareCaptionFormat{upper}{#1#2\uppercase{#3}\par}
+
+\usepackage{longtable}
+
+% Diseño de tabla para ingeniería
+\captionsetup[table]{
+	format=upper,
+	name=TABLA,
+	justification=centering,
+	labelsep=period,
+	width=.75\linewidth,
+	labelfont=small,
+	font=small,
+}
+
+
+% DISEÑO DE FIGURAS. Puedes elegir entre el estilo para ingeniería o para ciencias sociales y humanidades. Por defecto, está activado el estilo de ingeniería. Si deseas utilizar el otro, comenta las líneas del diseño de ingeniería y descomenta las del diseño de ciencias sociales y humanidades
+\usepackage{graphicx}
+\graphicspath{{images/}} %ruta a la carpeta de imágenes
+
+% Diseño de figuras para ingeniería
+\captionsetup[figure]{
+	format=hang,
+	name=Fig.,
+	singlelinecheck=off,
+	labelsep=period,
+	labelfont=small,
+	font=small		
+}
+
+% NOTAS A PIE DE PÁGINA
+\usepackage{chngcntr} %para numeración contínua de las notas al pie
+\counterwithout{footnote}{chapter}
+
+% LISTADOS DE CÓDIGO
+% soporte y estilo para listados de código. Más información en https://es.wikibooks.org/wiki/Manual_de_LaTeX/Listados_de_código/Listados_con_listings
+\usepackage{listings}
+
+% definimos un estilo de listings
+\lstdefinestyle{estilo}{ frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+	backgroundcolor=\color{gray97},
+	rulesepcolor=\color{black},
+	%
+	basicstyle=\ttfamily\footnotesize,
+	keywordstyle=\bfseries,
+	stringstyle=\ttfamily,
+	showstringspaces = false,
+	commentstyle=\color{gray45},     
+	%
+	numbers=left,
+	numbersep=15pt,
+	numberstyle=\tiny,
+	numberfirstline = false,
+	breaklines=true,
+	xleftmargin=\parindent
+}
+
+\captionsetup[lstlisting]{font=small, labelsep=period}
+% fijamos el estilo a utilizar 
+\lstset{style=estilo}
+\renewcommand{\lstlistingname}{\uppercase{Código}}
+
+
+%BIBLIOGRAFÍA - PUEDES ELEGIR ENTRE ESTILO IEEE O APA. POR DEFECTO ESTÁ CONFIGURADO IEEE. SI DESEAS USAR APA, COMENTA LAS LÍNEA DE IEEE Y DESCOMENTA LAS DE APA. Si haces cambios en la configuración de la bibliografía y no obtienes los resultados esperados, es recomendable limpiar los archivos auxiliares y volver a compilar en este orden: COMPILAR-BIBLIOGRAFIA-COMPILAR
+
+% Tienes más información sobre cómo generar bibliografía y CONFIGURAR TU EDITOR DE TEXTO para compilar con biber en http://tex.stackexchange.com/questions/154751/biblatex-with-biber-configuring-my-editor-to-avoid-undefined-citations , https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX y en http://www.ctan.org/tex-archive/macros/latex/exptl/biblatex-contrib
+% También te recomendamos consultar la guía temática de la Biblioteca sobre citas bibliográficas: http://uc3m.libguides.com/guias_tematicas/citas_bibliograficas/inicio
+
+% CONFIGURACIÓN PARA LA BIBLIOGRAFÍA IEEE
+\usepackage[backend=bibtex, style=ieee, isbn=false,sortcites, maxbibnames=5, minbibnames=1]{biblatex}
+% Configuración para el estilo de citas de IEEE, recomendado para el área de ingeniería. "maxbibnames" indica que a partir de 5 autores trunque la lista en el primero (minbibnames) y añada "et al." tal y como se utiliza en el estilo IEEE.
+\addbibresource{bibliography/bibliography.bib}
+% Añadimos las siguientes indicaciones para mejorar la adaptación de los estilos en español
+\DefineBibliographyStrings{spanish}{andothers = {et\addabbrvspace al\adddot}}
+\DefineBibliographyStrings{spanish}{url = {\adddot\space[En línea]\adddot\space Disponible en:}}
+\DefineBibliographyStrings{spanish}{urlseen = {Acceso:}}
+\DefineBibliographyStrings{spanish}{pages = {pp\adddot}, page = {p.\adddot}}
+
+
+
+
+%-------------
+%	DOCUMENTO
+%-------------
+
+\begin{document}
+
+
+
+	\pagenumbering{roman}
+	
+	%----------
+	%	PORTADA
+	%----------	
+	\begin{titlepage}
+		\begin{sffamily}
+			\color{azulUC3M}
+			\begin{center}
+				\begin{figure}[H] %incluimos el logotipo de la Universidad
+					\makebox[\textwidth][c]{\includegraphics[width=8 cm]{logo_ingenieros.png}}
+				\end{figure}
+				\vspace{2.5cm}
+				\begin{Large}
+					Grado en Ingeniería Eléctrica\\			
+					2020\\
+					\vspace{2cm}		
+					\textsl{Trabajo Fin de Grado}
+					\bigskip
+					
+				\end{Large}
+				{\Huge "Simulación de un campo solar de concentradores cilindroparabólicos con Python}\\
+				\vspace*{0.5cm}
+				\rule{10.5cm}{0.1mm}\\
+				\vspace*{0.9cm}
+				{\LARGE Francisco José Munuera Pérez}\\ 
+				\vspace*{1cm}
+				\begin{Large}
+					Tutor\\
+					Rubén Barbero Fresno\\
+					ETS de Ingenieros, UNED\\
+				\end{Large}
+			\end{center}
+			\vfill
+			\color{black}
+			% si nuestro trabajo se va a publicar con una licencia Creative Commons, incluir estas líneas. Es la opción recomendada.
+			\includegraphics[width=4.2cm]{images/creativecommons.png}\\ %incluimos el logotipo de creativecommons
+			Esta obra se encuentra sujeta a la licencia Creative Commons \textbf{Reconocimiento - No Comercial - Sin Obra Derivada}
+		\end{sffamily}
+	\end{titlepage}
+	
+	\newpage %página en blanco o de cortesía
+	\thispagestyle{empty}
+	\mbox{}
+
+%----------
+%	RESUMEN Y PALABRAS CLAVE
+%----------	
+\renewcommand\abstractname{\large\bfseries\filcenter\uppercase{Resumen}}
+\begin{abstract}
+\thispagestyle{plain}
+\setcounter{page}{3}
+	
+	
+	\textbf{Palabras clave:}
+	Energía solar de concentración; Python; Campo solar
+	
+	\vfill
+\end{abstract}
+	\newpage %página en blanco o de cortesía
+	\thispagestyle{empty}
+	\mbox{}
+
+
+%----------
+%	DEDICATORIA
+%----------	
+\chapter*{Dedicatoria}
+
+\setcounter{page}{5}
+		
+	\vfill
+	
+	\newpage %página en blanco o de cortesía
+	\thispagestyle{empty}
+	\mbox{}
+	
+
+%----------
+%	ÍNDICES
+%----------	
+
+%--
+%Índice general
+%-
+\tableofcontents
+\thispagestyle{fancy}
+
+\newpage %página en blanco o de cortesía
+\thispagestyle{empty}
+\mbox{}
+
+%--
+%Índice de figuras. Si no se incluyen, comenta las líneas siguientes
+%-
+\listoffigures
+\thispagestyle{fancy}
+
+\newpage %página en blanco o de cortesía
+\thispagestyle{empty}
+\mbox{}
+
+%--
+%Índice de tablas. Si no se incluyen, comenta las líneas siguientes
+%-
+\listoftables
+\thispagestyle{fancy}
+
+\newpage %página en blanco o de cortesía
+\thispagestyle{empty}
+\mbox{}
+
+
+%----------
+%	TRABAJO
+%----------	
+\clearpage
+\pagenumbering{arabic} % numeración con múmeros arábigos para el resto de la publicación	
+
+\chapter{Introducción}
+
+\section{Objetivo}
+El propósito principal de este Trabajo Final de Grado (TFG) es profundizar en el conocimiento del funcionamiento de un campo solar de concentradores cilindroparabólicos (CCP) mediante el desarrollo de una herramienta de simulación programada en Python 3. Para ello, se ha partido del modelo teórico desarrolado en su Tesis Doctoral por el profesor de la Universidad Nacional de Educación a Distancia (UNED), el Dr.~Rubén Barbero Fresno y se ha empleado una metodología basada en el paradigma de la programación orientada a objetos (POO). El desarrolo de este trabajo ha supuesto un reto personal por la necesidad de adquirir habilidades en el manejo de diferentes herramientas antes desconocidas para mí, como el lenguaje de programación Python 3 y sus diferentes librerías para el cálculo científico (Numpy) y el tratamiento de datos (Pandas). Finalmente, todo el código se encuentra publicado y accesible a través de GitHub y se puede interactuar con la versión final del código de simulación a través de un Notebook Jupyther.
+
+Los resutaldos obtenidos son compatibles con los datos de generación de un campo solar real dentro de las limitaciones que los diferentes modos de operación y eventos impredecibles (paradas de planta para mantenimiento, disparos por avería, etc\ldots{}) introducen en el proceso. En este proyecto solo se aborda la simulación del sistema del campo solar, el único sistema dentro del alcance del modelo teórico de partida. Para la simulación de planta sería necesario el desarrollo de
+modelos para gran número de sistemas como por ejemplo, los generadores de vapor, almacenamiento térmico, turbina, sistemas auxiliares de bombeo, sistemas de tratamiento de agua, torre de refrigeración, etc\ldots{} No obstante, la metodología seguida permite que en el futuro este proyecto pueda ser ampliado de forma sistemática con la incoroporación de nuevas clases de objetos que aprovechen los métodos de entrada y salida ya programados para interactuar con ellos. En todo caso, se han empleado valores de rendimientos estimados para los principales subsistemas de planta con el fin de ofrecer una estimación de la energía eléctrica finalmente vertida a la red.
+
+\section{Estructura de la memoria}
+Esta memoria se estructura en 6 capítulos y un anexo con el código fuente.\\
+* En el primer capítulo, del que forma parte esta introducción se describen los objetivos del TFG y se ofrece una introducción en la que se ofrecen algunos apuntes sobre la simulación de CCP, comentando algunas de las herramientas disponibles en la utilidad y su modo de funcionamiento. * El segúndo capítulo describe el modelo teórico de partida y se detallan las ecuaciones que describen los sistemas que más adelante serán modelados. * El tercer capítulo aborda el modelado de los
+diferentes sistemas necesarios para la caracterización del campo solar.
+* En el cuarto capítulo se presenta el código desde un punto de vista funcional y se muestran algunos ejemplos de interés para la caracterizacion de CCP * En el quinto capítulo se describe el proceso a segir para definir la confiuración del campo solar de tal forma que pueda ser interpretada por el código. Se acomete la simulación de una planta real y se comparan los resultados de la simulación con los datos disponibles de dicha planta. * El sexto capítulo se dedica a presentar conclusiones y se realizan algunas propuestas de desarrollo futuro.
+
+\section{Modelado de concentradores cilindroparabólicos}
+Un concentrador cilindroparabólico (CCP) consiste en un reflector parabólico cuya geometría se obtiene por la traslación de una parábola a lo largo de un eje que contiene su foco. Dentro de los diferentes sistemas de concentración solar pertenece al grupo de los concentradores lineales, al igual que los sistemas de concentración tipo Fresnel y al contrario que los sistemas de concentración de torre central o de discos parabólicos, en cuyo caso estaríamos hablando de sistemas de
+concentración puntuales.
+
+A lo largo del eje focal del concentrador se instala una conducción por la que circula un fluido caloportador o transmisor del calor (HTF por sus siglas en ingles, Heat Transfer Fluid). Esta conducción está compuesta en realidad por una serie de elentos tubulares denominados Heat Collector Element, HCE. Los HCE consisten en tubo de acero con una envolvente de vidrio de tal forma que en el proceso de fabricación se ha dejado extraido el aire que queda entre ambos (region anular o annulus). De esta forma se reducen las pérdidas de calor por convección a través de la región anular. La soldadura vidrio-metal y unos elementos denominados getters que absorben, hasta cierto punto, algunas moléculas que puedan filtrarse a la región anular durnte la vida de operacion del HCE permiten que éste cuente con pérdidas reducias de calor mientras no se produzca la rotura del vidrio o la saturación de dichos getters. 
+
+Para que se produzca la concentración de la radiación solar incidente ésta debe ser perpendicular al eje que pasa por el foco y la base de la parábola. La primera consecuenca es que solo puede aprovecharse plenamente la componente normal de la radiación solar incidente (DNI). Dado que el Sol varía su posición relativa al concentrador continuamente, el conjunto reflector-tubo absorbedor está montado sobre una estructura que pueda girar sobre un eje con el fin de segir la trayectoria solar a lo largo del día. Salvo instalaciones especiales en laboratorios, no se emplean seguidores a dos ejes por la dificultad técnica que acarrearía desarrollar este tipo de estructuras. Las plantas solares cuyo objetivo es maximizar el vertido anual de energía eléctrica a la red cuentan con una orientación de su eje de segumiento Norte-Sur, lo cual lleva a que exista una importante diferencia entre la generación en los meses de verano y los meses de invierno, siendo mayor en los primeros. Si lo que se persigue es obtener una producción más estable a lo largo del año, la orientación más adecuda del eje sería Este-Oeste.
+
+
+\chapter{Descripción de los modelos teóricos utilizados}
+
+\section{Modelo de rendimiento térmico de 4º Orden para caracterización de un sistema de captación solar}
+El modelo de partida desarrollado en \cite{barberofresnoDesarrolloModeloTeorico2018} tiene un caracter general que permite que sea aplicado a receptores térmicos de radiación solar de cualquier tecnología, tanto para concentradores cilindroparabólicos como para conentradores lineales Fresnel o receptores de torre central. En este trabajo nos centramos en los aspectos relativos a los CCP y a continuación revisaremos las características del modelo para este tipo concreto de receptores.
+
+El receptor considerado inicialmente consiste en un tubo desnudo de diámetro \(D_{ro}\) (m) y longitud \(L\) (m). A lo largo del desarrollo del modelo se realizan ciertas aproximaciones para las que se aportan justificaciones que no repetiremos ahora, pero que pueden encontrarse en el texto original. Como primera aproximación se considera que el receptor abosorbe radiación de manera uniforme a través de toda su superficie. Igualmente se desprecia la transerencia de calor en la
+dirección axial.
+
+El esquema propuesto parte del balance energético del receptor, ec.\(\eqref{eq:balance_receptor}\)
+
+\begin{equation}
+    \dot{q}^{"}_{perd}(x) = \dot{q}^{"}_{abs}-\dot{q}^{"}_{u}(x) \label{eq:balance_receptor}
+\end{equation}
+
+donde \(\dot{q}^{"}_{perd}\) es la energía perdida para una sección a una distancia \(x\) de la entrada al receptor, \(\dot{q}^{"}_{abs}\) es la radiación absorbida y \(\dot{q}^{"}_{u}\) es la energía útil . En la Fig.\(\ref{fig:receptormodelo}\) se representa el modelo y se representa mediante flechas el sentido de flujo de la energía.
+
+\begin{figure}[H]
+	\ffigbox[\FBwidth]
+	{\caption[Esquema del receptor empleado para el modelo]{Esquema del receptor empleado para el modelo. Fuente:\parencite{Barbero2016}}}
+	{\includegraphics[scale=0.8]{images/receptor_para_modelo.png}}
+	{\label{fig:receptormodelo}}
+\end{figure}
+
+
+La expresión para el cálculo de la radiación absorbida se muestra en la ec.\(\eqref{eq:qabs}\). 
+
+\begin{equation}
+    \dot{q}^{"}_{abs}= \eta_{opt}(\theta) \cdot Cg \cdot DNI \cdot \eta_{sombras} \cdot \eta_{bordes} \label{eq:qabs}
+\end{equation}
+
+El rendimiento óptico \(\eta_{opt}\), las pérdidas geométricas \(\eta_{bordes}\) y las pérdias por sombras, \(\eta_{sombras}\) son valores conocidos o que pueden calcularse para cada momento en función de la geometría del receptor y la disposicón de los concentradores en el campo solar. \(Cg\) es el factor de concentración y también es conocido a partir de la geometría del conjunto concentrador-receptor. Finalmente, \(DNI\) es la radiación normal incidente. La ec.\(\eqref{eq:qu}\) permite hallar al calor tranferido desde el tubo abosrbedor a temperatura \(T_{ro}\), al fluído térmico a temperatura \(T_{f}\):
+
+\begin{equation}
+    \dot{q}^{"}_{u}(x)= U_{rec} \cdot [T_{ro}(x)-T_{f}(x)] \label{eq:qu}
+\end{equation}
+
+donde \(U_{rec}\) es el ooeficiente global de transferencia de calor hacia el interior, cuya expresión se muestra en la ec.\(\eqref{eq:urec}\):
+
+\begin{equation}
+    U_{rec} = \frac{1}{\frac{1}{h_{int}} + \frac{D_{ro}\cdot(\frac{D_{ro}}{D_{ri})})}{2\cdot k_{rec}}} \label{eq:urec}
+\end{equation}
+
+Como aproximación se considera que \(U_{rec}\) es constate a lo largo de la longitud del tubo \((W/m^{2}\cdot K)\). \(D_{ro}\) y \(D_{ri}\) son el diámetro exterior e interior \((m)\) respectivamente del tubo absorbedor. \(h_{int}\) es el coeficiente de transferencia de calor convectivo hacia el interior \((W/m^{2}\cdot K)\) y \(k_{rec}\) es conductivdad del material del receptor, en \((W/m\cdot K)\)
+
+Para las pérdidas se calculan mediante la ec.\(\eqref{eq:qperd}\) de calor se tendrá en cuenta un término radiativo, con temperaturas de 4o grado y otro convectivo de 1er grado. 
+
+\begin{equation}
+    \dot{q}^{"}_{perd}(x)= \sigma \cdot \varepsilon_{ext} \cdot (T_{ro}^{4}(x)-T_{ext}^{4}) + h_{hext} \cdot (T_{ro}(x)-T_{ext}) \label{eq:qperd}
+\end{equation}
+
+donde \(\sigma\) es la constante de Stefan-Boltzmann (5.67x10-8 W/m2K4), \(\varepsilon_{ext}\) es la emisividad del tratamiento superficial exterior y \(h_{hext}\) es el coeficiente de convección exterior. Estas dos últimas constantes son características de cada receptor y variables, por ejemplo, en función de las condiciones de degradación del recubrimiento selectivo o del viento exterior. Deben ser halladas experimentalmente en laboratorio.
+
+La última ecuación necesaria es la ec.\(\eqref{eq:deltaT}\), donde se calcula el incremento de temperatura que experimenta el fluido considerando despreciables los cambios en energía cinética y un calor específico constante, \(c_{p}\) (J/Kg·K). Denominando \(T_{f}(x)\) a la tempertura del fluido en la sección a distancia \(x\) de la entrada y \(T_{fe}\) a la temperatura del fluido a la entrada, tenemos:
+
+\begin{equation}
+    \pi \cdot D_{ro} \cdot x \cdot \dot{q}^{"}_{abs} \cdot \eta(x)= \dot{m} \cdot c_{p} \cdot (T_{f}(x)-T_{fe}) \label{eq:deltaT}
+\end{equation}\\
+
+En esta última ecuación aparece el rendimiento integral hasta una sección a una distancia \(x\) de la entrada, \(\eta(x)\). Finalmente, a partir del rendimiento local, dado por la ec.\(\eqref{eq:rendimientolocal}\) podemos calcular el rendimiento integral mediante la ec.\(\eqref{eq:rendimientointegral}\).
+
+\begin{equation}
+    \eta_{x}(x) = \frac{\dot{q}^{"}_{u}(x)}{\dot{q}^{"}_{abs}} \label{eq:rendimientolocal}
+\end{equation}
+
+\begin{equation}
+    \eta(x) = \frac{\int_{0}^{x}\eta_{x}(x)dx}{\int_{0}^{x}dx} \label{eq:rendimientointegral}
+\end{equation}
+
+donde desarrollando \(\eta_{x}(x)\) según la ec.\(\eqref{eq:etax}\):
+
+\begin{equation}
+    \eta_{x}(x) = \eta(x) + \eta'(x)\cdot x  \label{eq:etax}
+\end{equation}
+
+y normalizando la distancia a la unidad con la variable adimensional \(x^{*}=x/L\), obtenemos la ecuación integral ec.\(\eqref{eq:rendimientonormalizado}\):
+
+\begin{equation}
+    \eta(x^{*}) = 1 - \frac{\int_{0}^{x^{*}} \dot{q}^{"}_{perd}(dx^{*})\cdot dx^{*}}{\dot{q}^{"}_{abs}\cdot dx^{*}} \label{eq:rendimientonormalizado}
+\end{equation}
+
+La resolución de esta ecuación requiere un largo desarrollo en el que se introducen nuevos factores característicos del sistema y que puede encontrarse en la obra de referencia, por lo que la omitiremos aquí. Pese a la complejidad de la expresión final obtenida, que dificulta extraer conclusiones de manera directa, el modelo incorpora todos los parámetros característicos del sistema y lo hace manteniendo su sentido físico. A partir de la solución se puede obtener una expresión para el modelo local (rendimiento en una sección determinada del absorbedor) y una expresión para el modelo de colector completo, es decir, un rendimiento integral a lo largo de todo el absorbedor. Esta última es la que nos interesa. A continuación se presenta la ecuación del Modelo de 4º Orden completo del colector en la ec.\(\eqref{eq:modelocompleto}\) y sucesivamente las ecuaciones que definen sus parámetros:
+
+\begin{equation}
+    \eta(x^{*}) = \frac{\eta_{0} \cdot g'(Z)}{1-g'(Z)} \cdot \frac{1}{NTU \cdot x^{*}} \cdot \left(e^{\frac{1-g'(Z)}{g'(Z)}\cdot NTU \cdot x^{*}} - 1\right) - \frac{\eta_{0}^2}{6} \cdot \frac{g''(Z)}{g'(Z)} \cdot NTU^{2} \cdot x^{*^{2}} - \frac{\eta_{0}^{3}}{24} \cdot \frac{g'''(Z)}{g'(Z)} \cdot NTU^{3} \cdot x^{*^{3}}
+    \label{eq:modelocompleto}
+\end{equation}
+
+\begin{equation}
+    \eta_{0} = 1 - (f_{1} \cdot Z + f_{2} \cdot Z^{2} + f_{3} \cdot Z^{3} + f_{4} \cdot Z^{4})
+    \label{eq:rendimiento0}
+\end{equation}
+
+\begin{equation}
+    Z = \eta_{0} + \frac{1}{f_{0}} 
+    \label{eq:zeta}
+\end{equation}
+
+\begin{equation}
+    g(Z) = -\left(1+\frac{1}{f_{0}}\right)+(1+f_{1})\cdot Z + f_{2}\cdot Z^{2} +  f_{3}\cdot Z^{3} + f_{4}\cdot Z^{4} 
+    \label{eq:gdezeta}
+\end{equation}
+
+\begin{equation}
+    g'(Z) = 1 + f_{1} + 2 \cdot f_{2} \cdot Z + 3 \cdot f_{3} \cdot Z^{2} + 4 \cdot f_{4} \cdot Z^{3} 
+    \label{eq:gprimadezeta}
+\end{equation}
+
+\begin{equation}
+    g''(Z) = 2 \cdot f_{2} \cdot Z + 6 \cdot f_{3} \cdot Z + 12 \cdot f_{4} \cdot Z^{2} 
+    \label{eq:g2primadezeta}
+\end{equation}
+
+\begin{equation}
+    g'''(Z) = 6 \cdot f_{3} + 24 \cdot f_{4} \cdot Z
+    \label{eq:g3primadezeta}
+\end{equation}
+
+\begin{equation}
+    g^{IV}(Z) = 24 \cdot f_{4}
+    \label{eq:g4primadezeta}
+\end{equation}
+
+\begin{equation}
+    f_{1} = \frac{4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T_{ext}^{3} + h_{ext}}{U_{rec}}
+    \label{eq:f1}
+\end{equation}
+
+\begin{equation}
+    f_{2} = 6 \cdot T_{ext}^{2} \cdot \left(\frac{\sigma \cdot \varepsilon_{ext}}{U_{rec}} \right) \cdot \left(\frac{\dot{q}^{"}_{abs}}{U_{rec}}\right) 
+    \label{eq:f2}
+\end{equation}
+
+\begin{equation}
+    f_{3} = 4 \cdot T_{ext} \cdot \left(\frac{\sigma \cdot \varepsilon_{ext}}{U_{rec}} \right) \cdot \left(\frac{\dot{q}^{"}_{abs}}{U_{rec}}\right)^{2} 
+    \label{eq:f3}
+\end{equation}
+
+\begin{equation}
+    f_{4} = \left(\frac{\sigma \cdot \varepsilon_{ext}}{U_{rec}} \right) \cdot \left(\frac{\dot{q}^{"}_{abs}}{U_{rec}}\right) 
+    \label{eq:f4}
+\end{equation}
+
+Para la resolución de este modelo es preciso conocer previamente diferentes parámetros, muchos de los cuales pueden obtenerse directamente de las característias físicas y materiales con los que está construido el HCE. De especial importancia son \(\varepsilon_{ext}\) y \(h_{ext}\) pues son dos coeficientes que de forma global vienen a caracterizar las pérdidas energéticas del receptor. Para obtener las ecuaciones que los caracterizan se parte de la expresión del coeficiente global del pérdidas al exterior dada por la ec.\(\eqref{eq:uext}\) de la siguiente forma:
+
+\begin{equation}
+    U_{ext} = h_{hext} + \sigma \cdot \varepsilon_{ext} \cdot \left(T_{ro}^2 + T_{ext}^2 \right) \cdot \left(T_{ro} + T_{ext} \right)
+    \label{eq:uext}
+\end{equation}
+
+Es necesario realizar ensayos de laboratorio bajo diferentes condiciones de viento (\(W_{spd}\)) y temperatura exterior (\(T_{ext}\)) para obtener el flujo de calor de pérdidas y calcular así dos expresiones del tipo \(\varepsilon_{ext}(T_{ext},W_{spd})\) y \(h_{ext}(T_{ext},W_{spd})\). Para este trabajo se emplean los valores obtenidos en \cite{barberofresnoDesarrolloModeloTeorico2018} a partir de \cite{burkholderHeatLossTestingSolel2008}, \cite{burkholderHeatLossTesting2009} y \cite{kutscherGenerationParabolicTrough2012}.
+
+A partir de este modelo de 4º Orden se realiza un desarrollo que permite obtener dos modelos simplificados de colector completo: el Modelo de Primer Orden y el Modelo Simplificado.
+
+\section{Modelo de Primer Orden}
+
+La ec.\(\eqref{eq:primerorden}\) presenta el Modelo de Primer Orden. Para llegar a ella resuelve la ec.\(\eqref{eq:rendimiento0}\) despreciando monomios a partir de segundo grado, con lo que se puede sustituir el rendimiento a la entrada del absorbedor, \(\eta_{0}\), por su valor aproximado dado en la ec.\(\eqref{eq:rendimiento0aproximado}\):
+
+\begin{equation}
+    \eta(x^{*}) = \left[1-\frac{\dot q''_{crit}}{\dot q''_{abs}}\right] \cdot \frac{1}{NTU_{perd} \cdot x^{*}} \cdot \left(1-e^{-NTU_{perd}\cdot F'_{crit}\cdot x^{*}}\right) 
+    \label{eq:primerorden}
+\end{equation}
+
+\begin{equation}
+    \eta_{0} = F'_{crit} \cdot \left[1-\frac{\dot q''_{crit}}{\dot q''_{abs}}\right] 
+    \label{eq:rendimiento0aproximado}
+\end{equation}
+
+En esta ecuación se han reagrupado variables en diferentes términos que cuentan con sentido físico. De este modo, se definen:
+
+\begin{equation}
+    \dot q''_{crit} = \sigma \cdot \varepsilon_{ext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)+h_{hext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)
+    \label{eq:qcrit}
+\end{equation}
+
+\begin{equation}
+    U_{crit} = 4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe} + h_{hext}
+    \label{eq:ucrit}
+\end{equation}
+
+\(\dot q''_{crit}\) y \(U_{crit}\) son valores de referencia en el estudio del comportamiento del colector pues cuando \(\dot q''_{abs}\) y \(U_{rec}\) se aproximan a ellos el rendimiento del colector se hace nulo. Por otra parte, \(F'_{crit}\) se asemeja al parámetro empleado en el modello desarrolado por Hottel y Whillier en \cite{1022085/DVRL97SH}.
+
+\begin{equation}
+    F'_{crit} = \frac{1}{\frac{4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe}}{U_{rec}} + \frac{h_{ext}}{U_{rec}} +1} = \frac{1}{\frac{U_{crit}}{U_{rec}}+1}
+    \label{eq:fcrit}
+\end{equation}
+
+El Modelo de Primer Orden presenta la ventaja de que el cálculo de \(\eta(x^{*})\) es explícito. Más adelante veremos cómo repercute esto en la reducción del coste computacional. Por otro lado, también nos ofrece una forma de calcular un valor aproximado del rendimiento a la entrada del colector, \(\eta_{0}\).
+
+\section{Modelo simplificadol}
+Si se desarrolla por Taylor la funcion exponencial del Modelo de Primer Orden, se trunca por el segundo término y se sustituye \(\dot q''_{abs}\) por su expresión en función de \(DNI\) se obtiene la ec.\(\eqref{eq:modelosimplificado}\) para el cálculo del rendimiento total en el receptor mediante el Modelo Simplificado:
+
+\begin{equation}
+    \eta_{T} = F'_{crit} \cdot \left[1 - \frac{\dot q''_{crit}}{\dot q''_{abs}}\right] = \frac{F'_{crit}}{Cg} \cdot \left[Cg \cdot IAM \cdot cos(\theta) \cdot \eta_{opt,pico} \cdot \eta_{sombras} \cdot \eta_{bordes} - \frac{h_{ext}\cdot (\bar{T}_{f}-\bar{T}_{ext})}{DNI} - \frac{\sigma \cdot \varepsilon_{ext}\cdot(\bar{T}^{4}_{f}-\bar{T}^{4}_{ext})}{DNI}\right] 
+    \label{eq:modelosimplificado}
+\end{equation}
+
+Esta ecuación es más parecida a la encontrada en otros modelos de diferentes autores, como por ejemplo en \cite{hottelEvaluationFlatplateSolar1955} o \cite{fraidenraichImprovedSolutionsTemperature1997a}, pero con dependencia de \(T^{4}\) lo cual tiene mayor sentido físico al esperarse que las pérdidas radiativas sean dominantes en situaciones de media y alta concentración.
+
+\section{Aplicabilidad de los modelos}
+Aunque en el caso del Modelo de 4º Orden no se ha realizado ninguna simplificación para la resolución de la ecuación caracterítica, sí que se han hecho las siguientes consdiraciones que limitan su aplicacion: 
+* Se ha considerdo que los parametros característicos \(U_{rec}\), \(\varepsilon_{ext}\), \(h_{ext}\) y \(Cp\) son constantes a lo largo de toda la longitud del receptor. Se considerará que esto es aceptable para longitudes inferiores a 100 m tal y como se indica en el desarrollo del modelo. 
+* Se supone uniformidad del flujo de radiación sobre el tubo absorbedor. Para tecnología CCP se acepta esta hipótesis. 
+* La caracterización de los tubos absorbedores empleados en CCP es compatible con el desarrollo del modelo basada en un tubo desnudo (para los que posteriormente se emplearán unos coeficientes de trasmisión de calor adecuados para los tubos con cubierta de vidrio). 
+* La suposición de fluido incompresible en la que se desprecia el término de pérdida de carga y de energía cinética sobre el término energético es adecuada para plantas que operan con aceite térmico dado que los circuitos están presurizados para mantener en todo momento el fluido en estado líquido y los caudales de operación tienen un número de Reynolds medio. 
+* El flujo puede suponerse uniforme en el interior del tubo absorbedor. 
+* Dada la longitud real del tubo absorbedor en una planta CCP, puede despreciarse el efecto de transmisión de calor longitudinal. 
+
+Según lo visto, el modelo resulta aplicable a la simulación de un campo solar de concentradores cilindroparabólicos bajo las condiciones normales de operación. Por otro lado, la simulación se realizará también para el cálculo con intervalos horarios en los que se supondrá condiciones estacionarias de planta y se descartarán aquellos periodos de arranque y parada o cambios abruptos en los que las inercias propias del sistema y la intervención de los operadores de planta producirían que el comportamiento instantáneo no se correspondiese con el simulado.
+
+El Modelo de Primer Orden presenta mayores restricciones, especialmente en los rangos de operación aceptables (no deben ser próximos a los valores críticos definidos en la ec.\(\eqref{eq:ucrit}\) y \(\eqref{eq:qcrit}\)), siendo sus resultados algo menos precisos en general.
+
+El Modelo Simplificado solo es válido además para longitudes de receptor más reducidas.
+
+
+\chapter{Modelado del campo solar}
+
+\section{Programación Orientada a Objetos para la simulación de sistemas físicos}
+
+Para la programación del código que realice la simulación del sistema se ha optado por seguir un paradigma de Programación Orientada a Objetos (POO) según el cual cada sistema físico se define como un objeto perteneciente a una Clase con la capacidad de recibir información, manipularla de acuerdo a unas reglas propias del sistema y devolver información.
+
+Una de las principales ventajas de esta metodología es la modularidad, de tal forma que se puede ir desarrollando jerárquica, progresiva e independientemente cada uno de los sistemas para después interconectarlos. Posteriormente se puede modificar el comportamiento de alguno de estos objetos reprogramando la Clase a la que pertenece sin que esto afecte de forma drástica al resto de objetos del modelo. Es una técnica escalable y que permite definir diferentes grados de
+intervención al usuario final, desde interactuar con cada objeto como si de una caja negra se tratase hasta modificar el comportamiento del sistema introduciendo sus propios métodos en las clases.
+
+Por todas estas razones, el modelado mediante POO resulta muy interesante para la simulación de sistemas en el ámbito de la ingeniería y ha sido el elegido para el desarrollo del código de este TFG 
+\section{Sistemas físicos y Clases para el modelado del campo solar}
+
+En los siguientes apartadoos iremos describiendo el campo solar desde el punto de vista de su comportamiento físico, los subsistemas que lo componen y definiremos las Clases que se deben programar para modelar cada uno de estos subsistemas. Pero en primer lugar introduciremos alguna terminología.
+
+Se denomina HCE (Heat Collector Element) a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro forman la tubería sobre la que concentra la radiación solar. Estos tubos vienen ensamblados en grupos de 2 o 3 para acelerar el proceso de construcción, de tal forma que pueden colocarse sobre una sección de concentrador denominada SCE (Solar Collector Element) de unos 12 m de longitud.
+
+Un conjunto de SCE que se mueven solidariamente con capacidad de movmiennto independiente se denomina SCA (Solar Collector Assambly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
+
+\begin{verbatim}
+FIGURA LAZO - SCA
+\end{verbatim}
+
+Un conjunto de SCAs con su tubo absorbedor conectado en serie constituye un lazo. Cada lazo consta de un numuero suficiente de SCAs para garantizar que, bajo condiciones de diseño, el fluido caloportador alcanza la temperatura deseada a la salida del lazo, es decir, se produce el salto térmico necesario. Si la temperatura en el SCA sobrepasa la máxima permitida, el SCA puede desenfocar parcial o totalmente con el fin de dejar de concentrar radiación sobre el tubo absorbedor.
+
+Un subcampo o sección es un conjunto de lazos conectados en paralelo, de tal forma que se espera que el caudal que circula por cada uno de sus lazos sea el mismo. El subcampo cuenta con válvulas de regulación de caudal a su entrada, por lo que constituye la unidad mínima de control de caudal en el campo solar. En algunas ocasiones cada lazo tiene capacidad de regulación de su caudal de forma constante. En ese caso se podría decir que cada lazo actúa como un subcampo con un único lazo, pero esto no es lo habitual.
+
+Finalmente, el campo solar está formado por un conjunto de subcampos. El fluido caloportador frío entra en el campo solar y se distribuye por cada uno de los subcampos, donde se vuelve a distribuir equitativamente entre los lazos. En los lazos, el HTF se calienta y retorna a una tubería que lo conduce a la salida del subcampo, donde finalmente el HTF procendente de todos los subcampos se mezcla y se trasforta, a lo largo de una tubería denominada colector caliente, hasta el punto de consumo.
+
+Se emplean clases derivadas de la Clase Model para implementar los diferentes modelos empleados para calcular el rendimiento y para simular, por tanto, el funcionamiento de cada HCE. Es en cada una de estas clases donde se desarrolla el algoritmo que, a partir de los parámetros físicos que definen al HCE, las variables que definen el estado del HTF que circula por él y las condiciones de operación, resuelve las ecuaciones definidas en el modelo y nos permite conocer las
+condiciones del HTF a la salida de cada HCE.
+
+\emph{Clase ModelBarbero4thOrder}
+
+La instancia de esta clase recibe como valores de entrada un referencia a una instancia de un HCE del cual va a calcular su rendimiento, una referencia a la instancia del HTF que se está empleando y valores de condiciones meterológicas de radiación, temperatura y velocidad del viento. El HCE debe estar inicializado previamente con los valores de caudal másico, temperatura y presión de entrada y el flujo de calor absorbido \(q_{abs}\).
+
+El procedimiento de cálculo implementado en el método \emph{calc\_pr()} es el siguiente (los parámetros que se obtienen mediante métodos propios de las instancias del HCE y del HTF se explican en los apartados correspondiente más adelante): * Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) según la ec\(\eqref{eq:tro}\) a partir del coeficiente de transmisión de calor al interior \(U_{rec}\) y del flujo de radiación abosorbido por el tubo absorbedor, \(\dot q''_{abs}\), a partir de la instancia del HCE. Para el primer HCE del lazo se asume un rendimiento inicial \(\eta=1\) pero para los siguientes se emplea el rendimiento del HCE anterior, con lo cual se acelera un poco el proceso de convergencia por partirse de un valor previsiblemente más próximo.
+
+\begin{equation}
+    T_{ro} = T_f + \eta \cdot \frac{\dot q''_{abs}}{U_{rec}}
+    \label{eq:tro}
+\end{equation}
+
+\begin{itemize}
+\item
+  Cálculo del flujo de pérdidas \(\dot q''_{perd}\) mediante la   ec.\(\eqref{eq:qperd}\) incrementado con las pérdidas a través de los   soportes que sujetan el tubo absorbedor, \(\dot q_{perd,soportes}\).   Las pérdidas en los soportes se modelan mediante la   ec.\(\eqref{eq:qperdidassoportes}\) que se explica en el apartado   correspondiente a la clase HCE.
+\item
+  Cálculo de los parámetros de funcionamiento \(\dot q''_{crit}\),   \(U_{crit}\) y \(NTU\) para el HCE con la temperatura de pared   calculada previamente según las ecuaciones \(\eqref{eq:qcrit}\) y   \(\eqref{eq:ucrit}\) respectivamente.
+\item
+  Cálculo de los coeficientes \(f_1\), \(f_2\), \(f_3\) y \(f_4\)   mediante las ecuaciones \(\eqref{eq:f1}\) a \(\eqref{eq:f4}\) y   cálculo de \(f_0\) mediante la ec.\(\eqref{eq:f0}\).
+\item
+  Se resuelve la ec.\(\eqref{eq:rendimiento0}\) con de forma iterativa   mediante Newton-Raphson para calcular \(\eta_0\). Como valor inicial   se calcula \(\eta_0\) a partir de la   ec.\(\eqref{eq:rendimiento0aproximado}\) del Modelo de \(1_{er}\)  Orden.
+\item
+  Con el valor de \(\eta_0\) obtenido se calculan los valores de \(Z\),   \(g'(Z)\), \(g''(Z)\) y \(g'''(Z)\) dados por las ecuaciones   \(\eqref{eq:zeta}\) a \(\eqref{eq:g3primadezeta}\). 
+\item
+  Finalmente, se calcula el rendimiento \(\eta(x^*)\) según la   ec.\(\eqref{eq:modelocompleto}\), la temperatura de pared exterior   \(T_{ro}\) y se comparan con los valores iniciales. Si las diferencias   son superiores a cierto margen configurable se vuelve a realizar otra   iteración hasta conseguir la convergencia, pero previamente a cada   iteración se recalculan todos los pasos anteriores empleando la   temperatura de pared del tubo absorbedor calculada con el nuevo
+  rendmiento. 
+\end{itemize}
+
+Para el primer HCE del lazo se emplea como temperatura del fluido \(T_f\) la temperatura del HTF a la entrada del HCE. Para los siguientes HCEs del lazo se incrementa la temperatura de entrada con la mitad del salto de temperatura que experimentó el HCE anterior.
+
+Una vez finalizado el proceso iterativo, la instancia del HCE actualiza sus valores de rendimiento, temperatura y presión de salida del HTF, quedando totalmente definido su punto de funcionamiento. Las condiciones de temperatura y presión a la salida del HCE serán las de entrada del HCE siguiente.
+
+Al calcular el rendimiento integral para todo la longitud del HCE estamos haciendo coincidir el tamaño de la malla de integración con la longitud física real del HCE. Se ha comprobado que la reducción de la malla no aumenta de forma apreciable la precisión de los cálculos y en cambio sí supone un coste computacional importante. Por el contrario, una forma de acelerar el proceso de simulación consiste en considerar artificialmente que la longitud del HCE es mayor que la real. Se trata de aumentar el tamaño de la malla de integración para reducir el número de cálculos. En este trabajo se seguirá, al igual que en \cite{1022085/7TD8VTGL}, el criterio de no superar un tramo de HCE superior a 100 m propuesto en \cite{1022085/CYH3NJEG}. 
+
+\emph{Clases ModelBarbero1stOrder} y ModelBarberoSimplified
+
+El cálculo del rendimento que realizan estas dos clases es idéntico al del Modelo de 4º Orden hasta el momento de llegar al proceso iterativo, punto en el cual se calcula el rendimiento térmico directamente mediante las ecuaciones  \(\eqref{eq:primerorden}\) y \(\eqref{eq:modelosimplificado}\) respectivamente.
+
+\hypertarget{heat-collector-element-hce}{\paragraph{Heat Collector Element, HCE}\label{heat-collector-element-hce}}
+
+Físicamente, un HCE es un tubo de acero con una envolvente de vidrio de tal forma que entre el tubo de acero y la envolvente queda un espacio en el que se ha practicado el vacío. Por el interior del tubo circula el fluido caloportador (HTF, Heat Transfer Fluid) que aumenta su energía térmica al recibir el calor procedente de las paredes interiores del tubo. El tubo recibe durante el proceso de fabricación un recubrimiento selectivo que mejora sus propidades físicas para absorber la raciación solar. De cara a modelar el funcionamiento del HCE como elemento responsable de calentar el HTF de forma compatible con el Modelo físico desarrolladose se define la clase HCE que consta de los siguientes atributos:
+
+\begin{itemize}
+\item
+  tin: Temperatura de entrada del HTF \((K)\)
+\item
+  pin: Presión de entrada del HTF \((Pa)\)
+\item
+  massflow: Caudal másico del HTF \((Kg/s)\)
+\item
+  qabs: Potencia calorífica absorbida \((W/m^2)\)
+\item
+  qlost: Potencia calorífica perdida \((W/m^2)\)
+\item
+  qlost\_brackets = Potencia calorífica perdida a través de los soportes
+  del HCE \((W/m^2)\)
+\item
+  pr: Rendimiento global del HCE ( )
+\item
+  pr\_opt: Rendimiento óptico del conjunto HCE + SCA ( )
+\item
+  tou: Temperatura de salida del HTF \((K)\)
+\item
+  pout: Presión de salida del HTF \((Pa)\)
+
+  {[}FIGURA ESQUEMA CLASE HCE{]}
+\end{itemize}
+
+Con estos parámetros el comportamiento del HCE queda totalmente caracterizado en el sistema desde el punto de vista del proceso de generación. Estos atributos (pueden entenderse como variables) están relacionados entre sí según las reglas que aplique cada modelo.
+
+Ya hemos visto, al hablar de la Clases para los modelos, cómo un objeto (instancia) de la clase HCE puede ser procesada por otra instancia de la clase del modelo para simular su comportamiento. Es necesario que la instancia del HCE pase los siguientes parámetros al modelo:
+
+\begin{itemize}
+\item
+  \(k_{rec}\), conductividad térmica de la pared del receptor. Se ha
+  empleado la ec.\(\eqref{eq:krec}\) válida para el acero inoxidable
+  321H:
+\end{itemize}
+
+\begin{equation}
+    k_{rec} = 0,0153 \cdot (t - 273,15) + 14,77
+    \label{eq:krec}
+\end{equation}
+
+\begin{itemize}
+\item
+  \(h_{int}\), coeficiente de transferencia de calor convectivo hacia el   interior. Para el cálculo se emplea la ec.\(\eqref{eq:hint}\) donde   \(Nu_{G}\) es el número de Nusselt obtenido mediante la correlación de   Gnielinski dada en la ec.\(\eqref{eq:nug}\), \(D_{ri}\) es el diámetro   interior del tubo absorbedor y \(k_f\) es la conductividad térmica a   la temperatura del fluido: 
+\end{itemize}
+
+\begin{equation}
+    h_{int} = \frac{Nu_{G}\cdot k_f }{D_{ri}}
+    \label{eq:hint}
+\end{equation}
+
+\begin{equation}
+    Nu_{G} = \frac{ \left( \frac{C_f}{2} \right)\cdot\left( Re_{D_{ri}} - 1000 \right)\cdot Pr_f }{1 + 12,7 \cdot \left(\frac{C_f}{2} \right)^{\frac{1}{2}}\cdot \left(Pr^{\frac{2}{3}}_f -1 \right)} \cdot \left( \frac{Pr_f}{Pr_{ri}} \right)^{0,11}
+    \label{eq:nug}
+\end{equation}
+
+\begin{itemize}
+\item
+  \(U_{rec}\), coeficiente de transmisión de calor al interior. Viene   dado por la ec.\(\eqref{eq:urec}\) comentada previamente. 
+\item
+qabs
+%  \(\dot q''_{abs}\), flujo de calor que absorbe el HCE. En este caso,   se trata de un parámetro que almacena cada instancia de HCE y que se   calcula según la ec.\(\eqref{eq:qabs}\) que repetimos a continuación:
+\end{itemize}
+
+\begin{equation}
+\dot q''_{abs}= \eta_{opt}(\theta) \cdot Cg \cdot DNI \cdot \eta_{sombras} \cdot \eta_{bordes} 
+\end{equation}
+
+Cada uno de los parámetros de esta ecuación se obtiene de la siguiente manera:
+
+\begin{itemize}
+\item
+  \(DNI\) es la irradiancia normal directa cuyo valor se lee para cada   fecha de cálculo de la simulación.
+\item
+  \(Cg\) es el factor de concentración geométria, definido genéricamente   para sistemas de concentración como el cociente entre el área de   apertura del concentrador, \(A_c\) y el área de apertura del receptor,   \(A_r\). Hemos considerado como efectiva toda el área del receptor, no   solo aquella donde se concentra la radiación ya que supondremo que el   flujo se reparte uniformemente por toda la superfice de tubo   absorbedor. De esta manera, el factor de concentración geométrica para   un colector cilindroparabólico es, según la ec.\(\eqref{eq:cg}\):
+\end{itemize}
+
+\begin{equation}
+   Cg = \frac{a}{\pi \dot D_{ro}}
+    \label{eq:cg}
+\end{equation}
+
+donde \(a\) es la apertura de la parábola del concentrador y \(D_{ro}\) es el diámetro exterior del tubo absorbedor.
+
+\begin{itemize}
+\item
+  \(\eta_{opt}(\theta)\), rendimiento óptico. Este parámtro depende del   ángulo de incidencia \(\theta\) y se obtiene a partir del rendimiento   óptico pico, \(\eta_{opt,peak}\) y del modificador del ángulo de   incidencia, \(IAM\) según la ec.\(\eqref{eq:rendimientooptico}\):
+\end{itemize}
+
+\begin{equation}
+   \eta_{opt}(\theta) = \eta_{opt,peak} \cdot IAM \cdot cos(\theta)
+    \label{eq:rendimientooptico}
+\end{equation}
+
+Para calcular \(\eta_{opt,peak}\) empleamos la expresión dada en la ec.\(\eqref{eq:rendimientoopticopico}\). La ecuación para \(IAM\) se ofrece en la sección correspondiente al modelado del SCAA por ser un valor característico de este componente.
+
+\begin{equation}
+   \eta_{opt,peak} = \alpha \cdot \tau \cdot \rho \cdot \gamma
+    \label{eq:rendimientoopticopico}
+\end{equation}
+
+Los parámetros \(F_0\), \(F_1\) y \(F_2\) los ofrece cada fabricante para su concentrador. El \(IAM\) es una propiedad del SCA y por tanto la instancia del HCE hace una llamada al método \emph{get\_IAM} de su SCA asociado, aquel en el que está montado, para recibir su valor.
+
+Igualmente, en la ec.\(\eqref{eq:rendimientoopticopico}\) los parámetros \(\rho\) (reflectividad del concentrador) y \(\gamma\) (fracción solar), son parámetros del SCA y deben obtenerse de la instancia de SCA asociada al HCE. \(\alpha\) es la absortividad del receptor y \(\tau\) es la transmisividad del vidrio envolvente del tubo absorbedor. En ambos casos se trata de parámetros configurables que se introducen con el resto de características del HCE en el archivo de configuración de la simulación.
+
+\begin{itemize}
+\item
+  \(\eta_{bordes}\) contabiliza las pérdidas debidas a que en una   pequeña porción del tubo absorbedor del SCA no se produce   concentración debido al ángulo de incidencia. Un tramo del tubo   absorbedor, que puede implicar desde solo un tramo del primer HCE  hasta a varios HCEs, tendrá un flujo de radiación nulo, o muy bajo. El   tramo de tubo absorbedor que queda sin concentración (\(L_{bordes}\)   se calcula mediante la ec.\(\eqref{eq:bordes}\) a partir de la   distancia focal, \(f_l\) y de ángulo de incidencia \(\theta\):
+\end{itemize}
+
+\begin{equation}
+   L_{bordes} = \frac {f_l}{tan(\theta)}
+    \label{eq:bordes}
+\end{equation}
+
+A partir de este valor el código calcula que fracción del HCE o cuantos HCEs quedan inutilizados y les asigna un rendimiento nulo.
+
+*{[}REVISAR MÉTODO DE CÁLCULO{]} \(\eta_{sombras}\) es un valor que se calcula en base a la porción del concentrador que se encuetra afectado por sombras debido a que la distancia de separación entre lazos está acotada. En disposiciones de lazos habituales con eje seguimiento Norte-Sur estas sombras solo aparecen a primera y última hora del día. Su cáculo exacto requeriria conocer totalmente la disposición de cada lazo, pero una aproximación suficiente se puede obtener mediante la ec.\(\eqref{eq:sombras}\):
+
+\begin{equation}
+   \eta_{sombras} =  \frac {sen(\alpha_s) \cdot D_L}{A_c}
+    \label{eq:sombras}
+\end{equation}
+
+Una vez que la instancia del modelo ha concluido el cálculo, el HCE ya puede cacular cuál será la temperatura de salida del HTF, \(t_{out}\), que aparece implícita en la ec.\(\eqref{eq:delta_h}\): 
+
+\begin{equation}
+   \Delta H =  {\dot m} \cdot \int_{t_{in}}^{t_{out}}Cp(t)dt
+    \label{eq:delta_h}
+\end{equation}
+
+donde \(\Delta H\) es el incremento de entalpía del H, pues hemos considerado que se trata de un fluido incompresible y también se ha despreciado la participación de energía cinética. Previamente se debe calcular \(\Delta H\) según la ec.\(\eqref{eq:delta_hvalor}\):
+
+\begin{equation}
+   \Delta H =  \dot q''_{abs} \cdot \eta \cdot \pi \cdot d_{ro} \cdot L \cdot \gamma_L \cdot \gamma_g
+    \label{eq:delta_hvalor}
+\end{equation}
+
+La ec.\(\eqref{eq:delta_h}\) puede resolverse por métodos numéricos si el calor específico \(Cp\) del fluido se ha obtenido a partir de un polinomio. En el caso de que se disponga de una función que proporcione la temperatura del fluido en función de la entalpía \(T(H)\), como ocurre si se usa \(CoolProp\), se puede calcular su valor directamente como \(T_{out} = T(H_{out})\).
+
+Se introducen el \emph{factor de longitud efectiva}, \(\gamma_L\) y \emph{factor de interceptación geométrico}, \(\gamma_g\) para tener en cuenta la reduccion de la longitud \emph{activa} del HCE debido a los fuelles en los extremos del HCE y al sombreado del escudo térmico en las uniones de HCEs. Un valor típico para ambos factores está comprendido entre 0,96 y 0,97 \cite{1022085/XAQ9AM5E}. En el caso de que el calor absorbido sea nulo, la temperatura de salida será inferior a la de entrada y el valor \(\Delta H < 0\). En este caso, no existe reducción de la longitud efectiva del absorbedor y la energía perdida se calcula según la ec.\(\eqref{eq:delta_hvalornegativo}\) pues a lo largo de toda la superficie del HCE se experimentan pérdidas energéticas:
+
+\begin{equation}
+   \Delta H =  \dot q''_{perd} \cdot \eta \cdot \pi \cdot d_{ro} \cdot L
+    \label{eq:delta_hvalornegativo}
+\end{equation}
+
+\begin{itemize}
+\item
+  \(\varepsilon_{ext}\), emisividad equivalente de la superficie   exterior del receptor. La emisividad equivalente empleada por el   modelo depende de la temperatura de pared exterior del tubo y se   emplea la ec.\(\eqref{eq:eext}\) para calcularla:
+\end{itemize}
+
+\begin{equation}
+   \varepsilon =  A_0 + A_1 \cdot  (t_{ro} - 273.15)
+    \label{eq:eext}
+\end{equation}
+
+Se corrige ligeramente su valor en función de la velocidad del viento, incrementando su valor un 1\% con un viento de 4 m/s y un 2\% para viento de 4 m/s. Los coeficientes \(A_0\) y \(A_1\) son los que se ofrecen en \cite{1022085/7TD8VTGL}.
+
+\begin{itemize}
+\item
+  \(h_{ext}\), coeficiente de transferencia de calor convectivo   equivalente al exterior. Su valor puede considerarse nulo para el caso  de un HCE con vacío en su espacio anular. En \cite{1022085/7TD8VTGL} se ofrecen las ecuaciones para diferentes combinaciones de   recubrimiento, Black-Chrome o Cermet y conservación o no del vacío,   obtenidas mediante simulación CFD (Computational Fluid Dynamics) por   su autor para un modelo unidimensional del HCE.
+\item
+  \(\dot q_{perd,soportes}\), pérdidas a través de los soportes que  sujetan en HCE. Se hace uso de la ec.\(\eqref{eq:qperdidassoportes}\)  propuesta en \cite{1022085/CYH3NJEG}:
+\end{itemize}
+
+\begin{equation}
+   \dot q_{perd,soportes} =  n \cdot \frac{\sqrt{P_b \cdot k_b \cdot A_{cs,b} \cdot \bar h_b} \cdot (T_{base}T{ext})}{L}
+    \label{eq:qperdidassoportes}
+\end{equation}
+
+donde \(P_b\) es el perímetro de la sección del soporte, \(A_{cs,b}\) es la sección transversal de la unión entre el brazo y el tubo absorbedor, \(K_b\) es la conductividad térmica del acero empleado en el brazo, \(\bar h_b\) es el coeficiente de transmisión de calor por convección medio hacia el exterior, \(T_{base}\) es la temperatura de la zona de conexión entre los brazos y el tubo absorbedor, \(L\) es la longitud del colector y \(n\) es el número de soportes por colector.
+
+La Clase HCE también nos proporciona algunos métodos necesarios para el trabajo de procesamiento de la información, asignación y recuperación de valores de los atributos. Otro aspecto importante es que cada instancia de la clase HCE tiene un
+atributo de tipo `diccionario', en el que a modo de lista de pares clave-valor va a recibir aquellos parámetros que posteriormente serán empleados por el Modelo. Los diferentes autores que han elaborado modelos para los HCE no siempren utilizan los mismos parámetros ni idénticos identificadores. Al emplear un diccionario se facilita la tarea de implementación de nuevos Modelos, sin que sea necesario cambiar los atributos de la clase en cada ocasión. Entre los parámetros que se
+pasan al HCE durante la creación de su instancia están su absortividad solar \(\alpha_{solar}\), la transmisividad del vidrio \(\tau\) y su reflectividad \(\rho\).
+
+En el caso de la planta simulada se ha utilizao un HCE fabricado por Solel cuyos parámetros se guardan en una libería en formato JSON. Parte de los datos de cada HCE de la librería se han extraído de los archivos de configuración de SAM (System Advisor Model), el software de referencia para la simulación de plantas de energías renovables. No obstante, el modelo no hace uso de todos ellos y, en cambio, se precisa de algún dato más para realizar la simulación. Estos parámetros son
+almacenados en el diccionario \emph{parameters}. El programa desarrollado permitiría, en principio, modelar cada HCE con unos parámetros diferentes, es decir, que cada HCE se comportase de forma diferente al resto. Esta funcionalidad puede ser interesante para el estudio de comportamiento del campo solar cuando se dispone de estadísticas adecuadas sobre cómo evoluciona en el tiempo y se distribuye en el campo solar cada parámetro, lo cual hace que no todos los lazos se comporten de igual manera. El inconveniente es que el tiempo de cálculo aumenta notablemente al tener que simularse cada lazo independientemente. 
+
+Finalmente, un HCE es un elemento que ocupa una determinada posición dentro del SCA (Solar Collector Assembly). Más adelante se verá que, para determinadas simulaciones, el orden que ocupa dentro de la fila de HCEs y el propio SCA al que pertenece, pueden ser datos necesarios a la hora de estudiar su comportamiento. Por este motivo cada HCE mantiene una referencia al SCA al que pertenece y guarda información sobre su posición relativa dentro de él. 
+\begin{itemize}
+\item
+  sca: Una referencia al objeto que representa el SCA en el cual el HCE
+  está montado.
+\item
+  hce\_order: Un número entero, indicando la posición relativa del HCE
+  dentro del SCA.
+\end{itemize}
+
+\hypertarget{solar-collector-assambly-sca}{%
+\paragraph{Solar Collector Assambly,
+SCA}\label{solar-collector-assambly-sca}}
+
+Un SCA es una estructura compuesta por una serie de reflectores que cocentran la radiación solar sobre los HCE. Desde el punto de vista operativo, un SCA cuenta con capacidad de movimiento independiente respecto al resto de SCAs de la planta, por lo que es la unidad mínima de control de enfoque o desenfoque de la radiación solar en el campo solar. La clase SCA nos permite modelar cada SCA teniendo en cuenta las propiedades de los reflectores (reflectividad, suciedad de los espejos, precisión del movimiento de seguimiento solar, etc.)
+
+En plantas de colectores cilindroparabólicos lo más frecuente es que el sistema de seguimiento tenga su eje de rotación alineado en la dirección Norte-Sur con el fin de hacer un seguimiento Este-Oeste de la trayectoria solar a lo largo del día. No obstante, una configuración con eje Este-Oeste también puede ser interesante en algunos casos y el modelo también permite esta configuración.
+
+Dentro del campo solar, cada HCE debe pertenecer a un SCA. El primer HCE del SCA recibe el fluido caloportadador procedente de otro SCA o de las tuberías colectoras de HTF frio. El último HCE del SCA entrega el HTF más caliente al siguiente SCA o a las tuberías colectoras de HTF caliente a la salida del lazo.
+
+El SCA cuenta con un método para el cálculo del modificador por ángulo de incidencia. Hemos considerado que el SCA mantendrá en todo momento un ángulo de seguimiento \(\beta\) óptimo con el fin de minimizar el ángulo de incidencia. En este caso, el \(IAM\) se calcula según la expresión dada por la ec.\(\eqref{eq:iam}\)
+
+\begin{equation}
+   IAM = F_0 + F_1 \cdot \frac{\theta}{cos(\theta)} + F_2 \cdot \frac{\theta^2}{cos(\theta)},\, \forall   
+ \theta \in (0^o, 80^o)
+    \label{eq:iam}
+\end{equation}
+
+Algunos fabricantes incluyen un factor \(cos(\theta)\) en la expresión del \(IAM\), por lo que no deberá incluirse entonces en la ecuación del rendimiento total del HCE. En nuestro caso, para el UVAC 3 de Solel empleado en la simulación, no es así.
+
+Otro valor que debe ofrecernos la clase que modela al SCA es la \emph{fraccción solar} o \emph{factor de interceptación}, que permite estimar la tasa entre la radiación solar que alcanza al reflector y la que posteriormente indice realmente sobre el tubo absorbedor. Su valor se optienen según la ec.\(\eqref{eq:fraccionsolar}\) como producto de una serie de factores: 
+
+\begin{equation}
+   \gamma = \eta_{geometrico} \cdot \eta_{seguidor} \cdot \eta_{suciedad} \cdot \eta_{disponibilidad}
+    \label{eq:fraccionsolar}
+\end{equation}
+
+El factor geométrico \(\eta_{geometrico}\) depende de las inperfecciones geométricas de conjunto reflector-absorbedor como pequeñas desviaciones en la curvatura de los espejos o la deformación de la estructura. El factor de precisión del seguidor \(\eta_{seguidor}\) permite considerar los errores de seguimiento del mecanismo de movimiento del reflector. El factor de suciedad \(\eta_{suciedad}\) se refiere a las pérdidas de reflectividad debidas a acumulación de polvo en los espejos. En realidad, si no se ha considerado un equivalente para el polvo acumulado en la superficie del vidrio del HCE, este factor debería computarse dos veces, pues la merma de radiación se produce tanto en el espejo, como radiación solar no reflejada, como en la envolvente de vidrio, al disminuir su transmisividad. Finalmente, el factor de disponibilidad \(\eta_{disponibilidad}\) considera las pérdidas que ocasionalmente se puedan producir por averias del sistema de concentración.
+
+El SCA, como sistema responsable del seguimiento solar, también cuenta con un método para ofrecernos información sobre el ángulo de incidencia \(\beta\) en el plano de apertura del reflector. Las expresiones generales pueden encontrarse en \cite{1022085/95AM6AQN}. En nuestro caso hemos recurrido a las librería \emph{pvlib-python} \cite{1022085/GUC54R5I} desarrollada en Sandia National Laboratories para obtener los valores del ángulo de incidencia y la posición solar para cada fecha del año y según las coordenadas geográficas del lugar donde se realiza la simulación.
+
+\hypertarget{lazo}{Lazo}
+
+Un Loop o lazo es un cojunto de SCAs conectados en serie de tal forma que el HTF que entra frío al lazo experimenta un salto térmico cuando transita por él. El sistema de control ajusta el estado de enfoque o desenfoque de cada SCA en el lazo con el fin de conseguir que la temperatura de salida sea la de consigna. Por motivos de económicos, el caudal de HTF no suele ser regulable a nivel de lazo, pues obligaría a instalar una válvula de control en cada uno de ellos y por tanto todos los lazos de un mismo subcampo suelen tener un caudal muy parecido. Se ha desarrollado también una Clase Subfield para dar cuenta del conjunto de lazos que pertenecen a un mismo subcampo y, por tanto, pueden variar su caudal de forma independiente de los lazos de otro subcampo. En un campo solar suele haber haber varios subcampos que pueden regular su caudal independientemente. Los casos más extremos serían el de un campo solar con un único subcampo, en el que todos los lazos pertenecen al mismo subcampo y en el otro extremo, un campo solar con tantos subcampos como lazos tiene, de tal forma que cada lazo es el único en su subcampo y por tanto cada lazo puede regular su caudal independientemente. 
+
+Cada lazo del campo solar es modelado mediante una instancia de la clase Loop. Cada instancia mantiene referencias al subcampo al que pertenece y a los SCA que contiene. Atributos importantes de estas instancias serán el caudal de HTF en el lazo, las temperaturas y presiones de entrada y salidad del HTF y el rendimiento completo del lazo. 
+
+El código permite trabajar de dos formas, bien calculando y ajustando el caudal requerido para conseguir una temperatura de HTF determinada o bien fijando el caudal de HTF y calculando qué temperatura de salida tendría el HTF. En caso de que esta tempertura de salida supere el máximo permitido (un valor configurable) el código considera que se producirá un desenfoque en el SCA en que se alcance esta temperatura y el HTF dejará de calentarse. En este caso se suele decir que se produce un vertido de energía o desaprovechamiento de la radiación existente. El código permite contabilizar esta energía desaprovechada por cada lazo durante estas situaciones. 
+
+La Clase PrototypeLoop hereda de la Clase Loop sus principales métodos y atributos pero supone una pequeña variación de una instancia o lazo definido por Loop ya que se trata de un lazo  "típico'' o "promedio'', que presenta una configuración constructiva idéntica a la del resto de lazos de la planta pero no pertenece a ningún subcampo solar. Este lazo especial o prototipo se empleará cuando queramos realizar un estudio paramétrico del comportamiento del lazo, no de la planta, y también para realizar una simulación mucho más rápida cuando asumamos la hipótesis de que todos los lazos de la planta se comportan de igual manera. Esta aproximación es la que se hace en aplicaciones como SAM, donde no se simulan todos los lazos para modelar el campo solar, sino que se simula solo un lazo y el resultado se obtiene multiplicando el caudal de salida de este lazo por el número de lazos que forman la planta. 
+
+\hypertarget{subfield}{Subfield}
+
+Un subcampo es un conjunto de lazos en los que se considera que el HTF se repartirá equitativamente. Cada subcampo dispone de una válvula de control de caudal a su entrada y representa el mayor grado de control de caudal de HTF que se puede alcanzar en el campo solar. Un campo solar suele contar con varios subcampos y cada uno de ellos, a su vez, cuenta con varios lazos.  
+
+La Clase Subfield mantiene referencias a lo lazos que lo constituyen, es deir, a cada una de las instancias que representan un lazo. También mantiene referencia al campo solar al que pertenece y cuenta con métodos para calcular cual será la tempertura de salida del HTF del subcampo solar una vez que el caudal de salida de cada lazo se haya mezclado con el del resto de lazos. Nótese que aunque se supone que todos los lazos del subcampo tienen el mismo caudal másico la temperatura de salida de cada uno de ellos puede ser diferente y, por tanto, la energía aportada por cada lazo también lo será. 
+
+\hypertarget{solarfield}{Solarfield}
+
+El campo solar alberga el conjunto de subcampos y, por tanto, todos los lazos de la instalación. Se trata del objeto que en última instancia queremos modelar con el fin de conocer cómo sera el comportamiento de la planta solar y su rendimento anual. A la hora de definir el campo solar para el modelo es necesario conocer cuántos subcampos contiene, cuántos lazos hay en cada subcampo, qué configuración tiene cada lazo (número de SCAs en cada lazo y número de HCEs en cada SCA). También es importante conocer la distancia entre lazos con el fin de estimar el sombreado que se produce a primera y última hora del día. 
+
+El Clase Solarfield también recibe una serie de valores nominales para los que se ha realizado un diseño óptimo del sistema, como las temperaturas y presiones de entrada y salida del HTF, las temperaturas máximas y mínmas tolerables por razones de seguridad, el caudal nominal (normalmente se suele dar este caudal por lazo y el caudal del campo solar será la suma de todos ellos), el caudal mínimo (existe cierta limitación tanto por la velocidad mínima de las bombas como por otras
+cuestiones operativas que desaconsejan que el HTF circule por debajo de este límite).
+
+Cuando se crea una instancia de la Clase Solarfield, ésta recibe los datos de configuración que se ha pasado para la simulación y lanza el proceso de construcción que genera, en base a esa configuración, los diferentes subcampos, lazos, SCAs y HCEs que forma en campo solar.
+
+\hypertarget{clase-fluid-y-sus-clases-hijas-fluidcoolprop-y-fluidtabular}{Clase Fluid y sus clases hijas, FluidCoolProp y FluidTabula}
+
+Para modelar el HTF (Heat Transfer Fluid) se ha creado una Clase Fluid.
+Las propiedades del HTF pueden obtenerse mediante funciones polinomicas con coeficientes constantes calculados experimentalmente o desde librerias preexistentes como CoolProp. Por ese motivo, según se opte por un método u otro, se han creado las subclases FluidCoolProp y FluidTabular. No obstante, se ha comprobado que el número de tipos de HTF que existen en la librería FluidCoolProp no es muy grande, limitándose a Therminol VP-1, Syltherm 800. No se encuentra en esta
+librería el aceite Dowtherm A, que es el que se emplea en la planta cuyos datos se han empleado para el desarrollo de esta herramienta. Pero el mayor inconveniente reside en que CoolProp devuelve valores solo dentro del rango de temperaturas de uso válidas según el fabricante. 
+
+Este rango es demasiado estricto y se producen problemas debido a la devolución de valores no numéricos, especialmente cuando se está calculando la temperatura teórica de salida del HTF cuando hay sobrecalentamiento. Por este motivo se ha hecho uso mayoritariamente de la clase FluidTabular, con funciones polinómicas con coeficientes calculados a partir de los datos ofrecidos por los fabricantes.  La clase Fluid sus clases hijas ofrecen métodos para calcular la densidad, viscosidad cinemática, número de Reynolds, calor específico, conductividad térmica y entalpia en función de la temperatura y la presión. También ofrecen un método para calcular la temperatura del fludo en función de la entalpía y la presión, considerando entalpía cero para líquido saturado según ASHRAE a una tempratura de 285.856 K.
+
+\hypertarget{clases-weather-fielddata-y-tabledata}{Clases Weather, FieldData y TableData}
+Estas clases impolemetan métodos adecuados para la adquisición de datos desde diferentes tipos de ficheros, en concreto:
+
+\begin{itemize}
+\item
+  Clase Weather para ficheros .tmy con datos meteorológicos (Weather   Files). En estos ficheros solo hay datos meteorológicos como radiación   normal incidente (DNI), temperatura de bulbo seco, y datos de   geográificos del emplazamiento (Site), como latitud, longitud y   altitud. A partir de estos datos se pueden realizar simulaciones para   ver cuál sería el comportamiento de la planta con estas condiciones.
+\item
+  Clase FieldData para ficheros .csv con datos recogidos de alguna   planta (Field Data Files). Estos ficheros contienen dastos   meteorológicos recogidos por la estaciones de planta y también datos   de instrumentación de planta, en concreto, temperaturas y presiones de   entrada y salida al campo solar y los diferentes subcampos y también   caudales másicos en los subcampos. Los encabezados de cada columna   probablemente serán identificadores o tags propios de cada planta, por
+  lo que es necesario indicar al programa a qué dato corresponde cada   tag. Esto se puede hacer en el fichero de configuracion de la   simulación. Con estos datos se puede simular el comportamiento del   campo solar para caudal teórico requerido pero también comprobar cuál   sería el rendimiento del campo solar operando con el caudal real de  planta. Los datos obtenidos podrán después compararse con los reales   de funcionamiento de planta. A este tipo de simulaciones las   denominaremos `benchmark'.
+\item
+  Clase TableData para ficheros .csv empleados en simulaciones   distintas, por ejemplo para el estudio del rendimiento de un lazo en   función de diferentes valores de \(q_{abs}\).
+\end{itemize}
+
+\hypertarget{clases-site}{Clases Site}
+
+La Clase Site (Emplazamiento), contiene la información relativa al lugar donde está ubicada la planta. Los datos de latitud, longitud y altitud son importantes a la hora de calcular la trayectoria solar para cada fecha. Nos ofrece un método para calcular la posición del sol en cada fecha del año en base a los parámetros que almacenan las coordenadas geográficas. 
+
+\section{Algoritmo de simulación}
+
+En este apartado se describe como puede desarrollarse un código a partir de las Clases implementadas y comentadas anteriormente con el fin de realizar diferentes tipos de simulaciones. Para ello, se continua con la filosofía de POO y se crea desarrolla la clase SolarFieldSimulation.
+
+El objetivo que nos proponemos es simular el comportamiento de un campo solar bajo unas determinadas condiciones. Puesto que estas condiciones varían a lo largo del día, se emplearán ficheros de datos en formato tabular que cuentan con una columna índice para la fecha y hora indicadas. Con el fin de poder reaprovechar el trabajo realizado durante el trabajo de configuración de la simulación, se emplea un archivo en formato JSON que recoge todos los parámetros necesarios. En resumen, la instancia de SolarFieldSimulation recibe realiza los siguientes pasos:
+
+\begin{itemize}
+\item
+  Lee el archivo de configuración de la simulación y almacena los   parámetros necesarios.
+\item
+  Crea una instancia de la Clase Site con información sobre la ubicación   de la planta.
+\item
+  Crea una instancia para el almacenamiento de los datos del fichero en   formato tipo tabla. En función de si el fichero es de tipo   meteorológico (TMY2 o TMY3) o es un fichero en formato CSV creará una   instancia de la clase Weather o FieldData respectivamente. Los datos   cargados se almacenan en un DataFrame de la librería Pandas denominado  \emph{datasource}.
+\item
+  Crea una instancia para el modelado del HTF a partir de la Clase   FluidCoolProp si los datos se van a tomar desde la libería externa   CoolProp o de la Clase FluidTabular si se le pasan los factores de los   polinomios que permiten calcular cada parámetro del fluido.
+\item
+  Crea una instancia SolarField a partir de los parámetros de   configuración de campo solar.
+\item
+  Crea una instancia BaseLoop a partir de los parámetros de   configuración de lazo.
+\end{itemize}
+
+A partir de aquí, la instancia de SolarFieldSimulation ya dispone de lo necesario para realizar la simulación del campo mediante su método \emph{runSimulation()}.
+
+El tipo de simulación que se realiza depende del tipo de datos de que se disponga y de lo que se seleccione en el archivo de configuración:
+
+\begin{itemize}
+\item
+  Simulación tipo \emph{simulation}: En este caso, el caudal del lazo se   recalculará en un proceso de convergencia hasta conseguir que la   temperatura de salida del lazo sea la temperatura consignada.
+
+  \begin{itemize}
+  \item
+    Si el tipo de datos del que se dispone no tiene datos reales de  planta, la instancia \emph{datasource} será de tipo Weather y solo   se cuenta con datos meteorológicos (\(DNI\), \(T_{ext}\), velocidad
+    del viento y presión atmosférica), por lo que la temperatura de   entrada a los lazos será la nominal
+  \item
+    Si el tipo de datos del que se dispone sí cuenta con datos reales de   planta que permitan conocer las temperaturas de entrada a los lazos  (como es nuestro caso), la simulación utilizará estas temperaturas a  la hora de ajustar los caudales al salto térmico necesario.
+  \end{itemize}
+\item
+  Simualción tipo \emph{benchmark}: En este caso se debe disponer  obligatoriamente de datos reales de planta, pues la simulación utiliza  las temperaturas de entrada a los lazos y los caudales reales para calcular cúal será la temperatura de salida. Posteriormente, en los  archivos de salida de datos, se puede comparar la temperatura real de  salida del lazo con la calculada y de esta forma estimar si ha habido desenfoque y por tanto, desaprovechamiento de la energía solar. Hay
+  que tener en cuenta en los datos que disponemos podemos encontrar   situaciones en las que el lazo alcanza su temperatura de consigna pero   es posible que se estuviera realizando un ajuste de enfoque-desenfoque   (ya que el caudal no es regulable a nivel de lazo). En ese caso, es   intersante saber qué temperatura hubera alcanzado el HTF de no haberse   producido el desenfoque y, por tanto, poder calcular la energía solar   que no se ha aprovechado por no poder introducir mayor caudal en el   lazo.
+\end{itemize}
+
+A la hora de realizarse cada una de estas simulaciones puede darse el caso de que se haya configurado la opción \emph{fastmode=True}. En este caso se considera que todos los lazos de la planta se comportan como el lazo típico, modelado mediante la Clase BaseLoop. En caso contrario, la simulación se realizará para cada lazo del campo, lo cual solo tiene sentido si los lazos o sus componentes cuentan con diferentes valores en sus parámetros. 
+
+Una vez que el método runSimulation() ha procesado todas las filas seleccionadas del DataFrame \emph{datasource}, los datos calculados que se han ido añadiendo al DataFrame son volcados a un archivo CSV para su posterior análisis.
+
+\hypertarget{simulaciuxf3n-tipo-simulation}{Simulación tipo simulation}
+
+Tal y como se ha mencionado, en este caso se simula la planta de tal forma que se calcula el caudal necesario en cada lazo con el fin de que se alcance la temperatura de consigna o nominal. En este tipo de simulación solo son necesarios los datos meteorológicos y los valores nominales de temperatura y presión de entrada y salida. Los valores exactos de la presión no son necesarios y basta con seleccionar presiones suficientemente altas para que garanticen el estado de líquido
+saturado del HTF en todo momento. Las propiedades del HTF en estado de líquido saturado no dependen significativamente de la presión.
+
+Los datos meteorológicos se pueden leer de un fichero en formato TMY2, TMY3 o CSV convenientemente etiquetado. Si además se dispone de los datos de temperatura de entrada del HTF al campo solar se emplearán éstos en lugar del valor nominal, por lo que el salto térmico necesario se calculará partiendo de la temperatura real de entrada.
+
+El programa calcula el rendimiento del lazo base o de cada lazo (según se haya seleccionado o no la opción \emph{fastmode}) ajusando iterativamente el caudal hasta que la temperatura de salida sea la consignada. Durante las horas nocturnas el caudal es fijo e igual al mínimo recomendado, tal y como ocurre en plantas reales. 
+
+\hypertarget{simulaciuxf3n-tipo-benchmark}{Simulación tipo benchmark}
+
+En este tipo de simulación el caudal viene marcado por el caudal real de planta, por lo que para este tipo de simulación es obligatorio disponer de los datos reales. Al emplearse un caudal fijo, la temperatura alcanzada por el HTF en la simulación no tiene porqué coincider con la temperatura real. Dependiendo de si el valor obtenido es mayor o menor que el real se pueden sacar las siguientes interpretaciones: 
+* Si la  temperatura calculada es menor que la real podemos interpretar que la simulación ha sobredimensionado las pérdidas en la configuración de la planta. Pueden corregirse algunos parámetros o introducir un factor multiplicativo. 
+* Si la temperatura calculada es mayor que la real puede deberse a que se han infravalorado las pérdidas, lo cual se podría corregir ajustando los valores de estas en el archivo de configuración, pero también puede deberse a que el campo real estaba realizando desenfoques parciales para reducir la energía captada. En ese caso, la energía no aprovechada se puede calcular como la diferencia entre la entalpía del HTF a la temperatura de salida simulada menos su entalpia a la temperatura de salida real.
+
+\section{Validación y configuración del campo solar real}
+
+Con el fin realizar una primera validación de nuestro código se compararán en primer lugar los valores obtenidos para una determinada configuración de campo con los que se optienen mediante SAM, \cite{1022085/NBJ6NM3F}, un software de reconocido prestigio muy empleado en el sector. Las posibilidades de SAM van mucho más allá del alcance de nuestro código, por lo que nos limitaremos a comparar los datos relativos exclusivametne al campo solar. Durante todo este trabajo
+se empleará la misma configuración de campo solar que se describe a continuación por disponerse de los datos reales de generación de dicha planta. Posteriormente se compararán los datos reales de generación con los resultados de una simulación realizada con SAM y con los de nuestro programa.
+
+\hypertarget{configuraciuxf3n-del-campo-solar-real}{Configuración del campo solar real}
+
+Las plantas Aste 1A y 1B se encuentran situadas en el término municipal de Alcázar de San Juan, provincia de Ciudad Real. Sus coordenadas geográficas son (39,1°N 3,16°W) y la altitud es de 651 m sobre el nivel del mar.
+
+La potencia eléctrica nomminal de cada una de ellas es de 50 MW. El proyecto inicial consideraba que las plantas contarían con almacenamiento térmico, el cual se construiría durante una segunda fase que finalmente no se llegó a ejecutar, por lo que en la actualidad solo existe generación durante las horas de sol. Se emplearán los datos de Aste 1B, cuya configuración es la siguente:
+
+El campo solar cuenta con 120 lazos distribuidos de manera irregular en 4 subcampos.
+
+\begin{itemize}
+\item
+  Subcampo NO, 31 lazos.
+\item
+  Subcampo NE, 28 lazos.
+\item
+  Subcampo SO, 27 lazos.
+\item
+  Subcampo SE, 34 lazos.
+\end{itemize}
+
+Todos los lazos son idénticos, contando con 4 SCAs cada uno en una configuración tipo \(U\). El eje de seguimiento perfectamente plano se encuentra alineado en direccion N-S. Cada SCA cuenta con un total de 336 espejos de vídrio fabricados por Flabeg.
+
+Los SCA, modelo SenerTrough I diseñado por Sener, se han parametrizado de la siguiente manera:
+
+\begin{itemize}
+\item
+  Longitud: 148,5 m.
+\item
+  Apertura: 5,77 m.
+\item
+  Distancia Focal: 2,1 m.
+\item
+  Coeficientes del \(IAM\): \(F_{0}=1\), \(F_{1}=0,0506\),
+  \(F_{2}=-0,1763\).
+\item
+  Precisión del seguidor: 0,99.
+\item
+  Precisión de la geometría: 0,98.
+\item
+  Disponibilidad: 0,99.
+\item
+  Reflectividad: 0,935.
+\item
+  Limpieza: 0,98.
+\end{itemize}
+
+El HCE es el modelo UVAC 3, de Solel con los siguientes parámetros:
+
+\begin{itemize}
+
+\item
+  Logintud: 4,05 m.
+\item
+  Factor de longitud efectiva, \(\gamma_L\): 0,96.
+\item
+  Factor de interceptación geométrica, \(\gamma_g\): 0,96.
+\item
+  Diámetro interior del tubo absorbedor, \(d_{ri}\): 0,066 m.
+\item
+  Diámetro exterior del tubo absorbedor, \(d_{ro}\)r: 0,070 m.
+\item
+  Diámetro interior de la envolvente de vídrio, \(d_{gi}\): 0,115 (m)
+\item
+  Diámetro exterior de la envolvente de vídrio, \(d_{go}\): 0,121 (m)
+\item
+  Rugosidad interior: 0,000045 m.
+\item
+  Factor de emisividad, \(A_1\): 0,000206.
+\item
+  Factor de emisividad, \(A_0\): 0,0430.
+\item
+  Absortibidad solar del receptor: 0,96.
+\item
+  Transmisividad del vídrio: 0,96.
+\item
+  Valor mínimo del número de Reynolds recomendado: 2400.
+\item
+  Distancia de separación entre brazos de soportación: 4,05 m.
+\end{itemize}
+
+La planta emplea como fluído caloportador Dowtherm-A, de Dow Chemical. Para el modelado sería necesario conocer una serie de parámetros en función de la temperatura y la presión, pero en una planta termosolar se debe trabajar siempre con el fluido en estado de líquido saturado y se ha comprobado que la variación de estos parámetros con la presión es despreciable, por lo que todos pueden expresarse a partir de un polinomio de mayor o menor grado en función exclusivamente de la temperatura. También se ha obtenido una curva para calcular la temperatura del líquido saturado en función de su entalpía.
+
+\begin{itemize}
+\item
+  \(\rho(T)\): Densidad, \((kg/m^3)\).
+\item
+  \(\mu(T)\): Viscosidad dinámica, \((Pa \cdot m)\).
+\item
+  \(k_T(T)\): Conductividad térmica, \((W/m \cdot K)\).
+\item
+  \(C_p(T)\): Calor específico a presión constante, \(J/Kg\cdot K\).
+\item
+  \(H(T)\): Entalpía específica, \(J/Kg\).
+\item
+  \(T(H)\): Temperatura, \((K)\), considerando H=0 a
+  \(T_{ref}= 285,86 K\)
+\end{itemize}
+
+La fórmula general para cada uno de estos parámetros es del tipo de la ec.\(\eqref{eq:polinomiohtf}\):
+
+\begin{equation}
+   parámetro(T) = a_0 + a_1 \cdot T + a_2 \cdot T^2 + a_3 \cdot T^3 + a_4 \cdot T^4 + a_5 \cdot T^5 + a_6 \cdot T^6 +  a_7 \cdot T^7 + a_8 \cdot T^8   
+    \label{eq:polinomiohtf}
+\end{equation}
+
+En las siguientes figuras pueden verse los diferentes parametros del Dowtherm-A en función de la temperatura.
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/curva_densidad.png}
+\caption{Densidad en función de la temperatura.} 
+\label{fig:curvadensidad}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/curva_viscosidad.png}
+\caption{Viscosidad dinámica en función de la temperatura.} 
+\label{fig:curvaviscosidad}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/curva_conductividad_termica.png}
+\caption{Conductividad térmica en función de la temperatura.} 
+\label{fig:curvaconductividad}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/curva_entalpia.png}
+\caption{Entalpía en función de la temperatura.} 
+\label{fig:curvaentalpia}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/curva_temperatura_entalpia.png}
+\caption{Temperatura en función de la entalpía.} 
+\label{fig:curvatemperatura}
+\end{figure}
+
+Para el caso del Dowtherm-A se han obtenido los coeficientes de los polinómios que caracterizan cada parámetro a partir de \cite{1022085/C5UIUT2V} y se han contrastado las curvas con los datos ofrecidos en \cite{1022085/LB9BTEXK}. En el caso de la viscosidad cinemática se ha detectado que el polinomio de 8º grado que se optiene con los coeficientes de la primera referencia presenta una gran desviación y crecimiento asintótico para temperaturas ligeramente superiores a la máxima de operación del fluido. Con el fin de poder flexibilizar el proceso de cálculo y que no se produzcan desbordamientos se ha ajustado un nuevo polinomio tras extender los datos de la viscosidad dinámica hasta unos 450 °C aproximadamente según la tendencia observada en el último tramo de la curva \(\mu(T)\). De esta forma seobtiene un nuevo polinomio, con mejor comportammiento en este rango extendido.
+
+El mismo procedimiento se ha empleado para obtener los polinomios característicos del fluido Therminol VP-1, aunque en este caso los polinomios se han ajustado a partir de una lista de valores sacada de la librería CoolProp. Pese a que el programa de simulación permite que durante el tiempo de ejecución se obtengan los parámetros citados a través de esta librería, existe una limitación debido al rígido margen de temperaturas con el que esta librería trabaja para cada fluído y esto
+provoca que para valores de temperatura ligeramente superiores al rango de operación ofrecido por fabricante no se devuelva ningún valor. Esto resulta en problemas en tiempo de ejecución si algún lazo alcanza una temperatura superior a los 397°C (398°C en el caso de Syltherm 800) . Aunque superar esta temperatura no es recomendable, es algo que puntualmente ocurre durante la operación de la planta. Además, una forma calcular la energía desaprovechada por desenfoque sería a partir de la temperatura que hubiera alcanzado el lazo de no haberse producido el desenfoque y calculando posteriormente su entalpía. Esta aproximación, que sería imposíble en la vida real debido a la degradación del HTF e incluso al daño del propio sistema por las sobrepresiones que se producirían, facilita el cálculo de la energía desaprovechada en cada  momento. Se ha supuesto que las curvas de los parámetros se mantienen bien ajustadas siempre y cuando la sobretemperatura alcanzada no sea excesiva (en las simulaciones realizadas no se ha superado más del 10\% de la temperatura máxima de operación recomendada por el fabricante). Por estos motivos, para este trabajo se han empleado siempre los valores de los parámetros obtenidos a partir de los polinomios y no de CoolProp.
+
+A continuación, en la siguiente tabla, se muestran los coeficientes para Dowtherm A:
+
+Coeficientes de los polinomios de ajuste para Dowtherm A
+
+\begin{longtable}[]{@{}lllllll@{}}
+& \(C_p(T)\) & \(\mu(T)\) & \(\rho(T)\) & \(k_T(T)\) & \(H(T)\) &
+\(T(H)\)\tabularnewline
+
+\endhead
+\(a_0\) & -2,363E+03 & 1,583E+00 & 1,492E+03 & 1,856E-01 & -6,511E+05 &
+2,853E+02\tabularnewline
+\(a_1\) & 3,946E+01 & -2,338E-02 & -3,332E+00 & -1,600E-04 & 4,121E+03 &
+6,207E-04\tabularnewline
+\(a_2\) & -1,702E-01 & 1,504E-04 & 1,248E-02 & 5,913E-12 & -1,235E+01 &
+-1,822E-10\tabularnewline
+\(a_3\) & 3,904E-04 & -5,489E-07 & -2,968E-05 & 0 & 2,771E-02 &
+-1,423E-16\tabularnewline
+\(a_4\) & -4,422E-07 & 1,242E-09 & 3,444E-08 & 0 & -2,776E-05 &
+3,316E-22\tabularnewline
+\(a_5\) & 1,979E-10 & -1,781E-12 & -1,622E-11 & 0 & 1,106E-08 &
+-1,753E-28\tabularnewline
+\(a_6\) & 0 & 1,581E-15 & 0 & 0 & 0 & 0\tabularnewline
+\(a_7\) & 0 & -7,941E-19 & 0 & 0 & 0 & 0\tabularnewline
+\(a_8\) & 0 & 1,728E-22 & 0 & 0 & 0 & 0\tabularnewline
+
+\end{longtable}
+
+Para el caso del Therminol VP-1 los coeficientes son los siguientes:
+
+Coeficientes de los polinomios de ajuste para Therminol VP-1
+
+\begin{longtable}[]{@{}lllllll@{}}
+
+& \(C_p(T)\) & \(\mu(T)\) & \(\rho(T)\) & \(k_T(T)\) & \(H(T)\) &
+\(T(H)\)\tabularnewline
+
+\endhead
+\(a_0\) & 2,881E+02 & 1,487E+00 & 1,403E+03 & 1,486E-01 & -2,923E+05 &
+2,924E+02\tabularnewline
+\(a_1\) & 5,875E+00 & -2,186E-02 & -1,613E+00 & 9,755E-06 & 3,910E+02 &
+6,424E-04\tabularnewline
+\(a_2\) & -6,857E-03 & 1,400E-04 & 2,138E-03 & -1,780E-07 & 2,076E+00 &
+-3,396E-10\tabularnewline
+\(a_3\) & 4,844E-06 & -5,092E-07 & -1,931E-06 & 3,524E-12 & 1,811E-03 &
+2,587E-16\tabularnewline
+\(a_4\) & 6,960E-20 & 1,148E-09 & -9,610E-21 & -7,572E-25 & -1,089E-05 &
+-1,066E-22\tabularnewline
+\(a_5\) & -2,780E-23 & -1,642E-12 & 3,864E-24 & 2,948E-28 & 2,274E-08 &
+0,000E+00\tabularnewline
+\(a_6\) & 0,000E+00 & 1,454E-15 & 0,000E+00 & 0,000E+00 & -2,667E-11 &
+0,000E+00\tabularnewline
+\(a_7\) & 0,000E+00 & -7,286E-19 & 0,000E+00 & 0,000E+00 & 1,788E-14 &
+0,000E+00\tabularnewline
+\(a_8\) & 0,000E+00 & 1,583E-22 & 0,000E+00 & 0,000E+00 & -5,284E-18 &
+0,000E+00\tabularnewline
+
+\end{longtable}
+
+Con el fin de facilitar la creación del archivo de configuración que emplea el código para realizar la simulación se ha desarrollado una sencilla interfaz que sirve de guía durante el proceso. Se muestran a continuación las capturas de pantalla de dicha interfaz durante la configuración de la simulación: 
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/interface01.png}
+\caption{Configuración de la simulación. Selección del tipo de simulación, fichero de datos y lugar de emplazamiento.} 
+\label{fig:interface01}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/interface02.png}
+\caption{Configuración de la simulación. Configuración del campo solar, número de subcampos, lazos, configuración de los lazos, valores nominales y asistente para relacionar los identificadores de las columnas del archivo de origen de datos con los que maneja el programa.} 
+\label{fig:interface02}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/interface03.png}
+\caption{Configuración de la simulación. Selección y configuración del fluido caloportador.} 
+\label{fig:interface03}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/interface04.png}
+\caption{Configuración de la simulación. Selección del modelo de SCA y configuración} 
+\label{fig:interface04}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/interface05.png}
+\caption{Configuración de la simulación. Selección del modelo de HCE y configuración} 
+\label{fig:interface05}
+\end{figure}
+
+El archivo de configuración completo resultant en formato JSON puede encontrarse en el ANEXO.
+
+Por otra parte, la versión de SAM utilizada ha sido la \emph{2020.2.29, 64 bit, updated to revision 1}. Se muestran también en las siguientes figuras las capturas de pantalla de las etapas más relevantes del proceso de configuración.
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/captura_sam01.png}
+\caption{Configuración SAM. Campo solar} 
+\label{fig:captura01}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/captura_sam02.png}
+\caption{Configuración SAM. Configuración del SCA SenerTrough I a partir del modelo EuroTrough ET150} 
+\label{fig:captura02}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/captura_sam03.png}
+\caption{Configuración SAM. Configuración del HCE UVAC 3 con vacío}
+\label{fig:captura03}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/captura_sam04.png}
+\caption{Configuración SAM. Configuración del bloque de potencia} 
+\label{fig:captura04}
+\end{figure}
+
+\section{Resultados de la validación}
+ 
+Una vez que tenemos configurado SAM y nuestro programa de la misma manera ejecutamos SAM sobre un archivo con los datos meteorológicos de un año y en valores horarios, en concreto se trata de los datos del año 2009 que se emplearon para el estudio y anteproyecto de construcción de las plantas. 
+
+Los datos generados por SAM son exportados a un archivo en formato \emph{.csv} y parte de ellos los emplearemos como datos de entrada en nuestro programa: 
+* Temperatura de entrada al campo solar: Usaremos este datos para que en podamos comparar entre ambas simulaciones los saltos de temperatura respecto a una misma temperatura. Nuestro código desconoce qué energía se extraerá del HTF que se envía al bloque de potencia al quedar este sistema fuera del modelo, por lo que es preciso darle algún valor. 
+* Caudal másico en entrada al campo solar: Nuestro código calculará el caudal necesario para obtener la temperatura deseada a la salida del lazo pero también empleará el caudal calculado por SAM para comparar ambos. Por otro lazo, entre las diferencias que existen entre nuestro código y SAM está que éste último considera nulo el caudal en el campo solar durante las horas nocturnas. En las plantas reales esto no es así, pues es necesario mantener cierto caudal en los lazos para evitar que el HTF descienda por debajo de su punto de congelación.  El caudal mínimo empleado en cada lazo es de 1,7 kg/s, lo cual sumo 204 kg/s para un total de 120 lazos. Por este motivo, en nuestra simulación se emplea este caudal mínimo durante las horas nocturnas y se calculan las pérdidas en base a él. Si en algún momento SAM ha calculado un cadual inferior a 204 kg/s sustituiremos ese valor por nuestro caudal mínimo. 
+* El resto de datos es idéntico para ambas configuraciones. SAM no emplea las presiones del HTF en ningún momento de su cálculo. En nuestro código se ha dejado esta posibilidad abierta de cara a incorporar, en un futuro, un cálculo de pérdidas de carga en tuberías. Por este motivo asignamos a todo el campo solar una presión de 20 bar, suficiente para mantener el HTF en estado de líquido saturado durante toda la simulación. 
+Tras ejecutar nuestra simulación estos son los datos más relevantes:
+
+SAM
+
+{Simulation}
+
+{Benchmark}
+
+Potencia térmica absorbida por el campo solar {[}GWh/año{]}
+
+470,0
+
+466,0
+
+0,9\%
+
+466,0
+
+0,9\%
+
+Potencia térmica a la salida del campo solar {[}GWh/año{]}
+
+404,6
+
+420,2
+
+-3,9\%
+
+417,2
+
+-3,1\%
+
+Potencia perdida en los HCEs de campo solar {[}GWh/año{]}
+
+65,4
+
+75,7
+
+-15,7\%
+
+77,6
+
+-18,7\%
+
+En comparación con SAM, nuestro programa
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+%----------
+%	BIBLIOGRAFÍA
+%----------	
+
+% \nocite{*} % Si quieres que aparezcan en la bibliografía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
+
+\clearpage
+\addcontentsline{toc}{chapter}{Bibliografía}
+\setquotestyle[english]{british} % Cambiamos el tipo de cita porque en el estilo IEEE se usan las comillas inglesas.
+\printbibliography
+
+
+
+%----------
+%	ANEXOS
+%----------	
+
+% Si tu trabajo incluye anexos, puedes descomentar las siguientes líneas
+\chapter* {Anexo A. Glosario}
+\pagenumbering{gobble} % Las páginas de los anexos no se numeran
+
+\begin{tabbing}	
+EASE \quad\=	European Association of Science Editors \\
+ECTS \>	Sistema Europeo de Transferencia de Créditos \\
+EEES \> Espacio Europeo de Educación Superior \\
+TFG	\>	Trabajo de Fin de Grado \\
+TFM	\>	Trabajo de Fin de Máster \\
+UC3M \>	Universidad Carlos III de Madrid 
+\end{tabbing}
+
+
+\end{document}

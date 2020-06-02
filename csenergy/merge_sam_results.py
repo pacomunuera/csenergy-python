@@ -16,9 +16,9 @@ import pandas as pd
 import plotly.express as px
 
 
-filename_sam = 'simulations_outputs/results SAM_VP1_UVAC3_VACIO.csv'
-filename_simulation = 'simulations_outputs/20200530 154033 TEST SAM-VP1_COMPLETE.csv'
-filename_columns = 'simulations_outputs/c.csv'
+filename_sam = 'simulations_outputs/IPH TODAS LAS COLUMNAS.csv'
+filename_simulation = 'simulations_outputs/20200602 005714 TEST 2007 IPH_COMPLETE.csv'
+filename_columns = 'simulations_outputs/COLUMNAS IPH.csv'
 
 with open(filename_simulation) as file_simulation:
     data_simulation = pd.read_csv(

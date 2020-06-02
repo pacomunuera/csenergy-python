@@ -142,18 +142,18 @@ class ModelBarbero4thOrder(Model):
         #  the first one in the loop or pr_j = pr_j-1 if there is a previous
         #  HCE in the loop.
         pr = hce.get_previous_pr()
-        tro = tf + qabs * pr / urec
+        tro1 = tf + qabs * pr / urec
 
         #  HCE emittance
-        eext = hce.get_eext(tro, wspd)
+        eext = hce.get_eext(tro1, wspd)
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
         #  Thermal power lost througth  bracktets
-        qlost_brackets = hce.get_qlost_brackets(tro, text)
+        qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
         #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
+        qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text) + \
             qlost_brackets
 
 
@@ -167,7 +167,7 @@ class ModelBarbero4thOrder(Model):
         NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
         #  if qabs > qcrit:
-        if qabs > 1.1 * qcrit:
+        if qabs > qcrit:
 
             #  We use Barbero2016's simplified model aproximation
             #  Eq. 3.63 Barbero2016
@@ -249,23 +249,36 @@ class ModelBarbero4thOrder(Model):
                 urec = hce.get_urec(tf, hce.pin, htf)
 
                 #  HCE emittance
-                eext = hce.get_eext(tro, wspd)
+                eext = hce.get_eext(tro1, wspd)
 
                 #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
 
                 #  We calculate tro again.
+                # kt = htf.get_thermal_conductivity(tro1, hce.pin)
+
+                # gx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
+                #                   (2.3 * np.log10(dro/dri))) -
+                #                   sigma * hce.get_eext(tro1, wspd) *
+                #                   (tro1**4 - text**4) - hce.get_hext(wspd) -
+                #                   hce.get_qlost_brackets(tro1, text))
+
+                # root = sc.optimize.newton(gx,
+                #                           tro1,
+                #                           maxiter=100000)
+
+                # tro2 = root
 
                 tro2 = tf + qabs * pr / urec
-                errtro = abs(tro2-tro)
-                tro = tro2
+                errtro = abs(tro2-tro1)
+                tro1 = tro2
 
                 #  Increase qlost with the thermal power lost througth bracktets
-                qlost_brackets = hce.get_qlost_brackets(tro, text)
+                qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
                 #  Thermal power loss. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro**4 - text**4) + \
-                    hext * (tro - text) + qlost_brackets
+                qlost = sigma * eext * (tro1**4 - text**4) + \
+                    hext * (tro1 - text) + qlost_brackets
 
                 #  Critical Thermal power loss. Eq. 3.50 Barbero2016
                 qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -285,29 +298,65 @@ class ModelBarbero4thOrder(Model):
             hce.qlost_brackets = qlost_brackets
 
         else:
+            hce.pr = 0.0
             errtro = 10.0
+            tf = 0.5 * (hce.tin + hce.tout)
+            tro1 = tf - 5
             while (errtro > self.max_err_tro):
 
-                hce.pr = 0.0
-                #  tro = tf
-                tro = 0.5 * (hce.tin + hce.tout)
-                #  HCE emittance
-                eext = hce.get_eext(tro, wspd)
+                # hce.pr = 0.0
+                # tro = 0.5 * (hce.tin + hce.tout)
+                # #  HCE emittance
+                # eext = hce.get_eext(tro, wspd)
+                # #  External Convective Heat Transfer equivalent coefficient
+                # hext = hce.get_hext(wspd)
+
+                # #  Thermal power lost. Eq. 3.23 Barbero2016
+                # qlost = sigma * eext * (tro**4 - text**4) + \
+                #     hext * (tro - text) + hce.get_qlost_brackets(tro, text)
+
+                # #  Thermal power lost througth  bracktets
+                # qlost_brackets = hce.get_qlost_brackets(tro, text)
+
+                # hce.qlost = qlost
+                # hce.qlost_brackets =  qlost_brackets
+                # hce.set_tout(htf)
+                # hce.set_pout(htf)
+                # errtro = abs(tro - 0.5 * (hce.tin + hce.tout))
+
+
+                kt = htf.get_thermal_conductivity(tro1, hce.pin)
+
+                fx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
+                                  (2.3 * np.log10(dro/dri))) -
+                                  sigma * hce.get_eext(tro1, wspd) *
+                                  (tro1**4 - text**4) - hce.get_hext(wspd) -
+                                  hce.get_qlost_brackets(tro1, text))
+
+                root = sc.optimize.newton(fx,
+                                          tro1,
+                                          maxiter=100000)
+
+                tro2 = root
+                eext = hce.get_eext(tro2, wspd)
                 #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
 
                 #  Thermal power lost. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro**4 - text**4) + \
-                    hext * (tro - text) + hce.get_qlost_brackets(tro, text)
+                qlost = sigma * eext * (tro2**4 - text**4) + \
+                    hext * (tro2 - text) + hce.get_qlost_brackets(tro2, text)
 
                 #  Thermal power lost througth  bracktets
-                qlost_brackets = hce.get_qlost_brackets(tro, text)
+                qlost_brackets = hce.get_qlost_brackets(tro2, text)
 
                 hce.qlost = qlost
                 hce.qlost_brackets =  qlost_brackets
                 hce.set_tout(htf)
                 hce.set_pout(htf)
-                errtro = abs(tro - 0.5 * (hce.tin + hce.tout))
+                tf = 0.5 * (hce.tin + hce.tout)
+                errtro = abs(tro2 - tro1)
+                tro1 = tro2
+
 
 class ModelBarbero1stOrder(Model):
 
@@ -387,7 +436,7 @@ class ModelBarbero1stOrder(Model):
         Aext = np.pi * dro * x  # Pendiente de confirmar
         NTUperd = ucrit * Aext / (massflow * cp)
 
-        if qabs > 1.1 * qcrit:
+        if qabs > qcrit:
             hce.pr = ((1 - (qcrit / qabs)) *
                   (1 / (NTUperd * x)) *
                   (1 - np.exp(-NTUperd * fcrit * x)))
@@ -475,7 +524,7 @@ class ModelBarberoSimplified(Model):
         ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
         fcrit = 1 / (1 + (ucrit / urec))
 
-        if qabs > 1.1 * qcrit:
+        if qabs > qcrit:
 
             hce.pr = fcrit * (1 - (qcrit / qabs))
 
@@ -486,6 +535,8 @@ class ModelBarberoSimplified(Model):
         hce.qlost_brackets = qlost_brackets
         hce.set_tout(htf)
         hce.set_pout(htf)
+
+
 # class ModelHottelWhilier(Model):
 
 #         def __ini__(self, simulation):
@@ -1068,6 +1119,7 @@ class __Loop__(object):
                     h.parameters['Length'] *
                     h.parameters['Absorber tube outer diameter'])
                 pr_opt_list.append(h.pr_opt)
+
         self.pr = np.mean(pr_list)
         self.qabs = np.sum(qabs_list)
         self.qlost_brackets = np.sum(qlost_brackets_list)
@@ -1517,9 +1569,10 @@ class Subfield(object):
             np.sum([l.massflow *
                     htf.get_enthalpy(l.tout, l.pout) for l in self.loops]) /
                               self.massflow, self.pout)
-        self.qlost = np.sum([l.qlost for l in self.loops])
-        self.qabs = np.sum([l.qabs for l in self.loops])
-        self.qlost_brackets = np.sum([l.qlost_brackets for l in self.loops])
+        self.qlost = np.sum([l.qlost for l in self.loops]) / 1000000
+        self.qabs = np.sum([l.qabs for l in self.loops]) / 1000000
+        self.qlost_brackets = np.sum([l.qlost_brackets for l in self.loops]) \
+            / 1000000
 
     def set_massflow(self):
 
