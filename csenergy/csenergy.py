@@ -328,7 +328,7 @@ class ModelBarbero4thOrder(Model):
                 kt = htf.get_thermal_conductivity(tro1, hce.pin)
 
                 fx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
-                                  (2.3 * np.log10(dro/dri))) -
+                                    np.log(dro/dri)) -
                                   sigma * hce.get_eext(tro1, wspd) *
                                   (tro1**4 - text**4) - hce.get_hext(wspd) -
                                   hce.get_qlost_brackets(tro1, text))
@@ -667,7 +667,7 @@ class HCE(object):
         cg = (self.sca.parameters['Aperture'] /
               (np.pi*self.parameters['Absorber tube outer diameter']))
 
-        pr_shadows = self.get_pr_shadows(solarpos)
+        pr_shadows = self.get_pr_shadows2(solarpos)
         pr_borders = self.get_pr_borders(aoi)
         #  Ec. 3.20 Barbero
         self.qabs = self.pr_opt * cg * dni * pr_borders * pr_shadows
@@ -762,27 +762,15 @@ class HCE(object):
         if  shading > 1 or  shading < 0:
             print("ERROR shading",  shading)
 
+        s2 = self.get_pr_shadows2(solarpos)
+        # print("s1", shading, "s2", s2)
         return shading
 
     def get_pr_shadows2(self, solarpos):
 
-        sigmabeta = 0.0
-        beta0 = 0.0
 
-        if self.sca.loop.parameters['Tracking Type'] == 1:  # N-S single axis tracker
-            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-                surface_azimuth = 90  # Surface facing east
-            else:
-                surface_azimuth = 270  # Surface facing west
-        elif self.sca.loop.parameters['Tracking Type'] == 2:  # E-W single axis tracker
-            surface_azimuth = 180  # Surface facing the equator
+        beta0 = self.sca.get_tracking_angle(solarpos)
 
-        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
-        #  pero hay que ver la posibilidad de modelar cierto error o desfase
-        beta0 = np.degrees(np.arctan(
-            np.tan(np.radians(solarpos['zenith'][0])) *
-            np.cos(np.radians(surface_azimuth -
-                              solarpos['azimuth'][0]))))
         if beta0 >= 0:
             sigmabeta = 0
         else:
@@ -795,18 +783,34 @@ class HCE(object):
         #                            solarpos['zenith'][0],
         #                            solarpos['azimuth'][0])
 
-        Hs = abs(self.sca.parameters['Aperture'] -
-               self.sca.loop.parameters['row_spacing'] *
-               np.cos(np.radians(90 - beta)))
+        surface_azimuth = self.sca.get_surface_azimuth(solarpos)
+
+
+
+        # Hs = abs(self.sca.parameters['Aperture'] -
+        #        self.sca.loop.parameters['row_spacing'] *
+        #        np.cos(np.radians(beta0)))
 
         Ls = abs(len(self.sca.loop.scas) * self.sca.parameters['SCA Length'] -
                  abs(self.sca.loop.parameters['row_spacing'] *
                      np.tan(np.radians(surface_azimuth -
                                        solarpos['azimuth'][0]))))
 
-        shading = (Ls * Hs / (len(self.sca.loop.scas) *
-                                self.sca.parameters['SCA Length'] *
-                                self.sca.parameters['Aperture']))
+        ls = Ls / (len(self.sca.loop.scas) * self.sca.parameters['SCA Length'])
+
+        # if solarpos['zenith'][0] < 90:
+        #     shading = 1 - (Ls * Hs / (len(self.sca.loop.scas) *
+        #                               self.sca.parameters['SCA Length'] *
+        #                               self.sca.parameters['Aperture']))
+        # else:
+        #     shading = 0
+
+        if solarpos['zenith'][0] < 90:
+            shading = min(abs(np.cos(np.radians(beta0))) * \
+                 self.sca.loop.parameters['row_spacing'] / \
+                     self.sca.parameters['Aperture'], 1)
+        else:
+            shading = 0
 
         return shading
 
@@ -990,26 +994,13 @@ class SCA(object):
         # print('aoi', aoi, 'kiam', kiam)
         return kiam
 
-
     def get_aoi(self, solarpos):
 
         sigmabeta = 0.0
         beta0 = 0.0
 
-        if self.loop.parameters['Tracking Type'] == 1: # N-S single axis tracker
-            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-                surface_azimuth = 90 # Surface facing east
-            else:
-                surface_azimuth = 270 # Surface facing west
-        elif self.loop.parameters['Tracking Type'] == 2:  # E-W single axis tracker
-            surface_azimuth = 180  # Surface facing the equator
-
-        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
-        #  pero hay que ver la posibilidad de modelar cierto error o desfase
-        beta0 = np.degrees(
-                    np.arctan(np.tan(np.radians(solarpos['zenith'][0])) *
-                              np.cos(np.radians(surface_azimuth -
-                                                solarpos['azimuth'][0]))))
+        surface_azimuth = self.get_surface_azimuth(solarpos)
+        beta0 = self.get_tracking_angle(solarpos)
 
         if beta0 >= 0:
             sigmabeta = 0
@@ -1022,6 +1013,29 @@ class SCA(object):
                                    solarpos['zenith'][0],
                                    solarpos['azimuth'][0])
         return aoi
+
+    def get_tracking_angle(self, solarpos):
+
+        surface_azimuth = self.get_surface_azimuth(solarpos)
+        #  Tracking angle for a collector with tilt = 0
+        #  Ec. 2.32 Technical Manual for the SAM Physical Trough Model
+        beta0 = np.degrees(
+                    np.arctan(np.tan(np.radians(solarpos['zenith'][0])) *
+                              np.cos(np.radians(surface_azimuth -
+                                                solarpos['azimuth'][0]))))
+        return beta0
+
+    def get_surface_azimuth(self, solarpos):
+
+        if self.loop.parameters['Tracking Type'] == 1: # N-S single axis tracker
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90 # Surface facing east
+            else:
+                surface_azimuth = 270 # Surface facing west
+        elif self.loop.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+            surface_azimuth = 180  # Surface facing the equator
+
+        return surface_azimuth
 
 
 class __Loop__(object):
@@ -1487,32 +1501,45 @@ class BaseLoop(__Loop__):
         sigmabeta = 0.0
         beta0 = 0.0
 
-        if self.parameters['Tracking Type'] == 1:  # N-S single axis tracker
-            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-                surface_azimuth = 90  # Surface facing east
-            else:
-                surface_azimuth = 270  # Surface facing west
-        elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
-            surface_azimuth = 180  # Surface facing the equator
+        surface_azimuth = self.get_surface_azimuth(solarpos)
+        beta0 = self.get_tracking_angle(solarpos)
 
-        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
-        #  pero hay que ver la posibilidad de modelar cierto error o desfase
-        beta0 = np.degrees(np.arctan(
-            np.tan(np.radians(solarpos['zenith'][0])) *
-            np.cos(np.radians(surface_azimuth -
-                              solarpos['azimuth'][0]))))
         if beta0 >= 0:
             sigmabeta = 0
         else:
             sigmabeta = 1
 
-        #  Surface tilt
         beta = beta0 + 180 * sigmabeta
         aoi = pvlib.irradiance.aoi(beta,
                                    surface_azimuth,
                                    solarpos['zenith'][0],
                                    solarpos['azimuth'][0])
         return aoi
+
+
+    def get_tracking_angle(self, solarpos):
+
+        surface_azimuth = self.get_surface_azimuth(solarpos)
+        #  Tracking angle for a collector with tilt = 0
+        #  Ec. 2.32 Technical Manual for the SAM Physical Trough Model
+        beta0 = np.degrees(
+                    np.arctan(np.tan(np.radians(solarpos['zenith'][0])) *
+                              np.cos(np.radians(surface_azimuth -
+                                                solarpos['azimuth'][0]))))
+        return beta0
+
+
+    def get_surface_azimuth(self, solarpos):
+
+        if self.parameters['Tracking Type'] == 1: # N-S single axis tracker
+            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+                surface_azimuth = 90 # Surface facing east
+            else:
+                surface_azimuth = 270 # Surface facing west
+        elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+            surface_azimuth = 180  # Surface facing the equator
+
+        return surface_azimuth
 
 
 class Subfield(object):
@@ -2135,7 +2162,7 @@ class SolarFieldSimulation(object):
         self.datasource.dataframe.at[row[0], 'IAM'] = \
             self.base_loop.get_IAM(aoi)
         self.datasource.dataframe.at[row[0], 'pr_shadows'] = \
-            self.base_loop.get_pr_shadows(solarpos)
+            self.base_loop.get_pr_shadows2(solarpos)
         self.datasource.dataframe.at[row[0], 'pr_borders'] = \
             self.base_loop.get_pr_borders(aoi)
         self.datasource.dataframe.at[row[0], 'pr_opt_peak'] = \
