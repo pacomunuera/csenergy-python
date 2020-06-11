@@ -153,8 +153,9 @@ class ModelBarbero4thOrder(Model):
         qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
         #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text) + \
-            qlost_brackets
+        # qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text) + \
+        #     qlost_brackets
+        qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
 
 
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
@@ -166,7 +167,6 @@ class ModelBarbero4thOrder(Model):
         #  Transmission Units Number, Ec. 3.30 Barbero2016
         NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
-        #  if qabs > qcrit:
         if qabs > qcrit:
 
             #  We use Barbero2016's simplified model aproximation
@@ -231,6 +231,7 @@ class ModelBarbero4thOrder(Model):
                 errpr = abs(pr2-pr)
                 pr = pr2
                 hce.pr = pr
+
                 hce.set_tout(htf)
                 hce.set_pout(htf)
                 tf = 0.5 * (hce.tin + hce.tout)
@@ -277,8 +278,9 @@ class ModelBarbero4thOrder(Model):
                 qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
                 #  Thermal power loss. Eq. 3.23 Barbero2016
-                qlost = sigma * eext * (tro1**4 - text**4) + \
-                    hext * (tro1 - text) + qlost_brackets
+                # qlost = sigma * eext * (tro1**4 - text**4) + \
+                #     hext * (tro1 - text) + qlost_brackets
+                qlost = sigma * eext * (tro1**4 - text**4)
 
                 #  Critical Thermal power loss. Eq. 3.50 Barbero2016
                 qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -293,7 +295,8 @@ class ModelBarbero4thOrder(Model):
             if step == 1000:
                 print('No se alcanzó convergencia. HCE', hce.get_index())
                 print(qabs, qcrit, urec, ucrit)
-            # hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+
+            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
             hce.qlost = qlost
             hce.qlost_brackets = qlost_brackets
 
@@ -343,8 +346,11 @@ class ModelBarbero4thOrder(Model):
                 hext = hce.get_hext(wspd)
 
                 #  Thermal power lost. Eq. 3.23 Barbero2016
+                # qlost = sigma * eext * (tro2**4 - text**4) + \
+                #     hext * (tro2 - text) + hce.get_qlost_brackets(tro2, text)
+
                 qlost = sigma * eext * (tro2**4 - text**4) + \
-                    hext * (tro2 - text) + hce.get_qlost_brackets(tro2, text)
+                    hext * (tro2 - text)
 
                 #  Thermal power lost througth  bracktets
                 qlost_brackets = hce.get_qlost_brackets(tro2, text)
@@ -364,13 +370,12 @@ class ModelBarbero1stOrder(Model):
 
         self.parameters = settings
         self.max_err_t = self.parameters['max_err_t']
+        self.max_err_tro = self.parameters['max_err_tro']
 
     def calc_pr(self, hce, htf, row, qabs = None):
 
         if qabs is None:
             qabs = hce.qabs
-
-        tin = hce.tin
 
         #  If the hce is the first one in the loop tf = tin, else
         #  tf equals tin plus half the jump of temperature in the previous hce
@@ -379,11 +384,11 @@ class ModelBarbero1stOrder(Model):
         else:
             tf = hce.tin + 0.5 * (hce.sca.hces[hce.hce_order - 1].tout -
                                   hce.sca.hces[hce.hce_order - 1].tin)
-        tri = tf  #  Absorber tube inner surface temperature
+
         massflow = hce.sca.loop.massflow
-        wspd = row[1]['Wspd']  #  Wind speed
-        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
-        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
+        wspd = row[1]['Wspd']  # Wind speed
+        text = row[1]['DryBulb']  # Dry bulb ambient temperature
+        sigma = sc.constants.sigma  # Stefan-Bolztmann constant
         dro = hce.parameters['Absorber tube outer diameter']
         dri = hce.parameters['Absorber tube inner diameter']
         dgo = hce.parameters['Glass envelope outer diameter']
@@ -415,7 +420,7 @@ class ModelBarbero1stOrder(Model):
         hext = hce.get_hext(wspd)
 
         #  Thermal power lost througth  bracktets
-        qlost_brackets = hce.get_qlost_brackets(tf, text)
+        qlost_brackets = hce.get_qlost_brackets(tro, text)
 
         #  Thermal power lost. Eq. 3.23 Barbero2016
         qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
@@ -440,14 +445,75 @@ class ModelBarbero1stOrder(Model):
             hce.pr = ((1 - (qcrit / qabs)) *
                   (1 / (NTUperd * x)) *
                   (1 - np.exp(-NTUperd * fcrit * x)))
-            # hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+            hce.qlost = qlost
+            hce.qlost_brackets = qlost_brackets
+            hce.set_tout(htf)
+            hce.set_pout(htf)
+
         else:
             hce.pr = 0.0
+            errtro = 10.0
+            tf = 0.5 * (hce.tin + hce.tout)
+            tro1 = tf - 5
+            while (errtro > self.max_err_tro):
 
-        hce.qlost = qlost
-        hce.qlost_brackets = qlost_brackets
-        hce.set_tout(htf)
-        hce.set_pout(htf)
+                # hce.pr = 0.0
+                # tro = 0.5 * (hce.tin + hce.tout)
+                # #  HCE emittance
+                # eext = hce.get_eext(tro, wspd)
+                # #  External Convective Heat Transfer equivalent coefficient
+                # hext = hce.get_hext(wspd)
+
+                # #  Thermal power lost. Eq. 3.23 Barbero2016
+                # qlost = sigma * eext * (tro**4 - text**4) + \
+                #     hext * (tro - text) + hce.get_qlost_brackets(tro, text)
+
+                # #  Thermal power lost througth  bracktets
+                # qlost_brackets = hce.get_qlost_brackets(tro, text)
+
+                # hce.qlost = qlost
+                # hce.qlost_brackets =  qlost_brackets
+                # hce.set_tout(htf)
+                # hce.set_pout(htf)
+                # errtro = abs(tro - 0.5 * (hce.tin + hce.tout))
+
+
+                kt = htf.get_thermal_conductivity(tro1, hce.pin)
+
+                fx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
+                                    np.log(dro/dri)) -
+                                  sigma * hce.get_eext(tro1, wspd) *
+                                  (tro1**4 - text**4) - hce.get_hext(wspd) -
+                                  hce.get_qlost_brackets(tro1, text))
+
+                root = sc.optimize.newton(fx,
+                                          tro1,
+                                          maxiter=100000)
+
+                tro2 = root
+                eext = hce.get_eext(tro2, wspd)
+                #  External Convective Heat Transfer equivalent coefficient
+                hext = hce.get_hext(wspd)
+
+                #  Thermal power lost. Eq. 3.23 Barbero2016
+                # qlost = sigma * eext * (tro2**4 - text**4) + \
+                #     hext * (tro2 - text) + hce.get_qlost_brackets(tro2, text)
+
+                qlost = sigma * eext * (tro2**4 - text**4) + \
+                    hext * (tro2 - text)
+
+                #  Thermal power lost througth  bracktets
+                qlost_brackets = hce.get_qlost_brackets(tro2, text)
+
+                hce.qlost = qlost
+                hce.qlost_brackets =  qlost_brackets
+                hce.set_tout(htf)
+                hce.set_pout(htf)
+                tf = 0.5 * (hce.tin + hce.tout)
+                errtro = abs(tro2 - tro1)
+                tro1 = tro2
+
 
 class ModelBarberoSimplified(Model):
 
@@ -859,14 +925,13 @@ class HCE(object):
 
     def get_eext(self, tro, wspd):
 
-
         #  Eq. 5.2 Barbero. Parameters given in Pg. 245
         eext = (self.parameters['Absorber emittance factor A0'] +
                 self.parameters['Absorber emittance factor A1'] *
                 (tro - 273.15))
         """
-        Lineal Increase if wind speed lower than 4 m/s up to 1% at 4 m/s
-        Lineal increase over 4 m/s up to 2% at 7 m/s
+        If wind speed is lower than 4 m/s, eext is increased up to a 1% at
+        4 m/s. As of 4 m/s forward, eext is increased up to a 2% at 7 m/s
         """
         if wspd < 4:
             eext = eext * (1 + 0.01 * wspd / 4)
@@ -1332,7 +1397,6 @@ class BaseLoop(__Loop__):
             id = 'LB.'+subfield.name
         else:
             id = 'LB.000'
-
         return id
 
     def get_qlost_brackets(self, tf, text):
@@ -2566,7 +2630,6 @@ class LoopSimulation(object):
 
             self.simulate_base_loop(solarpos, row)
 
-
             # self.gather_data(row, solarpos)
             str_data = ("{0} Ang. Zenith: {1:.2f} DNI: {2} W/m2 " +
                          "Qm: {3:.1f}kg/s Tin: {4:.1f}K Tout: {5:1f}K")
@@ -3277,36 +3340,23 @@ class TableData(object):
                                                 ("all files","*.*")))
                 root.update()
                 root.destroy()
-                if path is None:
-                    return
-                else:
-                    strfilename, strext = os.path.splitext(path)
-                    if  strext == ".csv":
-                        self.dataframe = pd.read_csv(path, sep=';',
-                                                     decimal= ',',
-                                                     dayfirst=True)
-                        self.file = path
-                    elif strext == ".xls":
-
-                        self.dataframe = pd.read_excel(path)
-                        self.file = path
-                    else:
-                        print("unknow extension ", strext)
-                        return
             else:
                 strfilename, strext = os.path.splitext(path)
 
                 if  strext == ".csv":
-                    self.dataframe = pd.read_csv(path, sep=';',
-                                                 decimal= ',',
-                                                 dayfirst=True)
-                    self.file = path
-                elif strext == ".xls":
-                    self.dataframe = pd.read_excel(path)
+                    self.dataframe = pd.read_csv(
+                        path, sep=';',
+                        decimal= ',',
+                        dayfirst=True,
+                        index_col=0)
+
                     self.file = path
                 else:
                     print("unknow extension ", strext)
                     return
+
+                self.dataframe.index = pd.to_datetime(self.dataframe.index,
+                                              format= "%d/%m/%Y %H:%M")
         except Exception:
             raise
             txMessageBox.showerror('Error loading FieldData File',

@@ -14,9 +14,11 @@ hmargin=3cm
 \renewcommand{\baselinestretch}{1.5}
 \parskip=6pt
 
+\usepackage{enumitem}
+
 % DEFINICIÓN DE COLORES para portada y listados de código
 \usepackage[table]{xcolor}
-\definecolor{azulUC3M}{RGB}{0,0,102}
+\definecolor{verdeUNED}{RGB}{0, 86, 63}
 \definecolor{gray97}{gray}{.97}
 \definecolor{gray75}{gray}{.75}
 \definecolor{gray45}{gray}{.45}
@@ -100,7 +102,7 @@ hmargin=3cm
 \usepackage{floatrow} % utilizamos este paquete y sus macros \ttabbox y \ffigbox para alinear los nombres de tablas y figuras de acuerdo con el estilo definido. Para su uso ver archivo de ejemplo 
 \usepackage{array} % con este paquete podemos definir en la siguiente línea un nuevo tipo de columna para tablas: ancho personalizado y contenido centrado
 \newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
-\DeclareCaptionFormat{upper}{#1#2\uppercase{#3}\par}
+\DeclareCaptionFormat{upper}{#1#2{#3}\par}
 
 \usepackage{longtable}
 
@@ -108,13 +110,12 @@ hmargin=3cm
 \captionsetup[table]{
 	format=upper,
 	name=TABLA,
-	justification=centering,
+	justification=justified,
 	labelsep=period,
 	width=.75\linewidth,
 	labelfont=small,
 	font=small,
 }
-
 
 \usepackage{graphicx}
 \graphicspath{{images/}} %ruta a la carpeta de imágenes
@@ -123,6 +124,7 @@ hmargin=3cm
 \captionsetup[figure]{
 	format=hang,
 	name=Fig.,
+	justification=justified,
 	singlelinecheck=off,
 	labelsep=period,
 	labelfont=small,
@@ -188,9 +190,6 @@ hmargin=3cm
 %-------------
 
 \begin{document}
-
-
-
 	\pagenumbering{roman}
 	
 	%----------
@@ -198,7 +197,7 @@ hmargin=3cm
 	%----------	
 	\begin{titlepage}
 		\begin{sffamily}
-			\color{azulUC3M}
+			\color{verdeUNED}
 			\begin{center}
 				\begin{figure}[H] %incluimos el logotipo de la Universidad
 					\makebox[\textwidth][c]{\includegraphics[width=8 cm]{logo_ingenieros.png}}
@@ -212,7 +211,7 @@ hmargin=3cm
 					\bigskip
 					
 				\end{Large}
-				{\Huge "Simulación de un campo solar de concentradores cilindroparabólicos con Python}\\
+				{\Huge Simulación de un campo solar de concentradores cilindroparabólicos con Python}\\
 				\vspace*{0.5cm}
 				\rule{10.5cm}{0.1mm}\\
 				\vspace*{0.9cm}
@@ -313,7 +312,7 @@ hmargin=3cm
 \input{chapters/ch01}
 \input{chapters/ch02}
 \input{chapters/ch03}
-
+\input{chapters/ch04}
 
 
 %----------
@@ -338,12 +337,15 @@ hmargin=3cm
 \pagenumbering{gobble} % Las páginas de los anexos no se numeran
 
 \begin{tabbing}	
-EASE \quad\=	European Association of Science Editors \\
-ECTS \>	Sistema Europeo de Transferencia de Créditos \\
-EEES \> Espacio Europeo de Educación Superior \\
-TFG	\>	Trabajo de Fin de Grado \\
-TFM	\>	Trabajo de Fin de Máster \\
-UC3M \>	Universidad Carlos III de Madrid 
+CCP \quad\= Colector Cilindro-Parabólico  \\
+HCE \> Heat Collector Element \\
+HTF \> Heat Transfer Fluid \\
+IPH \> Industrial Process Heat \\
+SAM\> System Advisor Model \\
+SCA \> Solar Collector Assembly\\
+SCE \> Solar Collector Element \\
+TFG	\>Trabajo de Fin de Grado \\
+UNED \> Universidad Nacional de Educación a Distancia \\
 \end{tabbing}
 
 

@@ -8,7 +8,7 @@ Los resutaldos obtenidos son compatibles con los datos de generación de un camp
 modelos para gran número de sistemas como por ejemplo, los generadores de vapor, almacenamiento térmico, turbina, sistemas auxiliares de bombeo, sistemas de tratamiento de agua, torre de refrigeración, etc\ldots{} No obstante, la metodología seguida permite que en el futuro este proyecto pueda ser ampliado de forma sistemática con la incoroporación de nuevas clases de objetos que aprovechen los métodos de entrada y salida ya programados para interactuar con ellos. En todo caso, se han empleado valores de rendimientos estimados para los principales subsistemas de planta con el fin de ofrecer una estimación de la energía eléctrica finalmente vertida a la red.
 
 \section{Estructura de la memoria}
-Esta memoria se estructura en 6 capítulos y un anexo con el código fuente.\\
+Esta memoria se estructura en 6 capítulos y un anexo con el código fuente.
 
 En este primer capítulo se describen los objetivos del TFG y se ofrece una introducción a las características de los concentradores cilindroparabólicos. 
 El segúndo capítulo presenta el modelo teórico de partida y se detallan las ecuaciones que describen los sistemas que más adelante serán modelados.
@@ -20,25 +20,13 @@ Finalmente, el sexto capítulo se dedica a presentar conclusiones y se realizan 
 
 \section{Concentradores cilindroparabólicos}
 
-Existen principalmente tres tecnologías para el aprovechamiento de la radiación solar directa en sistemas térmicos: concentrador cilindro parabólico CCP, central de torre y disco parabólico. La tecnología de central de torre y la de CCP son las que cuentan en la actualidad con una mayor madurez y gran número de centrales en operación y en construcción en todo el mundo \cite{Protermosolar}. En el caso de CCP, el
-estado del arte y la madurez de la tecnología garantizan el correcto funcionamiento del sistema. Por
-otro lado, este tipo de sistema presenta un alto grado de replicabilidad, modularidad y
-aprovechamiento del terreno. Desde el punto de vista económico, esta tecnología también resulta
-muy favorable ya que los costes de inversión y operación han sido comercialmente probados, al
-menos, para los sistemas termoeléctricos.
+Existen principalmente cuatro tecnologías para el aprovechamiento de la radiación solar directa en sistemas térmicos: concentrador cilindro parabólico CCP, central de torre, concentrador frestnel y disco parabólico. La tecnología de central de torre y la de CCP son las que cuentan en la actualidad con una mayor madurez y gran número de centrales en operación y en construcción en todo el mundo \cite{islamComprehensiveReviewStateoftheart2018}. En España actualmente hay medio centenar de centrales CCP en operación \cite{Protermosolar}, alguna de ellas desde hace más de una década, quedando probado que el estado del arte y la madurez de la tecnología garantizan el correcto funcionamiento del sistema. Este tipo de sistema presenta un alto grado de replicabilidad, modularidad y aprovechamiento del terreno. Desde el punto de vista económico, esta tecnología también resulta muy favorable ya que los costes de inversión y operación han sido comercialmente probados, al menos, para los sistemas termoeléctricos.
 
-Dentro del CCP pueden distinguirse cuatro elementos principales: el reflector o concentrador, el tubo absorbedor, el sistema de seguimiento y el fluido caloportador.
+En un CCP pueden distinguirse cuatro elementos principales: el reflector o concentrador, el tubo absorbedor, el sistema de seguimiento y el fluido caloportador.
 
 \subsection{El concentrador cilindroparabólico}
 \label{concentrador}
-Un CCP consiste en una superfice a modo canal  de sección parabóica que refleja la radiación solar directa
-concentrándola sobre un tubo absorbedor colocado en la línea focal del paraboloide. Por el tubo
-absorbedor se puede hacer circular algún fluido que se calentará debido a la radiación incidente
-sobre el tubo.  Se trata de una transformación directa de energía luminosa en energía
-térmica con una buena eficiencia y que puede alcanzar temperaturas de hasta 675 K.
-Un concentrador cilindroparabólico (CCP) consiste en un reflector parabólico cuya geometría se obtiene por la traslación de una parábola a lo largo de un eje que contiene su foco. Dentro de los diferentes sistemas de concentración solar pertenece al grupo de los concentradores lineales, al igual que los sistemas de concentración tipo Fresnel y al contrario que los sistemas de concentración de torre central o de discos parabólicos, en cuyo caso estaríamos hablando de sistemas de
-concentración puntuales.
-
+Un CCP consiste en una superfice a modo canal  de sección parabóica que refleja la radiación solar directa concentrándola sobre un tubo absorbedor colocado en la línea focal del paraboloide. Dentro de los diferentes sistemas de concentración solar pertenece al grupo de los concentradores lineales, al igual que los sistemas de concentración tipo Fresnel y al contrario que los sistemas de concentración de torre central o de discos parabólicos, en cuyo caso estaríamos hablando de sistemas de concentración puntuales. Por el tubo absorbedor se puede hacer circular algún fluido que se calentará debido a la radiación incidente sobre el tubo.  Se trata de una transformación directa de energía luminosa en energía térmica con una buena eficiencia y que puede alcanzar temperaturas de hasta 675 K. 
 
 \subsection{El tubo absorbedor o receptor}
 \label{tuboabsorbedor}

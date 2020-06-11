@@ -1,14 +1,7 @@
 {
  "simulation": {
-  "ID": "TEST 2007 IPH",
-  "datatype": 2,
-  "simulation": true,
-  "benchmark": true,
-  "fastmode": true,
-  "filename": "2007 IPH LOOP TEMP.csv",
-  "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2007/01/01 00:00",
-  "last_date": "2007/12/31 23:00"
+  "filename": "1-7-2019_2.csv",
+  "filepath": "./data_files/"
  },
  "model": {
   "name": "Barbero4thOrder",
@@ -23,8 +16,8 @@
   "altitude": 651.0
  },
  "loop": {
-  "scas": 4,
-  "hces": 2,
+  "scas": 1,
+  "hces": 1,
   "rated_tin": 566.15,
   "rated_tout": 666.15,
   "rated_pin": 2000000.0,
@@ -38,7 +31,7 @@
  },
  "SCA": {
   "Name": "SenerTrough-1 (SNT-1)",
-  "SCA Length": 148.5,
+  "SCA Length":4.05,
   "Aperture": 5.77,
   "Focal Len": 2.1,
   "IAM Coefficient F0": 1.0,
@@ -145,19 +138,5 @@
    "name": "NO",
    "loops": 120
   }
- ],
- "tags": {
-  "SB.NO.a.tin": "SB.NO.a.tin",
-  "SB.NO.a.tout": "SB.NO.a.tout",
-  "SB.NO.a.pin": "SB.NO.a.pin",
-  "SB.NO.a.pout": "SB.NO.a.pout",
-  "DNI": "DNI",
-  "Wspd": "Wspd",
-  "DryBulb": "DryBulb",
-  "Pressure": "Pressure",
-  "SB.NO.a.mf": "SB.NO.a.mf",
-  "GrossPower": "GrossPower",
-  "AuxPower": "AuxPower",
-  "NetPower": "NetPower"
- }
+ ]
 }

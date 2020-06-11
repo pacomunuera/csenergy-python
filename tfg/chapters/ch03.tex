@@ -1,21 +1,22 @@
 \chapter{Modelado del campo solar}
 \label{modeladodelcamposolar}
 
-\section{Programación Orientada a Objetos para la simulación de sistemas físicos}
+\section{Metodología seguida para el modelado del campo solar}
 
-Para la programación del código que realice la simulación del sistema se ha optado por seguir un paradigma de Programación Orientada a Objetos (POO) según el cual cada sistema físico se define como un objeto perteneciente a una Clase con la capacidad de recibir información, manipularla de acuerdo a unas reglas propias del sistema y devolver información.
+El software desarrollado se basa en el paradigma de Programación Orientada a Objetos (POO) donde, a grandes rasgos, cada sistema físico se define como un objeto perteneciente a una Clase con la capacidad de recibir información, manipularla de acuerdo a unas reglas propias del sistema y devolver información.
 
 Una de las principales ventajas de esta metodología es la modularidad, de tal forma que se puede ir desarrollando jerárquica, progresiva e independientemente cada uno de los sistemas para después interconectarlos. Posteriormente se puede modificar el comportamiento de alguno de estos objetos reprogramando la Clase a la que pertenece sin que esto afecte de forma drástica al resto de objetos del modelo. Es una técnica escalable y que permite definir diferentes grados de
 intervención al usuario final, desde interactuar con cada objeto como si de una caja negra se tratase hasta modificar el comportamiento del sistema introduciendo sus propios métodos en las clases.
 
 Por todas estas razones, el modelado mediante POO resulta muy interesante para la simulación de sistemas en el ámbito de la ingeniería y ha sido el elegido para el desarrollo del código de este TFG 
+
 \section{Sistemas físicos y Clases para el modelado del campo solar}
 
-En los siguientes apartadoos iremos describiendo el campo solar desde el punto de vista de su comportamiento físico, los subsistemas que lo componen y definiremos las Clases que se deben programar para modelar cada uno de estos subsistemas. Pero en primer lugar introduciremos alguna terminología.
+En los siguientes apartados iremos describiendo el campo solar desde el punto de vista de su comportamiento físico, los subsistemas que lo componen y definiremos las Clases que se deben programar para modelar cada uno de estos subsistemas. Pero en primer lugar introduciremos alguna terminología.
 
-Se denomina HCE (Heat Collector Element) a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro forman la tubería sobre la que concentra la radiación solar. Estos tubos vienen ensamblados en grupos de 2 o 3 para acelerar el proceso de construcción, de tal forma que pueden colocarse sobre una sección de concentrador denominada SCE (Solar Collector Element) de unos 12 m de longitud.
+Se denomina HCE a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro, forman la tubería sobre la que se concentra la radiación solar. Estos tubos vienen preensamblados en grupos 3 para acelerar el proceso de construcción, de tal forma que pueden colocarse sobre una sección de concentrador denominada SCE (Solar Collector Element) de unos 12 m de longitud.
 
-Un conjunto de SCE que se mueven solidariamente con capacidad de movmiennto independiente se denomina SCA (Solar Collector Assambly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
+Un conjunto de SCE que se mueven solidariamente entre ellos pero con capacidad de movmiennto independiente de otro conjunto de SCEs se denomina SCA (Solar Collector Assembly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
 
 \begin{verbatim}
 FIGURA LAZO - SCA
@@ -27,21 +28,24 @@ Un subcampo o sección es un conjunto de lazos conectados en paralelo, de tal fo
 
 Finalmente, el campo solar está formado por un conjunto de subcampos. El fluido caloportador frío entra en el campo solar y se distribuye por cada uno de los subcampos, donde se vuelve a distribuir equitativamente entre los lazos. En los lazos, el HTF se calienta y retorna a una tubería que lo conduce a la salida del subcampo, donde finalmente el HTF procendente de todos los subcampos se mezcla y se trasforta, a lo largo de una tubería denominada colector caliente, hasta el punto de consumo.
 
-Se emplean clases derivadas de la Clase Model para implementar los diferentes modelos empleados para calcular el rendimiento y para simular, por tanto, el funcionamiento de cada HCE. Es en cada una de estas clases donde se desarrolla el algoritmo que, a partir de los parámetros físicos que definen al HCE, las variables que definen el estado del HTF que circula por él y las condiciones de operación, resuelve las ecuaciones definidas en el modelo y nos permite conocer las
-condiciones del HTF a la salida de cada HCE.
+\subsection{Clases derivadas de Model: Clase ModelBarbero4thGrade, ModelBarbero1stGrade y ModelBarberoSimplied}
 
-\emph{Clase ModelBarbero4thOrder}
+Se emplean clases derivadas de la Clase Model para implementar los diferentes modelos empleados para calcular el rendimiento y para simular, por tanto, el funcionamiento de cada HCE. Es en cada una de estas clases donde se desarrolla el algoritmo que, a partir de los parámetros físicos que definen al HCE, las variables que definen el estado del HTF que circula por él y las condiciones de operación, resuelve las ecuaciones definidas en el modelo y nos permite conocer las condiciones del HTF a la salida de cada HCE.
+
+\subsubsection{Clase ModelBarbero4thOrder}
 
 La instancia de esta clase recibe como valores de entrada un referencia a una instancia de un HCE del cual va a calcular su rendimiento, una referencia a la instancia del HTF que se está empleando y valores de condiciones meterológicas de radiación, temperatura y velocidad del viento. El HCE debe estar inicializado previamente con los valores de caudal másico, temperatura y presión de entrada y el flujo de calor absorbido \(q_{abs}\).
 
-El procedimiento de cálculo implementado en el método \emph{calc\_pr()} es el siguiente (los parámetros que se obtienen mediante métodos propios de las instancias del HCE y del HTF se explican en los apartados correspondiente más adelante): * Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) según la ec\(\eqref{eq:tro}\) a partir del coeficiente de transmisión de calor al interior \(U_{rec}\) y del flujo de radiación abosorbido por el tubo absorbedor, \(\dot q''_{abs}\), a partir de la instancia del HCE. Para el primer HCE del lazo se asume un rendimiento inicial \(\eta=1\) pero para los siguientes se emplea el rendimiento del HCE anterior, con lo cual se acelera un poco el proceso de convergencia por partirse de un valor previsiblemente más próximo.
+El procedimiento de cálculo implementado en el método \emph{calc\_pr()} es el siguiente (los parámetros que se obtienen mediante métodos propios de las instancias del HCE y del HTF se explican en los apartados correspondiente más adelante): 
+\begin{itemize}
+\item
+Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) según la ec\(\eqref{eq:tro}\) a partir del coeficiente de transmisión de calor al interior \(U_{rec}\) y del flujo de radiación abosorbido por el tubo absorbedor, \(\dot q''_{abs}\), a partir de la instancia del HCE. Para el primer HCE del lazo se asume un rendimiento inicial \(\eta=1\) pero para los siguientes se emplea el rendimiento del HCE anterior, con lo cual se acelera un poco el proceso de convergencia por partirse de un valor previsiblemente más próximo.
 
 \begin{equation}
     T_{ro} = T_f + \eta \cdot \frac{\dot q''_{abs}}{U_{rec}}
     \label{eq:tro}
 \end{equation}
 
-\begin{itemize}
 \item
   Cálculo del flujo de pérdidas \(\dot q''_{perd}\) mediante la   ec.\(\eqref{eq:qperd}\) incrementado con las pérdidas a través de los   soportes que sujetan el tubo absorbedor, \(\dot q_{perd,soportes}\).   Las pérdidas en los soportes se modelan mediante la   ec.\(\eqref{eq:qperdidassoportes}\) que se explica en el apartado   correspondiente a la clase HCE.
 \item
@@ -63,11 +67,12 @@ Una vez finalizado el proceso iterativo, la instancia del HCE actualiza sus valo
 
 Al calcular el rendimiento integral para todo la longitud del HCE estamos haciendo coincidir el tamaño de la malla de integración con la longitud física real del HCE. Se ha comprobado que la reducción de la malla no aumenta de forma apreciable la precisión de los cálculos y en cambio sí supone un coste computacional importante. Por el contrario, una forma de acelerar el proceso de simulación consiste en considerar artificialmente que la longitud del HCE es mayor que la real. Se trata de aumentar el tamaño de la malla de integración para reducir el número de cálculos. En este trabajo se seguirá, al igual que en \cite{1022085/7TD8VTGL}, el criterio de no superar un tramo de HCE superior a 100 m propuesto en \cite{1022085/CYH3NJEG}. 
 
-\emph{Clases ModelBarbero1stOrder} y ModelBarberoSimplified
+\subsubsection{Clases ModelBarbero1stOrder  y ModelBarberoSimplified}
 
-El cálculo del rendimento que realizan estas dos clases es idéntico al del Modelo de 4º Orden hasta el momento de llegar al proceso iterativo, punto en el cual se calcula el rendimiento térmico directamente mediante las ecuaciones  \(\eqref{eq:primerorden}\) y \(\eqref{eq:modelosimplificado}\) respectivamente.
+El cálculo del rendimento que realizan estas dos clases es idéntico al del Modelo de 4$^o$  Orden hasta el momento de llegar al proceso iterativo, punto en el cual se calcula el rendimiento térmico directamente mediante las ecuaciones  \(\eqref{eq:primerorden}\) y \(\eqref{eq:modelosimplificado}\) respectivamente.
 
-\hypertarget{heat-collector-element-hce}{\paragraph{Heat Collector Element, HCE}\label{heat-collector-element-hce}}
+\subsection{HCE, Heat Collector Element}
+\label{heat-collector-element-hce}
 
 Físicamente, un HCE es un tubo de acero con una envolvente de vidrio de tal forma que entre el tubo de acero y la envolvente queda un espacio en el que se ha practicado el vacío. Por el interior del tubo circula el fluido caloportador (HTF, Heat Transfer Fluid) que aumenta su energía térmica al recibir el calor procedente de las paredes interiores del tubo. El tubo recibe durante el proceso de fabricación un recubrimiento selectivo que mejora sus propidades físicas para absorber la raciación solar. De cara a modelar el funcionamiento del HCE como elemento responsable de calentar el HTF de forma compatible con el Modelo físico desarrolladose se define la clase HCE que consta de los siguientes atributos:
 
@@ -262,9 +267,8 @@ Finalmente, un HCE es un elemento que ocupa una determinada posición dentro del
   dentro del SCA.
 \end{itemize}
 
-\hypertarget{solar-collector-assambly-sca}{%
-\paragraph{Solar Collector Assambly,
-SCA}\label{solar-collector-assambly-sca}}
+\subsection{SCA, Solar Collector Assembly}
+\label{solar-collector-assembly-sca}
 
 Un SCA es una estructura compuesta por una serie de reflectores que cocentran la radiación solar sobre los HCE. Desde el punto de vista operativo, un SCA cuenta con capacidad de movimiento independiente respecto al resto de SCAs de la planta, por lo que es la unidad mínima de control de enfoque o desenfoque de la radiación solar en el campo solar. La clase SCA nos permite modelar cada SCA teniendo en cuenta las propiedades de los reflectores (reflectividad, suciedad de los espejos, precisión del movimiento de seguimiento solar, etc.)
 
@@ -293,7 +297,8 @@ El factor geométrico \(\eta_{geometrico}\) depende de las inperfecciones geomé
 
 El SCA, como sistema responsable del seguimiento solar, también cuenta con un método para ofrecernos información sobre el ángulo de incidencia \(\beta\) en el plano de apertura del reflector. Las expresiones generales pueden encontrarse en \cite{1022085/95AM6AQN}. En nuestro caso hemos recurrido a las librería \emph{pvlib-python} \cite{1022085/GUC54R5I} desarrollada en Sandia National Laboratories para obtener los valores del ángulo de incidencia y la posición solar para cada fecha del año y según las coordenadas geográficas del lugar donde se realiza la simulación.
 
-\hypertarget{lazo}{Lazo}
+\subsection{Loop}
+\label{loop}
 
 Un Loop o lazo es un cojunto de SCAs conectados en serie de tal forma que el HTF que entra frío al lazo experimenta un salto térmico cuando transita por él. El sistema de control ajusta el estado de enfoque o desenfoque de cada SCA en el lazo con el fin de conseguir que la temperatura de salida sea la de consigna. Por motivos de económicos, el caudal de HTF no suele ser regulable a nivel de lazo, pues obligaría a instalar una válvula de control en cada uno de ellos y por tanto todos los lazos de un mismo subcampo suelen tener un caudal muy parecido. Se ha desarrollado también una Clase Subfield para dar cuenta del conjunto de lazos que pertenecen a un mismo subcampo y, por tanto, pueden variar su caudal de forma independiente de los lazos de otro subcampo. En un campo solar suele haber haber varios subcampos que pueden regular su caudal independientemente. Los casos más extremos serían el de un campo solar con un único subcampo, en el que todos los lazos pertenecen al mismo subcampo y en el otro extremo, un campo solar con tantos subcampos como lazos tiene, de tal forma que cada lazo es el único en su subcampo y por tanto cada lazo puede regular su caudal independientemente. 
 
@@ -303,13 +308,15 @@ El código permite trabajar de dos formas, bien calculando y ajustando el caudal
 
 La Clase PrototypeLoop hereda de la Clase Loop sus principales métodos y atributos pero supone una pequeña variación de una instancia o lazo definido por Loop ya que se trata de un lazo  "típico'' o "promedio'', que presenta una configuración constructiva idéntica a la del resto de lazos de la planta pero no pertenece a ningún subcampo solar. Este lazo especial o prototipo se empleará cuando queramos realizar un estudio paramétrico del comportamiento del lazo, no de la planta, y también para realizar una simulación mucho más rápida cuando asumamos la hipótesis de que todos los lazos de la planta se comportan de igual manera. Esta aproximación es la que se hace en aplicaciones como SAM, donde no se simulan todos los lazos para modelar el campo solar, sino que se simula solo un lazo y el resultado se obtiene multiplicando el caudal de salida de este lazo por el número de lazos que forman la planta. 
 
-\hypertarget{subfield}{Subfield}
+\subsection{Subfield, subcampo solar}
+\label{subfield}
 
 Un subcampo es un conjunto de lazos en los que se considera que el HTF se repartirá equitativamente. Cada subcampo dispone de una válvula de control de caudal a su entrada y representa el mayor grado de control de caudal de HTF que se puede alcanzar en el campo solar. Un campo solar suele contar con varios subcampos y cada uno de ellos, a su vez, cuenta con varios lazos.  
 
 La Clase Subfield mantiene referencias a lo lazos que lo constituyen, es deir, a cada una de las instancias que representan un lazo. También mantiene referencia al campo solar al que pertenece y cuenta con métodos para calcular cual será la tempertura de salida del HTF del subcampo solar una vez que el caudal de salida de cada lazo se haya mezclado con el del resto de lazos. Nótese que aunque se supone que todos los lazos del subcampo tienen el mismo caudal másico la temperatura de salida de cada uno de ellos puede ser diferente y, por tanto, la energía aportada por cada lazo también lo será. 
 
-\hypertarget{solarfield}{Solarfield}
+\subsection{Solarfield, campo solar}
+\label{solarfield}
 
 El campo solar alberga el conjunto de subcampos y, por tanto, todos los lazos de la instalación. Se trata del objeto que en última instancia queremos modelar con el fin de conocer cómo sera el comportamiento de la planta solar y su rendimento anual. A la hora de definir el campo solar para el modelo es necesario conocer cuántos subcampos contiene, cuántos lazos hay en cada subcampo, qué configuración tiene cada lazo (número de SCAs en cada lazo y número de HCEs en cada SCA). También es importante conocer la distancia entre lazos con el fin de estimar el sombreado que se produce a primera y última hora del día. 
 
@@ -318,174 +325,14 @@ cuestiones operativas que desaconsejan que el HTF circule por debajo de este lí
 
 Cuando se crea una instancia de la Clase Solarfield, ésta recibe los datos de configuración que se ha pasado para la simulación y lanza el proceso de construcción que genera, en base a esa configuración, los diferentes subcampos, lazos, SCAs y HCEs que forma en campo solar.
 
-\hypertarget{clase-fluid-y-sus-clases-hijas-fluidcoolprop-y-fluidtabular}{Clase Fluid y sus clases hijas, FluidCoolProp y FluidTabula}
+\subsection{Clase Fluid y sus clases hijas, FluidCoolProp y FluidTabular}
+\label{subclases-fluid}
 
 Para modelar el HTF (Heat Transfer Fluid) se ha creado una Clase Fluid.
 Las propiedades del HTF pueden obtenerse mediante funciones polinomicas con coeficientes constantes calculados experimentalmente o desde librerias preexistentes como CoolProp. Por ese motivo, según se opte por un método u otro, se han creado las subclases FluidCoolProp y FluidTabular. No obstante, se ha comprobado que el número de tipos de HTF que existen en la librería FluidCoolProp no es muy grande, limitándose a Therminol VP-1, Syltherm 800. No se encuentra en esta
 librería el aceite Dowtherm A, que es el que se emplea en la planta cuyos datos se han empleado para el desarrollo de esta herramienta. Pero el mayor inconveniente reside en que CoolProp devuelve valores solo dentro del rango de temperaturas de uso válidas según el fabricante. 
 
 Este rango es demasiado estricto y se producen problemas debido a la devolución de valores no numéricos, especialmente cuando se está calculando la temperatura teórica de salida del HTF cuando hay sobrecalentamiento. Por este motivo se ha hecho uso mayoritariamente de la clase FluidTabular, con funciones polinómicas con coeficientes calculados a partir de los datos ofrecidos por los fabricantes.  La clase Fluid sus clases hijas ofrecen métodos para calcular la densidad, viscosidad cinemática, número de Reynolds, calor específico, conductividad térmica y entalpia en función de la temperatura y la presión. También ofrecen un método para calcular la temperatura del fludo en función de la entalpía y la presión, considerando entalpía cero para líquido saturado según ASHRAE a una tempratura de 285.856 K.
-
-\hypertarget{clases-weather-fielddata-y-tabledata}{Clases Weather, FieldData y TableData}
-Estas clases impolemetan métodos adecuados para la adquisición de datos desde diferentes tipos de ficheros, en concreto:
-
-\begin{itemize}
-\item
-  Clase Weather para ficheros .tmy con datos meteorológicos (Weather   Files). En estos ficheros solo hay datos meteorológicos como radiación   normal incidente (DNI), temperatura de bulbo seco, y datos de   geográificos del emplazamiento (Site), como latitud, longitud y   altitud. A partir de estos datos se pueden realizar simulaciones para   ver cuál sería el comportamiento de la planta con estas condiciones.
-\item
-  Clase FieldData para ficheros .csv con datos recogidos de alguna   planta (Field Data Files). Estos ficheros contienen dastos   meteorológicos recogidos por la estaciones de planta y también datos   de instrumentación de planta, en concreto, temperaturas y presiones de   entrada y salida al campo solar y los diferentes subcampos y también   caudales másicos en los subcampos. Los encabezados de cada columna   probablemente serán identificadores o tags propios de cada planta, por
-  lo que es necesario indicar al programa a qué dato corresponde cada   tag. Esto se puede hacer en el fichero de configuracion de la   simulación. Con estos datos se puede simular el comportamiento del   campo solar para caudal teórico requerido pero también comprobar cuál   sería el rendimiento del campo solar operando con el caudal real de  planta. Los datos obtenidos podrán después compararse con los reales   de funcionamiento de planta. A este tipo de simulaciones las   denominaremos `benchmark'.
-\item
-  Clase TableData para ficheros .csv empleados en simulaciones   distintas, por ejemplo para el estudio del rendimiento de un lazo en   función de diferentes valores de \(q_{abs}\).
-\end{itemize}
-
-\hypertarget{clases-site}{Clases Site}
-
-La Clase Site (Emplazamiento), contiene la información relativa al lugar donde está ubicada la planta. Los datos de latitud, longitud y altitud son importantes a la hora de calcular la trayectoria solar para cada fecha. Nos ofrece un método para calcular la posición del sol en cada fecha del año en base a los parámetros que almacenan las coordenadas geográficas. 
-
-\section{Algoritmo de simulación}
-
-En este apartado se describe como puede desarrollarse un código a partir de las Clases implementadas y comentadas anteriormente con el fin de realizar diferentes tipos de simulaciones. Para ello, se continua con la filosofía de POO y se crea desarrolla la clase SolarFieldSimulation.
-
-El objetivo que nos proponemos es simular el comportamiento de un campo solar bajo unas determinadas condiciones. Puesto que estas condiciones varían a lo largo del día, se emplearán ficheros de datos en formato tabular que cuentan con una columna índice para la fecha y hora indicadas. Con el fin de poder reaprovechar el trabajo realizado durante el trabajo de configuración de la simulación, se emplea un archivo en formato JSON que recoge todos los parámetros necesarios. En resumen, la instancia de SolarFieldSimulation recibe realiza los siguientes pasos:
-
-\begin{itemize}
-\item
-  Lee el archivo de configuración de la simulación y almacena los   parámetros necesarios.
-\item
-  Crea una instancia de la Clase Site con información sobre la ubicación   de la planta.
-\item
-  Crea una instancia para el almacenamiento de los datos del fichero en   formato tipo tabla. En función de si el fichero es de tipo   meteorológico (TMY2 o TMY3) o es un fichero en formato CSV creará una   instancia de la clase Weather o FieldData respectivamente. Los datos   cargados se almacenan en un DataFrame de la librería Pandas denominado  \emph{datasource}.
-\item
-  Crea una instancia para el modelado del HTF a partir de la Clase   FluidCoolProp si los datos se van a tomar desde la libería externa   CoolProp o de la Clase FluidTabular si se le pasan los factores de los   polinomios que permiten calcular cada parámetro del fluido.
-\item
-  Crea una instancia SolarField a partir de los parámetros de   configuración de campo solar.
-\item
-  Crea una instancia BaseLoop a partir de los parámetros de   configuración de lazo.
-\end{itemize}
-
-A partir de aquí, la instancia de SolarFieldSimulation ya dispone de lo necesario para realizar la simulación del campo mediante su método \emph{runSimulation()}.
-
-El tipo de simulación que se realiza depende del tipo de datos de que se disponga y de lo que se seleccione en el archivo de configuración:
-
-\begin{itemize}
-\item
-  Simulación tipo \emph{simulation}: En este caso, el caudal del lazo se   recalculará en un proceso de convergencia hasta conseguir que la   temperatura de salida del lazo sea la temperatura consignada.
-
-  \begin{itemize}
-  \item
-    Si el tipo de datos del que se dispone no tiene datos reales de  planta, la instancia \emph{datasource} será de tipo Weather y solo   se cuenta con datos meteorológicos (\(DNI\), \(T_{ext}\), velocidad
-    del viento y presión atmosférica), por lo que la temperatura de   entrada a los lazos será la nominal
-  \item
-    Si el tipo de datos del que se dispone sí cuenta con datos reales de   planta que permitan conocer las temperaturas de entrada a los lazos  (como es nuestro caso), la simulación utilizará estas temperaturas a  la hora de ajustar los caudales al salto térmico necesario.
-  \end{itemize}
-\item
-  Simualción tipo \emph{benchmark}: En este caso se debe disponer  obligatoriamente de datos reales de planta, pues la simulación utiliza  las temperaturas de entrada a los lazos y los caudales reales para calcular cúal será la temperatura de salida. Posteriormente, en los  archivos de salida de datos, se puede comparar la temperatura real de  salida del lazo con la calculada y de esta forma estimar si ha habido desenfoque y por tanto, desaprovechamiento de la energía solar. Hay
-  que tener en cuenta en los datos que disponemos podemos encontrar   situaciones en las que el lazo alcanza su temperatura de consigna pero   es posible que se estuviera realizando un ajuste de enfoque-desenfoque   (ya que el caudal no es regulable a nivel de lazo). En ese caso, es   intersante saber qué temperatura hubera alcanzado el HTF de no haberse   producido el desenfoque y, por tanto, poder calcular la energía solar   que no se ha aprovechado por no poder introducir mayor caudal en el   lazo.
-\end{itemize}
-
-A la hora de realizarse cada una de estas simulaciones puede darse el caso de que se haya configurado la opción \emph{fastmode=True}. En este caso se considera que todos los lazos de la planta se comportan como el lazo típico, modelado mediante la Clase BaseLoop. En caso contrario, la simulación se realizará para cada lazo del campo, lo cual solo tiene sentido si los lazos o sus componentes cuentan con diferentes valores en sus parámetros. 
-
-Una vez que el método runSimulation() ha procesado todas las filas seleccionadas del DataFrame \emph{datasource}, los datos calculados que se han ido añadiendo al DataFrame son volcados a un archivo CSV para su posterior análisis.
-
-\hypertarget{simulaciuxf3n-tipo-simulation}{Simulación tipo simulation}
-
-Tal y como se ha mencionado, en este caso se simula la planta de tal forma que se calcula el caudal necesario en cada lazo con el fin de que se alcance la temperatura de consigna o nominal. En este tipo de simulación solo son necesarios los datos meteorológicos y los valores nominales de temperatura y presión de entrada y salida. Los valores exactos de la presión no son necesarios y basta con seleccionar presiones suficientemente altas para que garanticen el estado de líquido
-saturado del HTF en todo momento. Las propiedades del HTF en estado de líquido saturado no dependen significativamente de la presión.
-
-Los datos meteorológicos se pueden leer de un fichero en formato TMY2, TMY3 o CSV convenientemente etiquetado. Si además se dispone de los datos de temperatura de entrada del HTF al campo solar se emplearán éstos en lugar del valor nominal, por lo que el salto térmico necesario se calculará partiendo de la temperatura real de entrada.
-
-El programa calcula el rendimiento del lazo base o de cada lazo (según se haya seleccionado o no la opción \emph{fastmode}) ajusando iterativamente el caudal hasta que la temperatura de salida sea la consignada. Durante las horas nocturnas el caudal es fijo e igual al mínimo recomendado, tal y como ocurre en plantas reales. 
-
-\hypertarget{simulaciuxf3n-tipo-benchmark}{Simulación tipo benchmark}
-
-En este tipo de simulación el caudal viene marcado por el caudal real de planta, por lo que para este tipo de simulación es obligatorio disponer de los datos reales. Al emplearse un caudal fijo, la temperatura alcanzada por el HTF en la simulación no tiene porqué coincider con la temperatura real. Dependiendo de si el valor obtenido es mayor o menor que el real se pueden sacar las siguientes interpretaciones: 
-* Si la  temperatura calculada es menor que la real podemos interpretar que la simulación ha sobredimensionado las pérdidas en la configuración de la planta. Pueden corregirse algunos parámetros o introducir un factor multiplicativo. 
-* Si la temperatura calculada es mayor que la real puede deberse a que se han infravalorado las pérdidas, lo cual se podría corregir ajustando los valores de estas en el archivo de configuración, pero también puede deberse a que el campo real estaba realizando desenfoques parciales para reducir la energía captada. En ese caso, la energía no aprovechada se puede calcular como la diferencia entre la entalpía del HTF a la temperatura de salida simulada menos su entalpia a la temperatura de salida real.
-
-\section{Validación y configuración del campo solar real}
-
-Con el fin realizar una primera validación de nuestro código se compararán en primer lugar los valores obtenidos para una determinada configuración de campo con los que se optienen mediante SAM, \cite{1022085/NBJ6NM3F}, un software de reconocido prestigio muy empleado en el sector. Las posibilidades de SAM van mucho más allá del alcance de nuestro código, por lo que nos limitaremos a comparar los datos relativos exclusivametne al campo solar. Durante todo este trabajo
-se empleará la misma configuración de campo solar que se describe a continuación por disponerse de los datos reales de generación de dicha planta. Posteriormente se compararán los datos reales de generación con los resultados de una simulación realizada con SAM y con los de nuestro programa.
-
-\hypertarget{configuraciuxf3n-del-campo-solar-real}{Configuración del campo solar real}
-
-Las plantas Aste 1A y 1B se encuentran situadas en el término municipal de Alcázar de San Juan, provincia de Ciudad Real. Sus coordenadas geográficas son (39,1°N 3,16°W) y la altitud es de 651 m sobre el nivel del mar.
-
-La potencia eléctrica nomminal de cada una de ellas es de 50 MW. El proyecto inicial consideraba que las plantas contarían con almacenamiento térmico, el cual se construiría durante una segunda fase que finalmente no se llegó a ejecutar, por lo que en la actualidad solo existe generación durante las horas de sol. Se emplearán los datos de Aste 1B, cuya configuración es la siguente:
-
-El campo solar cuenta con 120 lazos distribuidos de manera irregular en 4 subcampos.
-
-\begin{itemize}
-\item
-  Subcampo NO, 31 lazos.
-\item
-  Subcampo NE, 28 lazos.
-\item
-  Subcampo SO, 27 lazos.
-\item
-  Subcampo SE, 34 lazos.
-\end{itemize}
-
-Todos los lazos son idénticos, contando con 4 SCAs cada uno en una configuración tipo \(U\). El eje de seguimiento perfectamente plano se encuentra alineado en direccion N-S. Cada SCA cuenta con un total de 336 espejos de vídrio fabricados por Flabeg.
-
-Los SCA, modelo SenerTrough I diseñado por Sener, se han parametrizado de la siguiente manera:
-
-\begin{itemize}
-\item
-  Longitud: 148,5 m.
-\item
-  Apertura: 5,77 m.
-\item
-  Distancia Focal: 2,1 m.
-\item
-  Coeficientes del \(IAM\): \(F_{0}=1\), \(F_{1}=0,0506\),
-  \(F_{2}=-0,1763\).
-\item
-  Precisión del seguidor: 0,99.
-\item
-  Precisión de la geometría: 0,98.
-\item
-  Disponibilidad: 0,99.
-\item
-  Reflectividad: 0,935.
-\item
-  Limpieza: 0,98.
-\end{itemize}
-
-El HCE es el modelo UVAC 3, de Solel con los siguientes parámetros:
-
-\begin{itemize}
-
-\item
-  Logintud: 4,05 m.
-\item
-  Factor de longitud efectiva, \(\gamma_L\): 0,96.
-\item
-  Factor de interceptación geométrica, \(\gamma_g\): 0,96.
-\item
-  Diámetro interior del tubo absorbedor, \(d_{ri}\): 0,066 m.
-\item
-  Diámetro exterior del tubo absorbedor, \(d_{ro}\)r: 0,070 m.
-\item
-  Diámetro interior de la envolvente de vídrio, \(d_{gi}\): 0,115 (m)
-\item
-  Diámetro exterior de la envolvente de vídrio, \(d_{go}\): 0,121 (m)
-\item
-  Rugosidad interior: 0,000045 m.
-\item
-  Factor de emisividad, \(A_1\): 0,000206.
-\item
-  Factor de emisividad, \(A_0\): 0,0430.
-\item
-  Absortibidad solar del receptor: 0,96.
-\item
-  Transmisividad del vídrio: 0,96.
-\item
-  Valor mínimo del número de Reynolds recomendado: 2400.
-\item
-  Distancia de separación entre brazos de soportación: 4,05 m.
-\end{itemize}
 
 La planta emplea como fluído caloportador Dowtherm-A, de Dow Chemical. Para el modelado sería necesario conocer una serie de parámetros en función de la temperatura y la presión, pero en una planta termosolar se debe trabajar siempre con el fluido en estado de líquido saturado y se ha comprobado que la variación de estos parámetros con la presión es despreciable, por lo que todos pueden expresarse a partir de un polinomio de mayor o menor grado en función exclusivamente de la temperatura. También se ha obtenido una curva para calcular la temperatura del líquido saturado en función de su entalpía.
 
@@ -607,116 +454,413 @@ Coeficientes de los polinomios de ajuste para Therminol VP-1
 
 \end{longtable}
 
-Con el fin de facilitar la creación del archivo de configuración que emplea el código para realizar la simulación se ha desarrollado una sencilla interfaz que sirve de guía durante el proceso. Se muestran a continuación las capturas de pantalla de dicha interfaz durante la configuración de la simulación: 
+
+\subsection{Clases Weather, FieldData y TableData}
+\label{clases-weather}
+Estas clases impolemetan métodos adecuados para la adquisición de datos desde diferentes tipos de ficheros, en concreto:
+
+\begin{itemize}
+\item
+  Clase Weather para ficheros .tmy con datos meteorológicos (Weather   Files). En estos ficheros solo hay datos meteorológicos como radiación   normal incidente (DNI), temperatura de bulbo seco, y datos de   geográificos del emplazamiento (Site), como latitud, longitud y   altitud. A partir de estos datos se pueden realizar simulaciones para   ver cuál sería el comportamiento de la planta con estas condiciones.
+\item
+  Clase FieldData para ficheros .csv con datos recogidos de alguna   planta (Field Data Files). Estos ficheros contienen dastos   meteorológicos recogidos por la estaciones de planta y también datos   de instrumentación de planta, en concreto, temperaturas y presiones de   entrada y salida al campo solar y los diferentes subcampos y también   caudales másicos en los subcampos. Los encabezados de cada columna   probablemente serán identificadores o tags propios de cada planta, por
+  lo que es necesario indicar al programa a qué dato corresponde cada   tag. Esto se puede hacer en el fichero de configuracion de la   simulación. Con estos datos se puede simular el comportamiento del   campo solar para caudal teórico requerido pero también comprobar cuál   sería el rendimiento del campo solar operando con el caudal real de  planta. Los datos obtenidos podrán después compararse con los reales   de funcionamiento de planta. A este tipo de simulaciones las   denominaremos `benchmark'.
+\item
+  Clase TableData para ficheros .csv empleados en simulaciones   distintas, por ejemplo para el estudio del rendimiento de un lazo en   función de diferentes valores de \(q_{abs}\).
+\end{itemize}
+
+\hypertarget{clases-site}{Clases Site}
+
+La Clase Site (Emplazamiento), contiene la información relativa al lugar donde está ubicada la planta. Los datos de latitud, longitud y altitud son importantes a la hora de calcular la trayectoria solar para cada fecha. Nos ofrece un método para calcular la posición del sol en cada fecha del año en base a los parámetros que almacenan las coordenadas geográficas. 
+
+\section{Algoritmo de simulación}
+
+En este apartado se describe como puede desarrollarse un código a partir de las Clases implementadas y comentadas anteriormente con el fin de realizar diferentes tipos de simulaciones. Para ello, se continua con la filosofía de POO y se crea desarrolla la clase SolarFieldSimulation.
+
+El objetivo que nos proponemos es simular el comportamiento de un campo solar bajo unas determinadas condiciones. Puesto que estas condiciones varían a lo largo del día, se emplearán ficheros de datos en formato tabular que cuentan con una columna índice para la fecha y hora indicadas. Con el fin de poder reaprovechar el trabajo realizado durante el trabajo de configuración de la simulación, se emplea un archivo en formato JSON que recoge todos los parámetros necesarios. En resumen, la instancia de SolarFieldSimulation recibe realiza los siguientes pasos:
+
+\begin{itemize}
+\item
+  Lee el archivo de configuración de la simulación y almacena los   parámetros necesarios.
+\item
+  Crea una instancia de la Clase Site con información sobre la ubicación   de la planta.
+\item
+  Crea una instancia para el almacenamiento de los datos del fichero en   formato tipo tabla. En función de si el fichero es de tipo   meteorológico (TMY2 o TMY3) o es un fichero en formato CSV creará una   instancia de la clase Weather o FieldData respectivamente. Los datos   cargados se almacenan en un DataFrame de la librería Pandas denominado  \emph{datasource}.
+\item
+  Crea una instancia para el modelado del HTF a partir de la Clase   FluidCoolProp si los datos se van a tomar desde la libería externa   CoolProp o de la Clase FluidTabular si se le pasan los factores de los   polinomios que permiten calcular cada parámetro del fluido.
+\item
+  Crea una instancia SolarField a partir de los parámetros de   configuración de campo solar.
+\item
+  Crea una instancia BaseLoop a partir de los parámetros de   configuración de lazo.
+\end{itemize}
+
+A partir de aquí, la instancia de SolarFieldSimulation ya dispone de lo necesario para realizar la simulación del campo mediante su método \emph{runSimulation()}.
+
+El tipo de simulación que se realiza depende del tipo de datos de que se disponga y de lo que se seleccione en el archivo de configuración:
+
+\begin{itemize}
+\item
+  Simulación tipo \emph{simulation}: En este caso, el caudal del lazo se   recalculará en un proceso de convergencia hasta conseguir que la   temperatura de salida del lazo sea la temperatura consignada.
+
+  \begin{itemize}
+  \item
+    Si el tipo de datos del que se dispone no tiene datos reales de  planta, la instancia \emph{datasource} será de tipo Weather y solo   se cuenta con datos meteorológicos (\(DNI\), \(T_{ext}\), velocidad
+    del viento y presión atmosférica), por lo que la temperatura de   entrada a los lazos será la nominal
+  \item
+    Si el tipo de datos del que se dispone sí cuenta con datos reales de   planta que permitan conocer las temperaturas de entrada a los lazos  (como es nuestro caso), la simulación utilizará estas temperaturas a  la hora de ajustar los caudales al salto térmico necesario.
+  \end{itemize}
+\item
+  Simualción tipo \emph{benchmark}: En este caso se debe disponer  obligatoriamente de datos reales de planta, pues la simulación utiliza  las temperaturas de entrada a los lazos y los caudales reales para calcular cúal será la temperatura de salida. Posteriormente, en los  archivos de salida de datos, se puede comparar la temperatura real de  salida del lazo con la calculada y de esta forma estimar si ha habido desenfoque y por tanto, desaprovechamiento de la energía solar. Hay
+  que tener en cuenta en los datos que disponemos podemos encontrar   situaciones en las que el lazo alcanza su temperatura de consigna pero   es posible que se estuviera realizando un ajuste de enfoque-desenfoque   (ya que el caudal no es regulable a nivel de lazo). En ese caso, es   intersante saber qué temperatura hubera alcanzado el HTF de no haberse   producido el desenfoque y, por tanto, poder calcular la energía solar   que no se ha aprovechado por no poder introducir mayor caudal en el   lazo.
+\end{itemize}
+
+A la hora de realizarse cada una de estas simulaciones puede darse el caso de que se haya configurado la opción \emph{fastmode=True}. En este caso se considera que todos los lazos de la planta se comportan como el lazo típico, modelado mediante la Clase BaseLoop. En caso contrario, la simulación se realizará para cada lazo del campo, lo cual solo tiene sentido si los lazos o sus componentes cuentan con diferentes valores en sus parámetros. 
+
+Una vez que el método runSimulation() ha procesado todas las filas seleccionadas del DataFrame \emph{datasource}, los datos calculados que se han ido añadiendo al DataFrame son volcados a un archivo CSV para su posterior análisis.
+
+\subsection{Simulación tipo simulation}
+
+Tal y como se ha mencionado, en este caso se simula la planta de tal forma que se calcula el caudal necesario en cada lazo con el fin de que se alcance la temperatura de consigna o nominal. En este tipo de simulación solo son necesarios los datos meteorológicos y los valores nominales de temperatura y presión de entrada y salida. Los valores exactos de la presión no son necesarios y basta con seleccionar presiones suficientemente altas para que garanticen el estado de líquido
+saturado del HTF en todo momento. Las propiedades del HTF en estado de líquido saturado no dependen significativamente de la presión.
+
+Los datos meteorológicos se pueden leer de un fichero en formato TMY2, TMY3 o CSV convenientemente etiquetado. Si además se dispone de los datos de temperatura de entrada del HTF al campo solar se emplearán éstos en lugar del valor nominal, por lo que el salto térmico necesario se calculará partiendo de la temperatura real de entrada.
+
+El programa calcula el rendimiento del lazo base o de cada lazo (según se haya seleccionado o no la opción \emph{fastmode}) ajusando iterativamente el caudal hasta que la temperatura de salida sea la consignada. Durante las horas nocturnas el caudal es fijo e igual al mínimo recomendado, tal y como ocurre en plantas reales. 
+
+\hypertarget{simulaciuxf3n-tipo-benchmark}{Simulación tipo benchmark}
+
+En este tipo de simulación el caudal viene marcado por el caudal real de planta, por lo que para este tipo de simulación es obligatorio disponer de los datos reales. Al emplearse un caudal fijo, la temperatura alcanzada por el HTF en la simulación no tiene porqué coincidir con la temperatura real. Dependiendo de si el valor obtenido es mayor o menor que el real se pueden sacar las siguientes interpretaciones: 
+* Si la  temperatura calculada es menor que la real podemos interpretar que la simulación ha sobredimensionado las pérdidas en la configuración de la planta. Pueden corregirse algunos parámetros o introducir un factor multiplicativo. 
+* Si la temperatura calculada es mayor que la real puede deberse a que se han infravalorado las pérdidas, lo cual se podría corregir ajustando los valores de estas en el archivo de configuración, pero también puede deberse a que el campo real estaba realizando desenfoques parciales para reducir la energía captada. En ese caso, la energía no aprovechada se puede calcular como la diferencia entre la entalpía del HTF a la temperatura de salida simulada menos su entalpia a la temperatura de salida real.
+
+\section{Validación por comparación con otra herramienta de simulación}
+
+Con el fin realizar una primera validación de nuestro código, compararemos en primer lugar los valores obtenidos para una determinada configuración de campo con los que se optienen mediante System Advisor Model (SAM, \cite{freemanSystemAdvisorModel2018}), un software de reconocido prestigio muy empleado en el sector de las energía renovables. Las posibilidades de SAM van mucho más allá del alcance de nuestro código, pudiendo realizar el modelado no solo de sistemas de energía solar de concentración sino también de sistemas fotovoltaicos, geotérmicos, mareomotrices, eólicos, de biomasa por ejemplo. Dentro de los sistemas de energía solar térmica de concentración, ofrece la posibilidad de modelar centrales de las cuatro principales tecnologías ya comentadas y a su vez, de diversas variedades. SAM realiza también el análisis económico y financiero del proyecto basándose principalmente en la generación eléctrica que se espera generar. Por este motivo, SAM tiene en cuenta el acoplamiento del campo solar con el bloque de potencia a la hora de realizar la simulación.  Esto hace que no podamos comparar directamente nuestro programa con los modelos de SAM para genaración eléctrica, pues los ajustes que hace SAM afectan al comportamiento del campo, introduciendo limitaciones de caudal de HTF y de potencia térmica transferida al bloque de potencia, desenfoques en el campo, rampas de arranque e inercias del sistema que quedan fuera de nuestro alcance. En cambio, SAM también cuenta con un móduo para la simulación de un sistema de generación de calor  para proceso industrial (IPH, Industrial Process Heat) basado en el modelo Físico que emplea para la simulación de plantas CCP. Emplearemos este módulo para comparar los resultados de SAM con nuestro simulador tal y como ese explica a continuación.
+
+\subsection{Configuración de las simulaciones}
+\label{configuracion-simulaciones}
+
+Para que una simulación realizada con el módulo IPH de SAM sea comparable a la nuestra indicaremos que no existe almacenamiento térmico para evitar procesos de mezcla de HTF a diferentes temperaturas que se producirían en ese caso. También indicaremos que el sumidero térmico tiene capacidad elevada, lo que, en principio, nos obligaría a seleccionar un tamaño de campo solar muy grande. Para que el tamaño de campo solar sea igual al del campo que queremos simular indicaremos a SAM que las condiciones de radiación solar nominales son mucho más elevadas que las que se alcanzarán en cualquier momento el año $(2000 W/m^2)$. De este modo conseguimos que el dimensionado que hace SAM del campo solar sea igual que el nuestro (120 lazos), pero que no se produzca desenfoque en ningún momento. Es decir, con SAM extraemos del campo solar toda energía posible, al igual que hace nuestro simulador.
+
+Puesto que solo modelamos el campo, no tenemos a priori ninguna información sobre la temperatura de retorno del HTF frío desde el intercambiador donde cede su energía al sumidero térmico. Con el fin de que la comparación sea lo más ajustada posible, aprovecharemos los datos de temperatura de HTF frío que se optienen de la simulación de SAM como datos de entrada para nuestra simulación. De esta forma, en ambas simulaciones el salto térmico se realiza desde el mismo punto de partida.
+
+Respecto al fluído caloportador, SAM nos permite seleccionar entre una serie de fluidos preconfigurados. Seleccionaremos Therminol VP-1 pues también podemos simular este fluido con nuestro programa.
+
+Realizaremos la simulación para un año completo. Contamos con los datos meteorológicos del año 2007 en formato TMY3.  En la Fig.\ref{fig:captura01} se puede ver la pestaña de configuración de SAM para seleccionar el origen de datos meteorológicos.
 
 \begin{figure}
-\includegraphics[scale=0.8]{images/interface01.png}
+\includegraphics[width=0.9\linewidth]{images/captura_sam_iph01.png}
+\caption{Configuración SAM. Seleccción del archivo de datos meterorológicos} 
+\label{fig:captura01}
+\end{figure}
+
+
+La versión de SAM utilizada ha sido la \emph{''2020.2.29, 64 bit, updated to revision 1''}. En la Fig.\ref{fig:captura02} podemos ver la pestaña de configuracion del campo solar. 
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/captura_sam_iph02.png}
+\caption{Configuración SAM. Campo solar} 
+\label{fig:captura02}
+\end{figure}
+
+Los SCA, modelo SenerTrough I diseñado por Sener, se han parametrizado de la siguiente manera a partir del modelo EuroTrough ET150:
+
+\begin{itemize}[itemsep=2pt,parsep=2pt]
+\item
+  Longitud: 148,5 m.
+\item
+  Apertura: 5,77 m.
+\item
+  Distancia Focal: 2,1 m.
+\item
+  Coeficientes del \(IAM\): \(F_{0}=1\), \(F_{1}=0,0506\),
+  \(F_{2}=-0,1763\).
+\item
+  Precisión del seguidor: 0,99.
+\item
+  Precisión geométrica: 0,98.
+\item
+  Disponibilidad: 0,99.
+\item
+  Reflectividad: 0,935.
+\item
+  Limpieza: 0,98.
+\end{itemize}
+
+
+En la Fig.\ref{fig:captura03} puede verse una captura de pantalla de la pestaña de configuración del tipo de SCA en SAM. En la Fig.\ref{fig:capture04}, puede verse la pestaña correspondiente a la configuración de HCE. En este caso el modelo empleado es el UVAC 3, de Solel, con los siguientes parámetros:
+
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/captura_sam_iph02.png}
+\caption{Configuración SAM. Configuración del SCA SenerTrough I a partir del modelo EuroTrough ET150} 
+\label{fig:captura03}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/captura_sam_iph03.png}
+\caption{Configuración SAM. Configuración del HCE UVAC 3 con vacío}
+\label{fig:captura04}
+\end{figure}
+
+
+\begin{itemize}[itemsep=2pt,parsep=2pt]
+\item
+  Logintud: 4,05 m.
+\item
+  Factor de longitud efectiva, \(\gamma_L\): 0,96.
+\item
+  Factor de interceptación geométrica, \(\gamma_g\): 0,96.
+\item
+  Diámetro interior del tubo absorbedor, \(d_{ri}\): 0,066 m.
+\item
+  Diámetro exterior del tubo absorbedor, \(d_{ro}\)r: 0,070 m.
+\item
+  Diámetro interior de la envolvente de vídrio, \(d_{gi}\): 0,115 (m)
+\item
+  Diámetro exterior de la envolvente de vídrio, \(d_{go}\): 0,121 (m)
+\item
+  Rugosidad interior: 0,000045 m.
+\item
+  Factor de emisividad, \(A_1\): 0,000206.
+\item
+  Factor de emisividad, \(A_0\): 0,0430.
+\item
+  Absortibidad solar del receptor: 0,96.
+\item
+  Transmisividad del vídrio: 0,96.
+\item
+  Valor mínimo del número de Reynolds recomendado: 2400.
+\item
+  Distancia de separación entre brazos de soportación: 4,05 m.
+\end{itemize}
+
+Se ha considerado que todos los HCE  del campo se encuentran en buen estado de vacío.
+
+Para la configuración de la simulación con nuestro código se debe crear un archivo en formato JSON con el que se le pasa toda la información necesaria. Con el fin de facilitar la creación de este archivo de configuración se ha desarrollado una sencilla interfaz que sirve de guía durante el proceso. En la Fig.\ref{fig:interface01} se muestra la primera pantalla de la interfaz de configuración. El archivo de origen de datos incluye los mismos datos meteorológicos que se han empleado para SAM y, además, los datos de temperatura de entrada del HTF al campo solar que ha generado SAM en la simulación IPH. También emplearemos el caudal calculado por SAM para compararlo con el que calcula nuestro simulador.
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/interface01.png}
 \caption{Configuración de la simulación. Selección del tipo de simulación, fichero de datos y lugar de emplazamiento.} 
 \label{fig:interface01}
 \end{figure}
 
+La configuración del campo solar es similar a la de SAM. Con el fin acelerar el proceso de simulación, consideraremos que hay 2 HCEs en cada SCA. Es decir, cada HCE tiene una longitud de 72,9 m, que está por debajo del límite de 100 m que nos hemos impuesto como criterio de validez del tamaño de malla para el modelo unidimensional.  El caudal mínimo de recirculación en cada lazo es de 1,7 kg/s. La temperatura de salida deseada es de $393\circ C$ (666,15 K).
+
 \begin{figure}
-\includegraphics[scale=0.8]{images/interface02.png}
+\includegraphics[width=0.9\linewidth]{images/interface02.png}
 \caption{Configuración de la simulación. Configuración del campo solar, número de subcampos, lazos, configuración de los lazos, valores nominales y asistente para relacionar los identificadores de las columnas del archivo de origen de datos con los que maneja el programa.} 
 \label{fig:interface02}
 \end{figure}
 
+El fluido caloportador Therminol VP-1 se configura tal y como puede verse en la Fig.\ref{fig:interface03}. Los coeficientes se cargan desde una librería donde los hemos guardado previamente tras su obtención según se indicó en el apartado \ref{subclases-fluid}.
+
 \begin{figure}
-\includegraphics[scale=0.8]{images/interface03.png}
+\includegraphics[width=0.9\linewidth]{images/interface03.png}
 \caption{Configuración de la simulación. Selección y configuración del fluido caloportador.} 
 \label{fig:interface03}
 \end{figure}
 
+Finalmente, en las figuras \ref{fig:interface04} y \ref{fig:interface05} puede verse la configuración del tipo de SCA y HCE respectivamente.
+
 \begin{figure}
-\includegraphics[scale=0.8]{images/interface04.png}
+\includegraphics[width=0.9\linewidth]{images/interface04.png}
 \caption{Configuración de la simulación. Selección del modelo de SCA y configuración} 
 \label{fig:interface04}
 \end{figure}
 
 \begin{figure}
-\includegraphics[scale=0.8]{images/interface05.png}
+\includegraphics[width=0.9\linewidth]{images/interface05.png}
 \caption{Configuración de la simulación. Selección del modelo de HCE y configuración} 
 \label{fig:interface05}
 \end{figure}
 
-El archivo de configuración completo resultant en formato JSON puede encontrarse en el ANEXO.
-
-Por otra parte, la versión de SAM utilizada ha sido la \emph{2020.2.29, 64 bit, updated to revision 1}. Se muestran también en las siguientes figuras las capturas de pantalla de las etapas más relevantes del proceso de configuración.
-
-\begin{figure}
-\includegraphics[scale=0.8]{images/captura_sam01.png}
-\caption{Configuración SAM. Campo solar} 
-\label{fig:captura01}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.8]{images/captura_sam02.png}
-\caption{Configuración SAM. Configuración del SCA SenerTrough I a partir del modelo EuroTrough ET150} 
-\label{fig:captura02}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.8]{images/captura_sam03.png}
-\caption{Configuración SAM. Configuración del HCE UVAC 3 con vacío}
-\label{fig:captura03}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.8]{images/captura_sam04.png}
-\caption{Configuración SAM. Configuración del bloque de potencia} 
-\label{fig:captura04}
-\end{figure}
-
-\section{Resultados de la validación}
+\subsection{Resultados de la validación}
+\label{resultados-validacion}
  
-Una vez que tenemos configurado SAM y nuestro programa de la misma manera ejecutamos SAM sobre un archivo con los datos meteorológicos de un año y en valores horarios, en concreto se trata de los datos del año 2009 que se emplearon para el estudio y anteproyecto de construcción de las plantas. 
+Una vez que tenemos configurado SAM y nuestro programa de la misma manera ejecutamos SAM sobre un archivo con los datos meteorológicos de un año y en valores horarios, en concreto se trata de los datos del año 2009 que se emplearon para el estudio y anteproyecto de construcción de las plantas.  
 
-Los datos generados por SAM son exportados a un archivo en formato \emph{.csv} y parte de ellos los emplearemos como datos de entrada en nuestro programa: 
-* Temperatura de entrada al campo solar: Usaremos este datos para que en podamos comparar entre ambas simulaciones los saltos de temperatura respecto a una misma temperatura. Nuestro código desconoce qué energía se extraerá del HTF que se envía al bloque de potencia al quedar este sistema fuera del modelo, por lo que es preciso darle algún valor. 
-* Caudal másico en entrada al campo solar: Nuestro código calculará el caudal necesario para obtener la temperatura deseada a la salida del lazo pero también empleará el caudal calculado por SAM para comparar ambos. Por otro lazo, entre las diferencias que existen entre nuestro código y SAM está que éste último considera nulo el caudal en el campo solar durante las horas nocturnas. En las plantas reales esto no es así, pues es necesario mantener cierto caudal en los lazos para evitar que el HTF descienda por debajo de su punto de congelación.  El caudal mínimo empleado en cada lazo es de 1,7 kg/s, lo cual sumo 204 kg/s para un total de 120 lazos. Por este motivo, en nuestra simulación se emplea este caudal mínimo durante las horas nocturnas y se calculan las pérdidas en base a él. Si en algún momento SAM ha calculado un cadual inferior a 204 kg/s sustituiremos ese valor por nuestro caudal mínimo. 
-* El resto de datos es idéntico para ambas configuraciones. SAM no emplea las presiones del HTF en ningún momento de su cálculo. En nuestro código se ha dejado esta posibilidad abierta de cara a incorporar, en un futuro, un cálculo de pérdidas de carga en tuberías. Por este motivo asignamos a todo el campo solar una presión de 20 bar, suficiente para mantener el HTF en estado de líquido saturado durante toda la simulación. 
-Tras ejecutar nuestra simulación estos son los datos más relevantes:
 
-SAM
 
-{Simulation}
 
-{Benchmark}
 
-Potencia térmica absorbida por el campo solar {[}GWh/año{]}
+\section{Aplicación para el análisis paramétrico}
+\label{analisis-parametrico}
 
-470,0
+Una vez que hemos confirmado que nuestro código es una herramienta válida para la simulación de un campo solar real nos proponemos a continuación aprovecharlo para realizar algunos análisis del comportamiento de los componentes del campo solar bajo diferentes condiciones o con diferetentes configuraciones. Este tipo de análisis es de especial utilidad durante la fase de diseño, cuando deben seleccionarse los diferentes componentes con el fin de alcanzar unos objetivos de rendimiento o potencia generada.
 
-466,0
+\subsection{Rendimiento del HCE en función de la radiación normal directa, $DNI$}
 
-0,9\%
+En la tabla \ref{tab:rendimiento_hce_dni} se resumen las principales características de algunos de los modelos de HCE más instalados hasta nuestros días. Los datos de $\varepsilon_{ext}$ son los ofrecidos por \cite{barberofresnoDesarrolloModeloTeorico2018}.
 
-466,0
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[]
+\centering
+\caption{Rendimiento en función de la radiación normal incidente para  distintos modelos de HCE}
+\label{tab:rendimiento_hce_dni}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cccccccc}
+$DNI (W/m^2)$ & Schott PTR70 & Schott PTR70 2008 & Solel UVAC 2 & Solel UVAC 3 & SkyTrough DSP & ASE (HEMS08) & NREL\#6 \\
+100 & 0,521 & 0,728 & 0,521 & 0,638 & 0,837 & 0,818 & 0,834 \\
+200 & 0,757 & 0,862 & 0,757 & 0,816 & 0,917 & 0,907 & 0,916 \\
+300 & 0,837 & 0,907 & 0,837 & 0,876 & 0,944 & 0,938 & 0,943 \\
+400 & 0,876 & 0,930 & 0,877 & 0,907 & 0,958 & 0,953 & 0,957 \\
+500 & 0,900 & 0,944 & 0,900 & 0,925 & 0,966 & 0,962 & 0,965 \\
+600 & 0,917 & 0,953 & 0,917 & 0,937 & 0,971 & 0,968 & 0,971 \\
+700 & 0,928 & 0,959 & 0,928 & 0,945 & 0,975 & 0,972 & 0,975 \\
+800 & 0,937 & 0,964 & 0,937 & 0,952 & 0,978 & 0,976 & 0,978 \\
+900 & 0,943 & 0,968 & 0,943 & 0,957 & 0,980 & 0,978 & 0,980 \\
+1000 & 0,948 & 0,971 & 0,949 & 0,961 & 0,982 & 0,980 & 0,982
+\end{tabular}%
+}
+\end{table}
 
-0,9\%
 
-Potencia térmica a la salida del campo solar {[}GWh/año{]}
+En la \ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento con el aumento de $DNI$.  Se aprecia como los  modelos de última generación presentan un buen comportamiento incluso con bajas radiaciones.
 
-404,6
+\begin{figure}[!h]
+\includegraphics[scale=0.8]{images/resultados_test1a.png}
+\caption{Rendimiento térmico en función de DNI para diferentes modelos de HCE} 
+\label{fig:test1a}
+\end{figure}
 
-420,2
 
--3,9\%
+\subsection{Rendimiento del HCE en función de la temperatura de entrada}
 
-417,2
+\begin{table}[!h]
+\centering
+\caption{Rendimiento en función de la temperatura de entrada del HTF para diferentes modelos de HCE}
+\label{tab:rendimiento_hce_tin}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cccccccc}
+$T_{in} (\circ C)$ & Schott PTR70 & Schott PTR70 2008 & Solel UVAC 2 & Solel UVAC 3 & SkyTrough DSP & ASE (HEMS08) & NREL\#6 \\
+473 & 0,975 & 0,986 & 0,974 & 0,982 & 0,993 & 0,993 & 0,993 \\
+483 & 0,972 & 0,985 & 0,971 & 0,980 & 0,992 & 0,992 & 0,992 \\
+493 & 0,969 & 0,983 & 0,969 & 0,978 & 0,991 & 0,990 & 0,991 \\
+503 & 0,966 & 0,981 & 0,965 & 0,976 & 0,990 & 0,989 & 0,990 \\
+513 & 0,963 & 0,979 & 0,962 & 0,973 & 0,988 & 0,988 & 0,988 \\
+523 & 0,959 & 0,977 & 0,958 & 0,970 & 0,987 & 0,986 & 0,987 \\
+533 & 0,955 & 0,975 & 0,955 & 0,967 & 0,986 & 0,984 & 0,985 \\
+543 & 0,951 & 0,973 & 0,951 & 0,964 & 0,984 & 0,982 & 0,984 \\
+553 & 0,946 & 0,970 & 0,946 & 0,960 & 0,982 & 0,980 & 0,982 \\
+563 & 0,942 & 0,967 & 0,942 & 0,956 & 0,980 & 0,978 & 0,980 \\
+573 & 0,937 & 0,964 & 0,937 & 0,952 & 0,978 & 0,976 & 0,978 \\
+583 & 0,931 & 0,961 & 0,931 & 0,947 & 0,976 & 0,973 & 0,975 \\
+593 & 0,925 & 0,957 & 0,926 & 0,943 & 0,974 & 0,970 & 0,973 \\
+603 & 0,919 & 0,953 & 0,920 & 0,938 & 0,971 & 0,967 & 0,970 \\
+613 & 0,912 & 0,949 & 0,914 & 0,932 & 0,968 & 0,963 & 0,967 \\
+623 & 0,905 & 0,945 & 0,907 & 0,926 & 0,965 & 0,960 & 0,964 \\
+633 & 0,898 & 0,941 & 0,900 & 0,920 & 0,962 & 0,956 & 0,961 \\
+643 & 0,890 & 0,936 & 0,892 & 0,913 & 0,958 & 0,951 & 0,957 \\
+653 & 0,881 & 0,931 & 0,884 & 0,906 & 0,955 & 0,947 & 0,954 \\
+663 & 0,872 & 0,925 & 0,876 & 0,898 & 0,951 & 0,942 & 0,949 \\
+673 & 0,863 & 0,919 & 0,867 & 0,890 & 0,946 & 0,937 & 0,945 \\
+683 & 0,853 & 0,913 & 0,858 & 0,882 & 0,942 & 0,931 & 0,941
+\end{tabular}%
+}
+\end{table}
 
--3,1\%
+\begin{figure}
+\includegraphics[scale=0.8]{images/resultados_test2a.png}
+\caption{Rendimiento térmico en función de la temperatura de entrada del HTF para diferentes modelos de HCE} 
+\label{fig:test2a}
+\end{figure}
 
-Potencia perdida en los HCEs de campo solar {[}GWh/año{]}
 
-65,4
 
-75,7
+El archivo de configuración completo resultante en formato JSON es el siguiente:
+\begin{lstlisting}
+\{
+ "simulation": \{
+  "ID": "TEST 2007 IPH",
+  "datatype": 2,
+  "simulation": true,
+  "benchmark": true,
+  "fastmode": true,
+  "filename": "2007 IPH LOOP TEMP.csv",
+  "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
+  "first_date": "2007/01/31 00:00",
+  "last_date": "2007/12/31 23:00"\},
+ "model": \{
+  "name": "Barbero4thOrder",
+  "max_err_t": 0.1,
+  "max_err_tro": 0.1,
+  "max_err_pr": 0.01\},
+ "site": \{
+  "name": "Alc\'azar de San Juan",
+  "latitude": 39.1,
+  "longitude": -3.16,
+  "altitude": 651.0\},
+ "loop": \{
+  "scas": 4,
+  "hces": 2,
+  "rated_tin": 566.15,
+  "rated_tout": 666.15,
+  "rated_pin": 2000000.0,
+  "rated_pout": 1600000.0,
+  "tmin": 288.0,
+  "tmax": 673.0,
+  "rated_massflow": 4.0,
+  "min_massflow": 1.7,
+  "row_spacing": 16.25,
+  "Tracking Type": 1\},
+ "SCA": \{
+  "Name": "SenerTrough-1 (SNT-1)",
+  "SCA Length": 148.5,
+  "Aperture": 5.77,
+  "Focal Len": 2.1,
+  "IAM Coefficient F0": 1.0,
+  "IAM Coefficient F1": 0.0506,
+  "IAM Coefficient F2": -0.1763,
+  "Track Twist": 0.99,
+  "Geom.Accuracy": 0.98,
+  "Reflectance": 0.935,
+  "Cleanliness": 0.98,
+  "Factor": 1.0,
+  "Availability": 0.99\},
+ "HCE": \{
+  "Name": "Solel UVAC 3",
+  "Length": 72.9,
+  "Bellows ratio": 0.96,
+  "Shield shading": 1.0,
+  "Absorber tube inner diameter": 0.066,
+  "Absorber tube outer diameter": 0.07,
+  "Glass envelope inner diameter": 0.115,
+  "Glass envelope outer diameter": 0.121,
+  "Min Reynolds": 2400.0,
+  "Inner surface roughness": 4.5e-05,
+  "Envelope transmittance": 0.965,
+  "Absorber emittance factor A0": 0.043,
+  "Absorber emittance factor A1": 0.000206,
+  "Absorber absorptance": 0.96,
+  "Brackets": 4.05\},
+ "HTF": \{
+  "source": "table",
+  "name": "THERMINOL VP1",
+  "mu": [ 1.487, -0.02186, 0.0001400, -5.092e-07, 1.148e-09, -1.642e-12, 1.454e-15, -7.286e-19, 1.582e-22],
+  "rho": [1403, -1.614, 0.002138, -1.931e-06, -9.610e-21, 3.864e-24, 0, 0, 0],
+  "kt": [0.1486, 9.755e-06, -1.780e-07, 3.523e-12, -7.572e-25, 2.948e-28, 0, 0, 0],
+  "h": [-292250, 391.0, 2.076, 0.001811, -1.089e-05, 2.274e-08, -2.667e-11, 1.788e-14, -5.284e-18],
+  "t": [292.4, 0.0006424, -3.396e-10, 2.587e-16, -1.065e-22, 0, 0, 0, 0],
+  "cp": [288.1, 5.875, -0.006857, 4.844e-06, 6.960e-20, -2.780e-23, 0, 0, 0],
+  "tmax": 673.0,
+  "tmin": 288.0\},
+ "subfields": [\{"name": "NO", "loops": 120\}],
+ "tags": {
+  "SB.NO.a.tin": "SB.NO.a.tin",
+  "SB.NO.a.tout": "SB.NO.a.tout",
+  "SB.NO.a.pin": "SB.NO.a.pin",
+  "SB.NO.a.pout": "SB.NO.a.pout",
+  "DNI": "DNI",
+  "Wspd": "Wspd",
+  "DryBulb": "DryBulb",
+  "Pressure": "Pressure",
+  "SB.NO.a.mf": "SB.NO.a.mf",
+  "GrossPower": "GrossPower",
+  "AuxPower": "AuxPower",
+  "NetPower": "NetPower"
+ \}\}
+\end{lstlisting}
 
--15,7\%
 
-77,6
-
--18,7\%
-
-En comparación con SAM, nuestro programa
