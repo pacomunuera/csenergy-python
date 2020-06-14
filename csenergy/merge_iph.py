@@ -16,9 +16,9 @@ import pandas as pd
 import plotly.express as px
 
 
-filename_sam = 'simulations_outputs/IPH TODAS LAS COLUMNAS.csv'
-filename_simulation = 'simulations_outputs/20200602 140348 TEST 2007 IPH_COMPLETE.csv'
-filename_columns = 'simulations_outputs/COLUMNAS IPH.csv'
+filename_sam = 'simulations_outputs/IPH TODAS LAS COLUMNAS SIN INERCIA.csv'
+filename_simulation = 'simulations_outputs/20200613 001311 TEST 2007 IPH_COMPLETE.csv'
+filename_columns = 'simulations_outputs/c.csv'
 
 with open(filename_simulation) as file_simulation:
     data_simulation = pd.read_csv(
@@ -55,19 +55,15 @@ data_sam.index = data_sam.index - d
 
 result = data_simulation.join(data_sam, how='left')
 
-for c in columns_df.columns:
-    if c not in result.columns:
-        result[c]=''
-
-result = result[columns_df.columns]
-
-
-
-
 result['Field total mass flow | (kg/s)'] = (
     result['Field total mass flow delivered | (kg/s)'] +
     result['Field total mass flow recirculated | (kg/s)'])
 
+for c in columns_df.columns:
+    if c not in result.columns:
+        result[c]=''
+
+result = result.reindex(columns=columns_df.columns)
 
 
 prefix = datetime.today().strftime("%Y%m%d %H%M%S ")

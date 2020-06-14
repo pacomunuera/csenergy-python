@@ -720,9 +720,10 @@ class HCE(object):
         # self.pout = self.pin - deltap
         self.pout = self.pin
 
-    def set_pr_opt(self, aoi):
+    def set_pr_opt(self, solarpos):
 
-        IAM = self.sca.get_IAM(aoi)
+        IAM = self.sca.get_IAM(solarpos)
+        aoi = self.sca.get_aoi(solarpos)
         pr_opt_peak = self.get_pr_opt_peak()
         self.pr_opt = pr_opt_peak * IAM * np.cos(np.radians(aoi))
 
@@ -834,7 +835,6 @@ class HCE(object):
 
     def get_pr_shadows2(self, solarpos):
 
-
         beta0 = self.sca.get_tracking_angle(solarpos)
 
         if beta0 >= 0:
@@ -851,16 +851,14 @@ class HCE(object):
 
         surface_azimuth = self.sca.get_surface_azimuth(solarpos)
 
-
-
         # Hs = abs(self.sca.parameters['Aperture'] -
         #        self.sca.loop.parameters['row_spacing'] *
         #        np.cos(np.radians(beta0)))
 
         Ls = abs(len(self.sca.loop.scas) * self.sca.parameters['SCA Length'] -
-                 abs(self.sca.loop.parameters['row_spacing'] *
-                     np.tan(np.radians(surface_azimuth -
-                                       solarpos['azimuth'][0]))))
+                  abs(self.sca.loop.parameters['row_spacing'] *
+                      np.tan(np.radians(surface_azimuth -
+                                        solarpos['azimuth'][0]))))
 
         ls = Ls / (len(self.sca.loop.scas) * self.sca.parameters['SCA Length'])
 
@@ -873,8 +871,8 @@ class HCE(object):
 
         if solarpos['zenith'][0] < 90:
             shading = min(abs(np.cos(np.radians(beta0))) * \
-                 self.sca.loop.parameters['row_spacing'] / \
-                     self.sca.parameters['Aperture'], 1)
+                  self.sca.loop.parameters['row_spacing'] / \
+                      self.sca.parameters['Aperture'], 1)
         else:
             shading = 0
 
@@ -1030,33 +1028,27 @@ class SCA(object):
 
         return solarfraction
 
-    def get_IAM(self, aoi):
+    def get_IAM(self, solarpos):
 
-        F0 = self.parameters['IAM Coefficient F0']
-        F1 = self.parameters['IAM Coefficient F1']
-        F2 = self.parameters['IAM Coefficient F2']
+        if  solarpos['zenith'][0] > 80:
+            kiam = 0.0
+        else:
+            aoi = self.get_aoi(solarpos)
 
-        if (aoi > 0 and aoi < 80):
-            kiam = (F0 + (F1 * np.radians(aoi) + F2 * np.radians(aoi)**2) /
-                    np.cos(np.radians(aoi)))
+            F0 = self.parameters['IAM Coefficient F0']
+            F1 = self.parameters['IAM Coefficient F1']
+            F2 = self.parameters['IAM Coefficient F2']
+
+            if (aoi > 0 and aoi < 80):
+                kiam = (F0 + (F1 * np.radians(aoi) + F2 * np.radians(aoi)**2) /
+                        np.cos(np.radians(aoi)))
 
             if kiam > 1.0:
                 kiam = 1.0
-        else:
-            kiam = 0.0
 
         if  kiam > 1.0 or  kiam < 0.0:
             print("ERROR",  kiam, aoi)
 
-
-        # if (aoi > 0 and aoi < 80):
-        #     aoi = np.radians(aoi)
-        #     kiam = (1- 2.23073E-4 * aoi - 1.1E-4 * aoi**2 +
-        #             3.18596E-6 * aoi**3 - 4.85509E-8 * aoi**4)
-        # else:
-        #     kiam = 0
-
-        # print('aoi', aoi, 'kiam', kiam)
         return kiam
 
     def get_aoi(self, solarpos):
@@ -1224,7 +1216,7 @@ class __Loop__(object):
         for s in self.scas:
             aoi = s.get_aoi(solarpos)
             for h in s.hces:
-                h.set_pr_opt(aoi)
+                h.set_pr_opt(solarpos)
                 h.set_qabs(aoi, solarpos, row)
                 h.set_tin()
                 h.set_pin()
@@ -1471,23 +1463,52 @@ class BaseLoop(__Loop__):
 
     def get_pr_shadows2(self, solarpos):
 
-        sigmabeta = 0.0
-        beta0 = 0.0
+        # sigmabeta = 0.0
+        # beta0 = 0.0
 
-        if self.parameters['Tracking Type'] == 1:  # N-S single axis tracker
-            if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-                surface_azimuth = 90  # Surface facing east
-            else:
-                surface_azimuth = 270  # Surface facing west
-        elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
-            surface_azimuth = 180  # Surface facing the equator
+        # if self.parameters['Tracking Type'] == 1:  # N-S single axis tracker
+        #     if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
+        #         surface_azimuth = 90  # Surface facing east
+        #     else:
+        #         surface_azimuth = 270  # Surface facing west
+        # elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+        #     surface_azimuth = 180  # Surface facing the equator
 
-        #  En esta fórmula asumo que el seguimiento del SCA es perfecto
-        #  pero hay que ver la posibilidad de modelar cierto error o desfase
-        beta0 = np.degrees(np.arctan(
-            np.tan(np.radians(solarpos['zenith'][0])) *
-            np.cos(np.radians(surface_azimuth -
-                              solarpos['azimuth'][0]))))
+        # #  En esta fórmula asumo que el seguimiento del SCA es perfecto
+        # #  pero hay que ver la posibilidad de modelar cierto error o desfase
+        # beta0 = np.degrees(np.arctan(
+        #     np.tan(np.radians(solarpos['zenith'][0])) *
+        #     np.cos(np.radians(surface_azimuth -
+        #                       solarpos['azimuth'][0]))))
+        # if beta0 >= 0:
+        #     sigmabeta = 0
+        # else:
+        #     sigmabeta = 1
+
+        # #  Surface tilt
+        # beta = beta0 + 180 * sigmabeta
+        # # aoi = pvlib.irradiance.aoi(beta,
+        # #                            surface_azimuth,
+        # #                            solarpos['zenith'][0],
+        # #                            solarpos['azimuth'][0])
+
+        # Hs = abs(self.parameters_sca['Aperture'] -
+        #        self.parameters['row_spacing'] *
+        #        np.cos(np.radians(beta)))
+
+        # Ls = abs(len(self.scas) * self.parameters_sca['SCA Length'] -
+        #          abs(self.parameters['row_spacing'] *
+        #              np.tan(np.radians(surface_azimuth -
+        #                                solarpos['azimuth'][0]))))
+
+        # shading = (Ls * Hs / (len(self.scas) *
+        #                         self.parameters_sca['SCA Length'] *
+        #                         self.parameters_sca['Aperture']))
+
+        # return shading
+
+        beta0 = self.get_tracking_angle(solarpos)
+
         if beta0 >= 0:
             sigmabeta = 0
         else:
@@ -1500,20 +1521,36 @@ class BaseLoop(__Loop__):
         #                            solarpos['zenith'][0],
         #                            solarpos['azimuth'][0])
 
-        Hs = abs(self.parameters_sca['Aperture'] -
-               self.parameters['row_spacing'] *
-               np.cos(np.radians(beta)))
+        surface_azimuth = self.get_surface_azimuth(solarpos)
+
+        # Hs = abs(self.sca.parameters['Aperture'] -
+        #        self.sca.loop.parameters['row_spacing'] *
+        #        np.cos(np.radians(beta0)))
 
         Ls = abs(len(self.scas) * self.parameters_sca['SCA Length'] -
-                 abs(self.parameters['row_spacing'] *
-                     np.tan(np.radians(surface_azimuth -
-                                       solarpos['azimuth'][0]))))
+                  abs(self.parameters['row_spacing'] *
+                      np.tan(np.radians(surface_azimuth -
+                                        solarpos['azimuth'][0]))))
 
-        shading = (Ls * Hs / (len(self.scas) *
-                                self.parameters_sca['SCA Length'] *
-                                self.parameters_sca['Aperture']))
+        ls = Ls / (len(self.scas) * self.parameters_sca['SCA Length'])
+
+        # if solarpos['zenith'][0] < 90:
+        #     shading = 1 - (Ls * Hs / (len(self.sca.loop.scas) *
+        #                               self.sca.parameters['SCA Length'] *
+        #                               self.sca.parameters['Aperture']))
+        # else:
+        #     shading = 0
+
+        if solarpos['zenith'][0] < 90:
+            shading = min(abs(np.cos(np.radians(beta0))) * \
+                  self.parameters['row_spacing'] / \
+                      self.parameters_sca['Aperture'], 1)
+        else:
+            shading = 0
 
         return shading
+
+
 
     def get_solar_fraction(self):
 
@@ -1530,33 +1567,28 @@ class BaseLoop(__Loop__):
 
         return solarfraction
 
-    def get_IAM(self, aoi):
+    def get_IAM(self, solarpos):
 
-        F0 = self.parameters_sca['IAM Coefficient F0']
-        F1 = self.parameters_sca['IAM Coefficient F1']
-        F2 = self.parameters_sca['IAM Coefficient F2']
+        if  solarpos['zenith'][0] > 80:
+            kiam = 0.0
+        else:
 
-        if (aoi > 0 and aoi < 80):
-            kiam = (F0 + (F1 * np.radians(aoi) + F2 * np.radians(aoi)**2) /
-                    np.cos(np.radians(aoi)))
+            aoi = self.get_aoi(solarpos)
+
+            F0 = self.parameters_sca['IAM Coefficient F0']
+            F1 = self.parameters_sca['IAM Coefficient F1']
+            F2 = self.parameters_sca['IAM Coefficient F2']
+
+            if (aoi > 0 and aoi < 80):
+                kiam = (F0 + (F1 * np.radians(aoi) + F2 * np.radians(aoi)**2) /
+                        np.cos(np.radians(aoi)))
 
             if kiam > 1.0:
                 kiam = 1.0
-        else:
-            kiam = 0.0
 
         if  kiam > 1.0 or  kiam < 0.0:
             print("ERROR",  kiam, aoi)
 
-
-        # if (aoi > 0 and aoi < 80):
-        #     aoi = np.radians(aoi)
-        #     kiam = (1- 2.23073E-4 * aoi - 1.1E-4 * aoi**2 +
-        #             3.18596E-6 * aoi**3 - 4.85509E-8 * aoi**4)
-        # else:
-        #     kiam = 0
-
-        # print('aoi', aoi, 'kiam', kiam)
         return kiam
 
 
@@ -2224,7 +2256,7 @@ class SolarFieldSimulation(object):
         aoi = self.base_loop.get_aoi(solarpos)
         self.datasource.dataframe.at[row[0], 'aoi'] = aoi
         self.datasource.dataframe.at[row[0], 'IAM'] = \
-            self.base_loop.get_IAM(aoi)
+            self.base_loop.get_IAM(solarpos)
         self.datasource.dataframe.at[row[0], 'pr_shadows'] = \
             self.base_loop.get_pr_shadows2(solarpos)
         self.datasource.dataframe.at[row[0], 'pr_borders'] = \
@@ -2510,7 +2542,7 @@ class SolarFieldSimulation(object):
 
             self.datasource.dataframe.to_csv(
                 path_complete, sep=';', decimal = ',')
-            self.report_df.to_csv(path_report, sep=';', decimal = ',')
+            # self.report_df.to_csv(path_report, sep=';', decimal = ',')
 
         except Exception:
             raise
@@ -2689,7 +2721,7 @@ class LoopSimulation(object):
             for h in s.hces:
                 if HCE_var != '':
                     h.parameters[HCE_var] = row[1][HCE_var]
-                h.set_pr_opt(aoi)
+                h.set_pr_opt(solarpos)
                 h.set_qabs(aoi, solarpos, row)
                 h.set_tin()
                 h.set_pin()
@@ -3396,17 +3428,14 @@ class Site(object):
 
         return solarpos
 
-    # def get_hour_angle(self, row, equiation_of_time):
+    def get_hour_angle(self, row, equiation_of_time):
 
-    #     hour_angle = pvlib.solarposition.hour_angle(
-    #         row[0] + timedelta(hours=0.5),
-    #         self.longitude,
-    #         equation_of_time)
+        hour_angle = pvlib.solarposition.hour_angle(
+            row[0] + timedelta(hours=0.5),
+            self.longitude,
+            equation_of_time)
 
-    #     return hour_angle
-
-    # def get_equation_of_time(self, row):
-
+        return hour_angle
 
 
 class HCEScatterMask(object):

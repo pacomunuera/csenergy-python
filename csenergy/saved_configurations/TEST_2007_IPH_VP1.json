@@ -54,7 +54,7 @@
  "HCE": {
   "Name": "Solel UVAC 3",
   "Length": 72.9,
-  "Bellows ratio": 0.96,
+  "Bellows ratio": 0.971,
   "Shield shading": 1.0,
   "Absorber tube inner diameter": 0.066,
   "Absorber tube outer diameter": 0.07,
@@ -62,7 +62,7 @@
   "Glass envelope outer diameter": 0.121,
   "Min Reynolds": 2400.0,
   "Inner surface roughness": 4.5e-05,
-  "Envelope transmittance": 0.965,
+  "Envelope transmittance": 0.96,
   "Absorber emittance factor A0": 0.043,
   "Absorber emittance factor A1": 0.000206,
   "Absorber absorptance": 0.96,

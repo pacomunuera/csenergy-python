@@ -542,7 +542,7 @@ Con el fin realizar una primera validación de nuestro código, compararemos en 
 
 Para que una simulación realizada con el módulo IPH de SAM sea comparable a la nuestra indicaremos que no existe almacenamiento térmico para evitar procesos de mezcla de HTF a diferentes temperaturas que se producirían en ese caso. También indicaremos que el sumidero térmico tiene capacidad elevada, lo que, en principio, nos obligaría a seleccionar un tamaño de campo solar muy grande. Para que el tamaño de campo solar sea igual al del campo que queremos simular indicaremos a SAM que las condiciones de radiación solar nominales son mucho más elevadas que las que se alcanzarán en cualquier momento el año $(2000 W/m^2)$. De este modo conseguimos que el dimensionado que hace SAM del campo solar sea igual que el nuestro (120 lazos), pero que no se produzca desenfoque en ningún momento. Es decir, con SAM extraemos del campo solar toda energía posible, al igual que hace nuestro simulador.
 
-Puesto que solo modelamos el campo, no tenemos a priori ninguna información sobre la temperatura de retorno del HTF frío desde el intercambiador donde cede su energía al sumidero térmico. Con el fin de que la comparación sea lo más ajustada posible, aprovecharemos los datos de temperatura de HTF frío que se optienen de la simulación de SAM como datos de entrada para nuestra simulación. De esta forma, en ambas simulaciones el salto térmico se realiza desde el mismo punto de partida.
+Puesto que solo modelamos el campo, no tenemos a priori ninguna información sobre la temperatura de retorno del HTF frío desde el intercambiador donde cede su energía al sumidero térmico. Con el fin de que la comparación sea lo más ajustada posible, aprovecharemos los datos de temperatura de HTF frío que se optienen de la simulación de SAM como datos de entrada para nuestra simulación. De esta forma, en ambas simulaciones el salto térmico se realiza desde el mismo punto de partida. Además, indicaremos a SAM que no existe inercia térmica en tuberías y concentradores y prescindiremos del cálculo de pérdidas térmicas en las primeras.
 
 Respecto al fluído caloportador, SAM nos permite seleccionar entre una serie de fluidos preconfigurados. Seleccionaremos Therminol VP-1 pues también podemos simular este fluido con nuestro programa.
 
@@ -657,7 +657,7 @@ El fluido caloportador Therminol VP-1 se configura tal y como puede verse en la 
 
 \begin{figure}
 \includegraphics[width=0.9\linewidth]{images/interface03.png}
-\caption{Configuración de la simulación. Selección y configuración del fluido caloportador.} 
+\caption{Configuración de la simulación. Selección y configuración del fluido caloportador} 
 \label{fig:interface03}
 \end{figure}
 
@@ -680,8 +680,108 @@ Finalmente, en las figuras \ref{fig:interface04} y \ref{fig:interface05} puede v
  
 Una vez que tenemos configurado SAM y nuestro programa de la misma manera ejecutamos SAM sobre un archivo con los datos meteorológicos de un año y en valores horarios, en concreto se trata de los datos del año 2009 que se emplearon para el estudio y anteproyecto de construcción de las plantas.  
 
+En el campo solar de 120 lazos, con una superfice total de captación de 392400 $m^2$ la energía anual incidente es de 792,1 GWh, que se ve reducida a 686,4 GWh debido a que el ángulo de incidencia es distinto de cero (efecto coseno).
+
+En la Tabla \ref{tab:energia_anual} se muestran los valores  calculados por SAM y los que obtenemos con nuestro código. SAM denonima \''Receiver thermal power incident\'' a la radiación solar que finalmente alcanza al fluido caloportador, es decir, la radaciación solar incidente menos las pérdidas ópticas. Este valor es equivalente a lo que nosotros hemos venido denominando \''potencia absorbida, $\cdot q_{abs}$\''. 
+
+\begin{longtable}[]{ccc}
+Valores anuales  & SAM & Código Python\tabularnewline
+\endhead
+Potencia absorbida (GWh/año)	& 477,0		& 491,2			\tabularnewline
+Rencimiento óptico 			& 0,6948 	& 0,7156		\tabularnewline
+Pérdidas térmicas (GWh/año)	& 63,5		& 73,4			\tabularnewline
+Rendimiento térmico			& 0,8668	& 0,8505		\tabularnewline
+Energía evacuada				& 411,6		& 418,8        	\tabularnewline
+\end{longtable}
 
 
+Comprobamos que existe una ligera desviación en el rendimiento óptico anual (2,9\%) y en el rendimento térmico anual (1,9\%). El origen de esta desviación se encuentra en la dificultad de adaptar exactametne la configuracón de nuestra simulación a la de SAM pues no todos los parámetros son equivalentes en ambas casos. Por otro lado, por tratarse de valores anuales, existe una acumulación de pequeñas desviaciones que se producen entre ambas simulaciones, principalmente a primera y última hora del día  y durante jornadas de gran inestabilidad en la radiación. 
+
+Nos fijaremos ahora en el comportamiento para varios días del año. Hemos seleccionado un día de gran estabilidad y buena radiación solar y otro día menos estable y con peores condiciones. En las figuras \ref{fig:177caudal}  a \ref{fig:177temperatura} podemos ver la evolución del caudal, la temperatura y la potencia térmica en ambas simulaciones para el día 17 de julio (buenas condiciones de radiación y estabilidad). En las figuras \ref{fig:176caudal}  a \ref{fig:176temperatura} podemos ver la evolución para el día 17 de junio, con peores condiciones tal y como se aprecia por los altibajos que presentan las curvas a lo largo del día. En todas las gráficas se ha representado DNI en el eje secundario.
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/177caudal.png}
+\caption{Caudal másico calculado por SAM y por el código Python para el día 17/07/2009} 
+\label{fig:177caudal}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/177temperatura.png}
+\caption{Temperatura de entrada y de salida calculadas por SAM y por el código Python para el día 17/07/2009} 
+\label{fig:177temperatura}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/177potencia.png}
+\caption{Potencia térmica calculada por SAM y por el código Python para el día 17/07/2009} 
+\label{fig:177potencia}
+\end{figure}
+
+
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/176caudal.png}
+\caption{Caudal másico calculado por SAM y por el código Python para el día 17/06/2009} 
+\label{fig:176caudal}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/176temperatura.png}
+\caption{Temperatura de entrada y de salida calculadas por SAM y por el código Python para el día 17/06/2009} 
+\label{fig:176temperatura}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/176potencia.png}
+\caption{Potencia térmica calculada por SAM y por el código Python para el día 17/06/2009} 
+\label{fig:176potencia}
+\end{figure}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[]
+\centering
+\caption{}
+\label{tab:datos_17_junio}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cccccccc}
+Fecha &
+  \multicolumn{1}{c}{DNI (S, P)} &
+  \multicolumn{1}{c}{Caudal (S)} &
+  \multicolumn{1}{c}{Caudal (P)} &
+  \multicolumn{1}{c}{$T_{in}$ (S, P)} &
+  \multicolumn{1}{c}{$T_{out}$ (S)} &
+  \multicolumn{1}{c}{$T_{out}$ (P)} &
+  \multicolumn{1}{c}{Pot. Térmica (S)} &
+  \multicolumn{1}{c}{Pot. Térmica (P)} \\
+   & ($W/m^2$)   & ($Kg/s$)   &  ($Kg/s$)  & $(\circ C)$  & $(\circ C)$  & $(\circ C)$  &  (MWt)  &  (MWt)   \\ 
+0:00  & 0   & 204,0  & 204,0  & 289,3 & 277,5 & 277,4 & -6,0  & -5,5  \\
+1:00  & 0   & 204,0  & 204,0  & 284,8 & 273,5 & 273,3 & -5,8  & -5,3  \\
+2:00  & 0   & 204,0  & 204,0  & 280,6 & 269,6 & 269,3 & -5,5  & -5,1  \\
+3:00  & 0   & 204,0  & 204,0  & 276,5 & 265,9 & 265,5 & -5,3  & -5,0  \\
+4:00  & 0   & 204,0  & 204,0  & 272,5 & 262,3 & 261,8 & -5,1  & -4,8  \\
+5:00  & 45  & 204,0  & 204,0  & 268,8 & 262,0 & 258,4 & -3,2  & -4,7  \\
+6:00  & 194 & 204,0  & 204,0  & 269,2 & 338,7 & 353,3 & 41,5  & 40,3  \\
+7:00  & 795 & 885,8  & 916,9  & 289,7 & 392,7 & 392,9 & 227,1 & 230,5 \\
+8:00  & 189 & 204,0  & 204,0  & 292,8 & 385,9 & 383,5 & 46,1  & 44,9  \\
+9:00  & 339 & 366,8  & 367,7  & 292,9 & 392,2 & 392,9 & 90,0  & 89,7  \\
+10:00 & 81  & 204,0  & 204,0  & 293,0 & 336,0 & 323,7 & 15,6  & 14,7  \\
+11:00 & 225 & 204,0  & 215,4  & 293,0 & 389,6 & 392,9 & 53,8  & 52,5  \\
+12:00 & 473 & 514,8  & 518,7  & 293,0 & 392,6 & 392,9 & 125,8 & 126,4 \\
+13:00 & 634 & 711,7  & 722,5  & 293,0 & 392,5 & 392,9 & 174,1 & 176,1 \\
+14:00 & 403 & 442,9  & 445,2  & 293,0 & 392,5 & 392,9 & 108,4 & 108,5 \\
+15:00 & 899 & 1059,6 & 1082,5 & 293,0 & 392,7 & 392,9 & 259,6 & 263,9 \\
+16:00 & 619 & 716,1  & 727,6  & 293,0 & 392,7 & 392,9 & 175,4 & 177,4 \\
+17:00 & 654 & 740,2  & 755,1  & 293,0 & 393,0 & 392,9 & 181,9 & 184,1 \\
+18:00 & 522 & 241,7  & 309,5  & 293,0 & 392,7 & 392,9 & 59,4  & 75,4  \\
+19:00 & 160 & 204,0  & 204,0  & 293,0 & 297,8 & 280,9 & -6,5  & -5,6  \\
+20:00 & 0   & 204,0  & 204,0  & 293,0 & 281,0 & 280,9 & -6,2  & -5,6  \\
+21:00 & 0   & 204,0  & 204,0  & 296,2 & 281,6 & 283,8 & -6,4  & -5,7  \\
+22:00 & 0   & 204,0  & 204,0  & 295,3 & 282,4 & 282,9 & -6,4  & -5,7  \\
+23:00 & 0   & 204,0  & 204,0  & 291,1 & 279,1 & 279,1 & -6,1  & -5,6 
+\end{tabular}%
+}
+\end{table}
 
 
 \section{Aplicación para el análisis paramétrico}
