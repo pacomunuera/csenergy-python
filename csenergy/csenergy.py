@@ -1003,8 +1003,6 @@ class SCA(object):
         self.status = 'focused'
         self.tracking_angle = 0.0
         self.parameters = dict(settings)
-        self.surface_tilt = 0.0
-        self.surface_azimuth = 180.0
 
 
     def get_solar_fraction(self):

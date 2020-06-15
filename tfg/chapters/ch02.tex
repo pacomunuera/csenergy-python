@@ -194,7 +194,11 @@ El Modelo de Primer Orden presenta la ventaja de que el cálculo de \(\eta(x^{*}
 Si se desarrolla por Taylor la funcion exponencial del Modelo de Primer Orden, se trunca por el segundo término y se sustituye \(\dot q''_{abs}\) por su expresión en función de \(DNI\) se obtiene la ec.\(\eqref{eq:modelosimplificado}\) para el cálculo del rendimiento total en el receptor mediante el Modelo Simplificado:
 
 \begin{equation}
-    \eta_{T} = F'_{crit} \cdot \left[1 - \frac{\dot q''_{crit}}{\dot q''_{abs}}\right] = \frac{F'_{crit}}{Cg} \cdot \left[Cg \cdot IAM \cdot cos(\theta) \cdot \eta_{opt,pico} \cdot \eta_{sombras} \cdot \eta_{bordes} - \frac{h_{ext}\cdot (\bar{T}_{f}-\bar{T}_{ext})}{DNI} - \frac{\sigma \cdot \varepsilon_{ext}\cdot(\bar{T}^{4}_{f}-\bar{T}^{4}_{ext})}{DNI}\right] 
+\begin{split}
+\eta_{T}	 = & F'_{crit} \cdot \left[1 - \frac{\dot q''_{crit}}{\dot q''_{abs}}\right]  \\
+ 		 = & \frac{F'_{crit}}{Cg} \cdot \left[Cg \cdot IAM \cdot cos(\theta) \cdot \eta_{opt,pico} \cdot \eta_{sombras} \cdot \eta_{bordes}\right. - \frac{h_{ext}\cdot (\bar{T}_{f}-T_{ext})}{DNI} \\
+& \left. - \frac{\sigma \cdot \varepsilon_{ext}\cdot(\bar{T}^{4}_{f}-T^{4}_{ext})}{DNI}\right] 
+\end{split}
     \label{eq:modelosimplificado}
 \end{equation}
 

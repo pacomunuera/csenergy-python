@@ -7,11 +7,11 @@
   "fastmode": true,
   "filename": "2007 IPH LOOP TEMP.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2007/01/01 00:00",
-  "last_date": "2007/12/31 23:00"
+  "first_date": "2007/03/01 00:00",
+  "last_date": "2007/03/15 23:00"
  },
  "model": {
-  "name": "Barbero4thOrder",
+  "name": "BarberoSimplified",
   "max_err_t": 0.1,
   "max_err_tro": 0.1,
   "max_err_pr": 0.01

@@ -14,9 +14,9 @@ Por todas estas razones, el modelado mediante POO resulta muy interesante para l
 
 En los siguientes apartados iremos describiendo el campo solar desde el punto de vista de su comportamiento físico, los subsistemas que lo componen y definiremos las Clases que se deben programar para modelar cada uno de estos subsistemas. Pero en primer lugar introduciremos alguna terminología.
 
-Se denomina HCE a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro, forman la tubería sobre la que se concentra la radiación solar. Estos tubos vienen preensamblados en grupos 3 para acelerar el proceso de construcción, de tal forma que pueden colocarse sobre una sección de concentrador denominada SCE (Solar Collector Element) de unos 12 m de longitud.
+Se denomina HCE a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro, forman la tubería sobre la que se concentra la radiación solar. Los HCE se unen mediante soldadura en grupos de 3 o 4 y se montan sobre unidades estructurales denominadas SCE (Solar Collector Element).  
 
-Un conjunto de SCE que se mueven solidariamente entre ellos pero con capacidad de movmiennto independiente de otro conjunto de SCEs se denomina SCA (Solar Collector Assembly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
+Un conjunto de SCE que se mueven solidariamente entre ellos pero con capacidad de movmiento independiente de otro conjunto de SCEs se denomina SCA (Solar Collector Assembly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
 
 \begin{verbatim}
 FIGURA LAZO - SCA
@@ -391,7 +391,7 @@ En las siguientes figuras pueden verse los diferentes parametros del Dowtherm-A 
 \label{fig:curvatemperatura}
 \end{figure}
 
-Para el caso del Dowtherm-A se han obtenido los coeficientes de los polinómios que caracterizan cada parámetro a partir de \cite{1022085/C5UIUT2V} y se han contrastado las curvas con los datos ofrecidos en \cite{1022085/LB9BTEXK}. En el caso de la viscosidad cinemática se ha detectado que el polinomio de 8º grado que se optiene con los coeficientes de la primera referencia presenta una gran desviación y crecimiento asintótico para temperaturas ligeramente superiores a la máxima de operación del fluido. Con el fin de poder flexibilizar el proceso de cálculo y que no se produzcan desbordamientos se ha ajustado un nuevo polinomio tras extender los datos de la viscosidad dinámica hasta unos 450 °C aproximadamente según la tendencia observada en el último tramo de la curva \(\mu(T)\). De esta forma seobtiene un nuevo polinomio, con mejor comportammiento en este rango extendido.
+Para el caso del Dowtherm-A se han obtenido los coeficientes de los polinómios que caracterizan cada parámetro a partir de \cite{richardl.mooreImplementationDOWTHERMProperties2010} y se han contrastado las curvas con los datos ofrecidos en \cite{machadoProductTechnicalData}. En el caso de la viscosidad cinemática se ha detectado que el polinomio de 8º grado que se optiene con los coeficientes de la primera referencia presenta una gran desviación y crecimiento asintótico para temperaturas ligeramente superiores a la máxima de operación del fluido. Con el fin de poder flexibilizar el proceso de cálculo y que no se produzcan desbordamientos se ha ajustado un nuevo polinomio tras extender los datos de la viscosidad dinámica hasta unos 450 °C aproximadamente según la tendencia observada en el último tramo de la curva \(\mu(T)\). De esta forma seobtiene un nuevo polinomio, con mejor comportammiento en este rango extendido.
 
 El mismo procedimiento se ha empleado para obtener los polinomios característicos del fluido Therminol VP-1, aunque en este caso los polinomios se han ajustado a partir de una lista de valores sacada de la librería CoolProp. Pese a que el programa de simulación permite que durante el tiempo de ejecución se obtengan los parámetros citados a través de esta librería, existe una limitación debido al rígido margen de temperaturas con el que esta librería trabaja para cada fluído y esto
 provoca que para valores de temperatura ligeramente superiores al rango de operación ofrecido por fabricante no se devuelva ningún valor. Esto resulta en problemas en tiempo de ejecución si algún lazo alcanza una temperatura superior a los 397°C (398°C en el caso de Syltherm 800) . Aunque superar esta temperatura no es recomendable, es algo que puntualmente ocurre durante la operación de la planta. Además, una forma calcular la energía desaprovechada por desenfoque sería a partir de la temperatura que hubiera alcanzado el lazo de no haberse producido el desenfoque y calculando posteriormente su entalpía. Esta aproximación, que sería imposíble en la vida real debido a la degradación del HTF e incluso al daño del propio sistema por las sobrepresiones que se producirían, facilita el cálculo de la energía desaprovechada en cada  momento. Se ha supuesto que las curvas de los parámetros se mantienen bien ajustadas siempre y cuando la sobretemperatura alcanzada no sea excesiva (en las simulaciones realizadas no se ha superado más del 10\% de la temperatura máxima de operación recomendada por el fabricante). Por estos motivos, para este trabajo se han empleado siempre los valores de los parámetros obtenidos a partir de los polinomios y no de CoolProp.
@@ -565,30 +565,28 @@ La versión de SAM utilizada ha sido la \emph{''2020.2.29, 64 bit, updated to re
 
 Los SCA, modelo SenerTrough I diseñado por Sener, se han parametrizado de la siguiente manera a partir del modelo EuroTrough ET150:
 
-\begin{itemize}[itemsep=2pt,parsep=2pt]
-\item
-  Longitud: 148,5 m.
-\item
-  Apertura: 5,77 m.
-\item
-  Distancia Focal: 2,1 m.
-\item
-  Coeficientes del \(IAM\): \(F_{0}=1\), \(F_{1}=0,0506\),
-  \(F_{2}=-0,1763\).
-\item
-  Precisión del seguidor: 0,99.
-\item
-  Precisión geométrica: 0,98.
-\item
-  Disponibilidad: 0,99.
-\item
-  Reflectividad: 0,935.
-\item
-  Limpieza: 0,98.
-\end{itemize}
+\begin{table}[]
+\centering
+\caption{Configuración del SCA modelo SenerTrough I de Sener}
+\label{tab:configuracionSCA}
+\begin{tabular}{lc}
+Parámetro & Valor \\ \hline
+Longitud &  148,5  (m) \\
+Apertura &  5,77  (m) \\
+Distancia Focal & 2,1 (m) \\
+Coeficiente $F_{0}$ del  IAM  &  1 \\
+Coeficiente $F_{1}$ del  IAM  &  0,0506 \\
+Coeficiente $F_{2}$ del  IAM  &  -0,1763 \\
+Precisión del seguidor &  0,99 \\
+Precisión geométrica &  0,98 \\
+Disponibilidad &  0,99 \\
+Reflectividad &  0,935 \\
+Limpieza &  0,98
+\end{tabular}
+\end{table}
 
 
-En la Fig.\ref{fig:captura03} puede verse una captura de pantalla de la pestaña de configuración del tipo de SCA en SAM. En la Fig.\ref{fig:capture04}, puede verse la pestaña correspondiente a la configuración de HCE. En este caso el modelo empleado es el UVAC 3, de Solel, con los siguientes parámetros:
+En la Fig.\ref{fig:captura03} puede verse una captura de pantalla de la pestaña de configuración del tipo de SCA en SAM. En la Fig.\ref{fig:capture04}, puede verse la pestaña correspondiente a la configuración de HCE. En este caso el modelo empleado es el UVAC 3, de Solel, con los parámetros que se indican en la \ref{tab:configuracionHCE}.
 
 
 \begin{figure}
@@ -604,36 +602,28 @@ En la Fig.\ref{fig:captura03} puede verse una captura de pantalla de la pestaña
 \end{figure}
 
 
-\begin{itemize}[itemsep=2pt,parsep=2pt]
-\item
-  Logintud: 4,05 m.
-\item
-  Factor de longitud efectiva, \(\gamma_L\): 0,96.
-\item
-  Factor de interceptación geométrica, \(\gamma_g\): 0,96.
-\item
-  Diámetro interior del tubo absorbedor, \(d_{ri}\): 0,066 m.
-\item
-  Diámetro exterior del tubo absorbedor, \(d_{ro}\)r: 0,070 m.
-\item
-  Diámetro interior de la envolvente de vídrio, \(d_{gi}\): 0,115 (m)
-\item
-  Diámetro exterior de la envolvente de vídrio, \(d_{go}\): 0,121 (m)
-\item
-  Rugosidad interior: 0,000045 m.
-\item
-  Factor de emisividad, \(A_1\): 0,000206.
-\item
-  Factor de emisividad, \(A_0\): 0,0430.
-\item
-  Absortibidad solar del receptor: 0,96.
-\item
-  Transmisividad del vídrio: 0,96.
-\item
-  Valor mínimo del número de Reynolds recomendado: 2400.
-\item
-  Distancia de separación entre brazos de soportación: 4,05 m.
-\end{itemize}
+\begin{table}[]
+\centering
+\caption{Configuración del HCE modelo UVAC 3 de Solel}
+\label{tab:configuracionHCE}
+\begin{tabular}{lc}
+Parámetro & Valor \\ \hline
+Logintud & 4,05 (m) \\
+Factor de longitud efectiva, \(\gamma_L\) &  0,96 \\
+Factor de interceptación geométrica, \(\gamma_g\) & 0,96 \\
+Diámetro interior del tubo absorbedor, \(d_{ri}\) & 0,066 (m) \\
+Diámetro exterior del tubo absorbedor, \(d_{ro}\)r &  0,070 (m) \\ 
+Diámetro interior de la envolvente de vídrio, \(d_{gi}\) &  0,115 (m) \\
+Diámetro exterior de la envolvente de vídrio, \(d_{go}\) &  0,121 (m) \\
+Rugosidad interior &  0,000045 (m)  \\
+Factor de emisividad, \(A_1\) &  0,000206 \\
+Factor de emisividad, \(A_0\) &  0,0430 \\
+Absortibidad solar del receptor &  0,96 \\
+Transmisividad del vídrio &  0,96 \\
+Valor mínimo del número de Reynolds recomendado &  2300 \\
+Distancia de separación entre brazos de soportación &  4,05 (m) 
+\end{tabular}
+\end{table}
 
 Se ha considerado que todos los HCE  del campo se encuentran en buen estado de vacío.
 
@@ -682,18 +672,22 @@ Una vez que tenemos configurado SAM y nuestro programa de la misma manera ejecut
 
 En el campo solar de 120 lazos, con una superfice total de captación de 392400 $m^2$ la energía anual incidente es de 792,1 GWh, que se ve reducida a 686,4 GWh debido a que el ángulo de incidencia es distinto de cero (efecto coseno).
 
-En la Tabla \ref{tab:energia_anual} se muestran los valores  calculados por SAM y los que obtenemos con nuestro código. SAM denonima \''Receiver thermal power incident\'' a la radiación solar que finalmente alcanza al fluido caloportador, es decir, la radaciación solar incidente menos las pérdidas ópticas. Este valor es equivalente a lo que nosotros hemos venido denominando \''potencia absorbida, $\cdot q_{abs}$\''. 
+En la Tabla \ref{tab:energia_anual} se muestran los valores  calculados por SAM y los que obtenemos con nuestro código. SAM denonima ''Receiver thermal power incident'' a la radiación solar que finalmente alcanza al fluido caloportador, es decir, la radaciación solar incidente menos las pérdidas ópticas. Este valor es equivalente a lo que nosotros hemos venido denominando ''potencia absorbida, $\cdot q_{abs}$''. 
 
-\begin{longtable}[]{ccc}
-Valores anuales  & SAM & Código Python\tabularnewline
-\endhead
-Potencia absorbida (GWh/año)	& 477,0		& 491,2			\tabularnewline
-Rencimiento óptico 			& 0,6948 	& 0,7156		\tabularnewline
-Pérdidas térmicas (GWh/año)	& 63,5		& 73,4			\tabularnewline
-Rendimiento térmico			& 0,8668	& 0,8505		\tabularnewline
-Energía evacuada				& 411,6		& 418,8        	\tabularnewline
-\end{longtable}
-
+\begin{table}[]
+\centering
+\caption{Resultados globales anuales para las simulaciones con SAM y Python}
+\label{tab:generacion_anual}
+\begin{tabular}{lcc}
+Valores anuales  & SAM & Código Python \\ \hline
+Potencia incidente (GWh/año)	& 686		& 686			\\ 
+Potencia absorbida (GWh/año)	& 477		& 491			\\ 
+Rencimiento óptico 			& 0,695	 	& 0,716			\\ 
+Pérdidas térmicas (GWh/año)	& 64		& 73			\\ 
+Rendimiento térmico			& 0,866		& 0,851			\\ 
+Potencia térmica (GWh/año) 	& 413		& 418	        	\\ 
+\end{tabular}
+\end{table}
 
 Comprobamos que existe una ligera desviación en el rendimiento óptico anual (2,9\%) y en el rendimento térmico anual (1,9\%). El origen de esta desviación se encuentra en la dificultad de adaptar exactametne la configuracón de nuestra simulación a la de SAM pues no todos los parámetros son equivalentes en ambas casos. Por otro lado, por tratarse de valores anuales, existe una acumulación de pequeñas desviaciones que se producen entre ambas simulaciones, principalmente a primera y última hora del día  y durante jornadas de gran inestabilidad en la radiación. 
 
@@ -717,11 +711,9 @@ Nos fijaremos ahora en el comportamiento para varios días del año. Hemos selec
 \label{fig:177potencia}
 \end{figure}
 
-% Please add the following required packages to your document preamble:
-% \usepackage{graphicx}
 \begin{table}[]
 \centering
-\caption{}
+\caption{Resultados de las simulaciones (S: SAM, P: Python) para el día 17 de julio de 2009. Condiciones estables}
 \label{tab:datos_17_julio}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{ccccccccc}
@@ -783,7 +775,7 @@ Hora &
 
 \begin{table}[]
 \centering
-\caption{}
+\caption{Resultados de las simulaciones (S: SAM, P: Python) para el día 17 de junio de 2009. Condiciones inestables}
 \label{tab:datos_17_junio}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{ccccccccc}
@@ -857,7 +849,6 @@ $DNI (W/m^2)$ & Schott PTR70 & Schott PTR70 2008 & Solel UVAC 2 & Solel UVAC 3 &
 }
 \end{table}
 
-
 En la \ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento con el aumento de $DNI$.  Se aprecia como los  modelos de última generación presentan un buen comportamiento incluso con bajas radiaciones.
 
 \begin{figure}[!h]
@@ -865,7 +856,6 @@ En la \ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento 
 \caption{Rendimiento térmico en función de DNI para diferentes modelos de HCE} 
 \label{fig:test1a}
 \end{figure}
-
 
 \subsection{Rendimiento del HCE en función de la temperatura de entrada}
 
@@ -907,6 +897,188 @@ $T_{in} (\circ C)$ & Schott PTR70 & Schott PTR70 2008 & Solel UVAC 2 & Solel UVA
 \caption{Rendimiento térmico en función de la temperatura de entrada del HTF para diferentes modelos de HCE} 
 \label{fig:test2a}
 \end{figure}
+
+
+
+\subsection{Simulación con los diferentes modelos}
+
+Comparamos ahora el resultado de simular con los tres modelos: modelo de 4º Orden, modelo de $1^{er}$ Orden y modelo simplificado. En las figuras puede verse el restultado para un día del año (se ha tomado el día 2 de marzo por tener buenas condiciones de radiación y estabilidad). 
+
+\begin{table}[]
+\centering
+\caption{Temperaturas obtenidas en la simulación para cada modelo}
+\label{tab:temperaturas_modelos}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+date &
+  DNI &
+  Temperatura de Entrada &
+  Temperatura de Salida (SAM) &
+  Temperatura de Salida (4º Orden) &
+  Temperatura de Salida (1er Orden) &
+  Temperatura de Salida (Simplificado) \\ \hline
+02/03/2007 0:00  & 0   & 277 & 266 & 266 & 266 & 261 \\ 
+02/03/2007 1:00  & 0   & 273 & 262 & 262 & 262 & 258 \\
+02/03/2007 2:00  & 0   & 269 & 259 & 258 & 258 & 254 \\
+02/03/2007 3:00  & 0   & 265 & 255 & 255 & 255 & 251 \\
+02/03/2007 4:00  & 0   & 262 & 252 & 251 & 251 & 248 \\
+02/03/2007 5:00  & 0   & 258 & 249 & 248 & 248 & 245 \\
+02/03/2007 6:00  & 0   & 255 & 246 & 245 & 245 & 242 \\
+02/03/2007 7:00  & 234 & 252 & 263 & 243 & 243 & 240 \\
+02/03/2007 8:00  & 596 & 272 & 377 & 393 & 393 & 393 \\
+02/03/2007 9:00  & 724 & 292 & 392 & 393 & 393 & 393 \\
+02/03/2007 10:00 & 806 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 11:00 & 859 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 12:00 & 876 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 13:00 & 867 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 14:00 & 846 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 15:00 & 781 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 16:00 & 663 & 293 & 393 & 393 & 393 & 393 \\
+02/03/2007 17:00 & 420 & 293 & 313 & 281 & 281 & 275 \\
+02/03/2007 18:00 & 1   & 293 & 284 & 281 & 281 & 275 \\
+02/03/2007 19:00 & 0   & 298 & 282 & 285 & 285 & 280 \\
+02/03/2007 20:00 & 0   & 298 & 284 & 285 & 285 & 279 \\
+02/03/2007 21:00 & 0   & 293 & 281 & 281 & 281 & 276 \\
+02/03/2007 22:00 & 0   & 289 & 277 & 277 & 277 & 272 \\
+02/03/2007 23:00 & 0   & 284 & 273 & 273 & 273 & 268
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/temperaturas_modelos.png}
+\caption{Temperaturas de salida obtenidas con los tres modelos} 
+\label{fig:temperturas_modelos}
+\end{figure}
+
+
+
+\begin{table}[]
+\centering
+\caption{Caudales obtenidos en la simulación para cada modelo}
+\label{tab:caudales_modelos}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+Fecha            & DNI & Caudal (SAM) & Caudal (4º Orden) & Caudal (1er Orden) & Caudal (Simplificado) \\ \hline
+02/03/2007 0:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 1:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 2:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 3:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 4:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 5:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 6:00  & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 7:00  & 234 & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 8:00  & 596 & 530          & 514               & 516                & 518                   \\ 
+02/03/2007 9:00  & 724 & 660          & 669               & 670                & 672                   \\ 
+02/03/2007 10:00 & 806 & 648          & 661               & 663                & 664                   \\ 
+02/03/2007 11:00 & 859 & 614          & 630               & 632                & 634                   \\ 
+02/03/2007 12:00 & 876 & 599          & 617               & 619                & 621                   \\ 
+02/03/2007 13:00 & 867 & 632          & 648               & 650                & 651                   \\ 
+02/03/2007 14:00 & 846 & 699          & 714               & 716                & 718                   \\ 
+02/03/2007 15:00 & 781 & 736          & 750               & 752                & 753                   \\ 
+02/03/2007 16:00 & 663 & 599          & 620               & 622                & 624                   \\ 
+02/03/2007 17:00 & 420 & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 18:00 & 1   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 19:00 & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 20:00 & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 21:00 & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 22:00 & 0   & 204          & 204               & 204                & 204                   \\ 
+02/03/2007 23:00 & 0   & 204          & 204               & 204                & 204                   
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/caudales_modelos.png}
+\caption{Caudales de salida obtenidos con los tres modelos} 
+\label{fig:caudales_modelos}
+\end{figure}
+
+
+\begin{table}[]
+\centering
+\caption{Potencia calculada en la simulación de cada modelo}
+\label{tab:potencias_modelos}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+date & DNI & Potencia Térmica (SAM) & Potencia Térmica (4º Orden) & Potencia Térmica (1er Orden) & Potencia Térmica (Simplificado) \\ \hline
+02/03/2007 0:00  & 0   & -4,9  & -5,0  & -5,0  & -6,9  \\
+02/03/2007 1:00  & 0   & -4,7  & -4,9  & -4,9  & -6,7  \\
+02/03/2007 2:00  & 0   & -4,5  & -4,8  & -4,8  & -6,5  \\
+02/03/2007 3:00  & 0   & -4,4  & -4,6  & -4,6  & -6,3  \\
+02/03/2007 4:00  & 0   & -4,2  & -4,5  & -4,5  & -6,0  \\
+02/03/2007 5:00  & 0   & -4,1  & -4,4  & -4,4  & -5,9  \\
+02/03/2007 6:00  & 0   & -3,9  & -4,3  & -4,3  & -5,7  \\
+02/03/2007 7:00  & 234 & 4,7   & -4,2  & -4,2  & -5,6  \\
+02/03/2007 8:00  & 596 & 133,1 & 149,5 & 150,1 & 150,5 \\
+02/03/2007 9:00  & 724 & 161,6 & 164,6 & 165,0 & 165,4 \\
+02/03/2007 10:00 & 806 & 157,7 & 161,2 & 161,6 & 162,1 \\
+02/03/2007 11:00 & 859 & 149,2 & 153,6 & 154,1 & 154,5 \\
+02/03/2007 12:00 & 876 & 145,5 & 150,5 & 150,9 & 151,3 \\
+02/03/2007 13:00 & 867 & 153,4 & 157,9 & 158,3 & 158,8 \\
+02/03/2007 14:00 & 846 & 170,2 & 174,2 & 174,6 & 175,0 \\
+02/03/2007 15:00 & 781 & 179,3 & 182,7 & 183,2 & 183,6 \\
+02/03/2007 16:00 & 663 & 145,6 & 151,1 & 151,6 & 152,0 \\
+02/03/2007 17:00 & 420 & 9,7   & -5,7  & -5,7  & -8,2  \\
+02/03/2007 18:00 & 1   & -4,4  & -5,7  & -5,7  & -8,1  \\
+02/03/2007 19:00 & 0   & -7,1  & -5,9  & -5,9  & -8,4  \\
+02/03/2007 20:00 & 0   & -6,3  & -5,9  & -5,9  & -8,4  \\
+02/03/2007 21:00 & 0   & -5,8  & -5,7  & -5,7  & -8,1  \\
+02/03/2007 22:00 & 0   & -5,5  & -5,5  & -5,5  & -7,8  \\
+02/03/2007 23:00 & 0   & -5,3  & -5,4  & -5,4  & -7,5 
+\end{tabular}%
+}
+\end{table}
+
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/potencias_modelos.png}
+\caption{Potencia térmica obtenida con cada uno de los tres modelos} 
+\label{fig:potencia_modelos}
+\end{figure}
+
+
+\begin{table}[]
+\centering
+\caption{Rendimientos obtenidos en la simulación de cada modelo}
+\label{tab:rendimientos_modelos}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+date & DNI & Rendimento Térmico (4º Orden) & Rendimiento Térmico (1er Orden) & Rendimento Térmico (Simplificado) \\ \hline
+02/03/2007 0:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 1:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 2:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 3:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 4:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 5:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 6:00  & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 7:00  & 234 & 0,000 & 0,000 & 0,000 \\
+02/03/2007 8:00  & 596 & 0,912 & 0,917 & 0,920 \\
+02/03/2007 9:00  & 724 & 0,916 & 0,920 & 0,922 \\
+02/03/2007 10:00 & 806 & 0,914 & 0,918 & 0,920 \\
+02/03/2007 11:00 & 859 & 0,910 & 0,914 & 0,917 \\
+02/03/2007 12:00 & 876 & 0,909 & 0,912 & 0,915 \\
+02/03/2007 13:00 & 867 & 0,913 & 0,916 & 0,919 \\
+02/03/2007 14:00 & 846 & 0,920 & 0,923 & 0,926 \\
+02/03/2007 15:00 & 781 & 0,923 & 0,926 & 0,928 \\
+02/03/2007 16:00 & 663 & 0,907 & 0,911 & 0,914 \\
+02/03/2007 17:00 & 420 & 0,000 & 0,000 & 0,000 \\
+02/03/2007 18:00 & 1   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 19:00 & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 20:00 & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 21:00 & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 22:00 & 0   & 0,000 & 0,000 & 0,000 \\
+02/03/2007 23:00 & 0   & 0,000 & 0,000 & 0,000
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure}
+\includegraphics[scale=0.8]{images/rendimientos_modelos.png}
+\caption{Rendimiento térmico para cada uno de los tres modelos} 
+\label{fig:rendimientos_modelos}
+\end{figure}
+
 
 
 

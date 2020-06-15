@@ -2,21 +2,19 @@
 \label{introduccion}
 
 \section{Objetivo}
-El propósito principal de este Trabajo Final de Grado (TFG) es profundizar en el conocimiento del funcionamiento de un campo solar de concentradores cilindroparabólicos (CCP) mediante el desarrollo de una herramienta de simulación programada en Python 3. Para ello, se ha partido del modelo teórico desarrolado en su Tesis Doctoral por el profesor de la Universidad Nacional de Educación a Distancia (UNED), el Dr.~Rubén Barbero Fresno y se ha empleado una metodología basada en el paradigma de la programación orientada a objetos (POO). El desarrolo de este trabajo ha supuesto un reto personal por la necesidad de adquirir habilidades en el manejo de diferentes herramientas antes desconocidas para mí, como el lenguaje de programación Python 3 y sus diferentes librerías para el cálculo científico (Numpy) y el tratamiento de datos (Pandas). Finalmente, todo el código se encuentra publicado y accesible a través de GitHub y se puede interactuar con la versión final del código de simulación a través de un Notebook Jupyther.
+El propósito principal de este Trabajo Final de Grado (TFG) es profundizar en el conocimiento del funcionamiento de un campo solar de concentradores cilindroparabólicos (CCP) mediante el desarrollo de una herramienta de simulación programada en Python 3. Para ello, se ha partido del modelo teórico desarrolado en su Tesis Doctoral por el profesor de la Universidad Nacional de Educación a Distancia (UNED), el Dr.~Rubén Barbero Fresno y se ha empleado una metodología basada en el paradigma de la programación orientada a objetos (POO). El desarrolo de este trabajo ha supuesto un reto personal por la necesidad de adquirir habilidades en el manejo de diferentes herramientas antes desconocidas para mí, como el lenguaje de programación Python 3 y sus diferentes librerías para el cálculo científico (Numpy) y el tratamiento de datos (Pandas). Finalmente, todo el código se encuentra publicado y accesible a través de GitHub y se puede interactuar con la versión final del código de simulación a través de un Notebook Jupyter.
 
 Los resutaldos obtenidos son compatibles con los datos de generación de un campo solar real dentro de las limitaciones que los diferentes modos de operación y eventos impredecibles (paradas de planta para mantenimiento, disparos por avería, etc\ldots{}) introducen en el proceso. En este proyecto solo se aborda la simulación del sistema del campo solar, el único sistema dentro del alcance del modelo teórico de partida. Para la simulación de planta sería necesario el desarrollo de
 modelos para gran número de sistemas como por ejemplo, los generadores de vapor, almacenamiento térmico, turbina, sistemas auxiliares de bombeo, sistemas de tratamiento de agua, torre de refrigeración, etc\ldots{} No obstante, la metodología seguida permite que en el futuro este proyecto pueda ser ampliado de forma sistemática con la incoroporación de nuevas clases de objetos que aprovechen los métodos de entrada y salida ya programados para interactuar con ellos. En todo caso, se han empleado valores de rendimientos estimados para los principales subsistemas de planta con el fin de ofrecer una estimación de la energía eléctrica finalmente vertida a la red.
 
 \section{Estructura de la memoria}
-Esta memoria se estructura en 6 capítulos y un anexo con el código fuente.
+Esta memoria se estructura en 5 capítulos y un anexo con el código fuente.
 
 En este primer capítulo se describen los objetivos del TFG y se ofrece una introducción a las características de los concentradores cilindroparabólicos. 
 El segúndo capítulo presenta el modelo teórico de partida y se detallan las ecuaciones que describen los sistemas que más adelante serán modelados.
-El tercer capítulo aborda el modelado de los diferentes sistemas necesarios para la caracterización del campo solar.
-En el cuarto capítulo se procede a la validación por comparación con otra herramienta de simulación y se presentan los resultados de algunos análisis paramétricos.
-En el quinto capítulo se acomete la simulación ajustada a los datos de una planta real y se comparan los resultados de la simulación con los datos disponibles de dicha planta.
-
-Finalmente, el sexto capítulo se dedica a presentar conclusiones y se realizan algunas propuestas de desarrollo futuro.
+El tercer capítulo aborda el modelado de los diferentes sistemas necesarios para la caracterización del campo solar. Se procede a la validación por comparación con otra herramienta de simulación y se presentan los resultados de algunos análisis paramétricos.
+En el cuarto capítulo se aborda una análisis del funcionamiento de una central solar termoeléctrica y se contratastan los resultados de la simulación del campo solar con los datos reales disponibles.
+Finalmente, en el quinto capítulo se presentan algunas conclusiones y propuestas de desarrollo futuro.
 
 \section{Concentradores cilindroparabólicos}
 
