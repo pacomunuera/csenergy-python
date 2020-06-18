@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['csenergy.py', 'test_3_HCES_SCA.py', 'saved_configurations\\test_3.json', 'scripts\\script_hce.py', '__init__.py', 'merge_iph.py', 'saved_configurations\\TEST_2007_IPH_VP1.json']
+recent_files = ['csenergy.py', 'test_3_HCES_SCA.py', 'saved_configurations\\test_3.json', 'scripts\\script_hce.py', '__init__.py', 'merge_iph.py', 'test_4_qabs.py', 'saved_configurations\\test_4.json', 'saved_configurations\\TEST_2007_IPH_VP1.json']
 

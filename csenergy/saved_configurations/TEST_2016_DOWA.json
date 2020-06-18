@@ -24,7 +24,7 @@
  },
  "loop": {
   "scas": 4,
-  "hces": 2,
+  "hces": 36,
   "rated_tin": 566.15,
   "rated_tout": 666.15,
   "rated_pin": 2000000.0,
@@ -47,13 +47,13 @@
   "Track Twist": 0.99,
   "Geom.Accuracy": 0.98,
   "Reflectance": 0.935,
-  "Cleanliness": 0.96,
+  "Cleanliness": 0.9375,
   "Factor": 1.0,
   "Availability": 0.99
  },
  "HCE": {
   "Name": "Solel UVAC 3",
-  "Length": 72.9,
+  "Length": 4.05,
   "Bellows ratio": 0.971,
   "Shield shading": 1.0,
   "Absorber tube inner diameter": 0.066,

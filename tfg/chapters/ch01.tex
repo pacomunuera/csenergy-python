@@ -18,13 +18,70 @@ Finalmente, en el quinto capítulo se presentan algunas conclusiones y propuesta
 
 \section{Concentradores cilindroparabólicos}
 
-Existen principalmente cuatro tecnologías para el aprovechamiento de la radiación solar directa en sistemas térmicos: concentrador cilindro parabólico CCP, central de torre, concentrador frestnel y disco parabólico. La tecnología de central de torre y la de CCP son las que cuentan en la actualidad con una mayor madurez y gran número de centrales en operación y en construcción en todo el mundo \cite{islamComprehensiveReviewStateoftheart2018}. En España actualmente hay medio centenar de centrales CCP en operación \cite{Protermosolar}, alguna de ellas desde hace más de una década, quedando probado que el estado del arte y la madurez de la tecnología garantizan el correcto funcionamiento del sistema. Este tipo de sistema presenta un alto grado de replicabilidad, modularidad y aprovechamiento del terreno. Desde el punto de vista económico, esta tecnología también resulta muy favorable ya que los costes de inversión y operación han sido comercialmente probados, al menos, para los sistemas termoeléctricos.
+Existen principalmente cuatro tecnologías para el aprovechamiento de la radiación solar directa en sistemas térmicos: concentrador cilindro-parabólico CCP, central de torre, concentrador Fresnel y disco parabólico. La tecnología de central de torre y la de CCP son las que cuentan en la actualidad con una mayor madurez y gran número de centrales en operación y en construcción en todo el mundo \cite{islamComprehensiveReviewStateoftheart2018}. En España actualmente hay medio centenar de centrales CCP en operación \cite{Protermosolar}, alguna de ellas desde hace más de una década, quedando probado que el estado del arte y la madurez de la tecnología garantizan el correcto funcionamiento del sistema. Este tipo de sistema presenta un alto grado de replicabilidad, modularidad y aprovechamiento del terreno. Desde el punto de vista económico, esta tecnología también resulta muy favorable ya que los costes de inversión y operación han sido comercialmente probados, al menos, para los sistemas termoeléctricos.
+
+\begin{figure}
+ \centering
+  \subfloat[Central Solar de Torre. Fuente \cite{Protermosolar}]{
+   \label{f:torre}
+    \includegraphics[width=0.5\textwidth]{images/torre.png}}
+  \subfloat[Concentradores de Disco Parabólico. Fuente \cite{Protermosolar}]{
+   \label{f:disco}
+    \includegraphics[width=0.5\textwidth]{images/disco.png}}
+  \\
+   \subfloat[Colector Cilindro-Parabólico. Fuente: Propia]{
+   \label{f:ccp}
+    \includegraphics[width=0.5\textwidth]{images/ccp.png}}
+   \subfloat[Concentrador de tipo Fresnel. Fuente \cite{Protermosolar}]{
+   \label{f:fresnel}
+    \includegraphics[width=0.5\textwidth]{images/fresnel.png}}
+ \caption{Tecnologías solares de concentración}
+ \label{f:tecnologias_concentracion}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/torre.png}
+\caption{Central Solar de Torre Central. Fuente \cite{Protermosolar}} 
+\label{fig:torre}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/ccp.png}
+\caption{Colector Cilindro-Parabólico. Fuente: Propia} 
+\label{fig:ccp}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/fresnel.png}
+\caption{Concentrador de tipo Fresnel. Fuente \cite{Protermosolar}} 
+\label{fig:fresnel}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/disco.png}
+\caption{Concentradores de Disco Parabólico. Fuente \cite{Protermosolar}} 
+\label{fig:disco}
+\end{figure}
 
 En un CCP pueden distinguirse cuatro elementos principales: el reflector o concentrador, el tubo absorbedor, el sistema de seguimiento y el fluido caloportador.
 
 \subsection{El concentrador cilindroparabólico}
 \label{concentrador}
-Un CCP consiste en una superfice a modo canal  de sección parabóica que refleja la radiación solar directa concentrándola sobre un tubo absorbedor colocado en la línea focal del paraboloide. Dentro de los diferentes sistemas de concentración solar pertenece al grupo de los concentradores lineales, al igual que los sistemas de concentración tipo Fresnel y al contrario que los sistemas de concentración de torre central o de discos parabólicos, en cuyo caso estaríamos hablando de sistemas de concentración puntuales. Por el tubo absorbedor se puede hacer circular algún fluido que se calentará debido a la radiación incidente sobre el tubo.  Se trata de una transformación directa de energía luminosa en energía térmica con una buena eficiencia y que puede alcanzar temperaturas de hasta 675 K. 
+Un CCP consiste en una superfice a modo canal  de sección parabólica que refleja la radiación solar directa concentrándola sobre un tubo absorbedor colocado en la línea focal del paraboloide. Dentro de los diferentes sistemas de concentración solar pertenece al grupo de los concentradores lineales, al igual que los sistemas de concentración tipo Fresnel y al contrario que los sistemas de concentración de torre central o de discos parabólicos, en cuyo caso estaríamos hablando de sistemas de concentración puntuales. Por el tubo absorbedor se puede hacer circular algún fluido que se calentará debido a la radiación incidente sobre el tubo.  Se trata de una transformación directa de energía luminosa en energía térmica con una buena eficiencia y que puede alcanzar temperaturas de hasta 675 K.
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/entrada_salida_lazo2_texto.png}
+\caption{Perspectiva de un lazo completo. Se indica el sentido del recorrido del HTF en el lazo, desde la tubería de entrada hasta la de salida. Fuente: Propia} 
+\label{fig:entrada_salida_lazo}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=0.9\linewidth]{images/perfil_sca_2_texto.png}
+\caption{Vista de perfeil de un SCA. Pueden distinguirse algunos HCEs y los brazos de soporte. Fuente: Propia} 
+\label{fig:perfil_sca}
+\end{figure}
 
 \subsection{El tubo absorbedor o receptor}
 \label{tuboabsorbedor}
@@ -32,38 +89,13 @@ A lo largo del eje focal del concentrador se instala una conducción por la que 
 
 \subsection{El sistema de seguimiento}
 \label{sistemadeseguimiento}
-Para que se produzca la concentración de la radiación solar incidente ésta debe ser perpendicular al eje que pasa por el foco y la base de la parábola. La primera consecuenca es que solo puede aprovecharse plenamente la componente normal de la radiación solar incidente (DNI). Dado que el Sol varía su posición relativa al concentrador continuamente, el conjunto reflector-tubo absorbedor está montado sobre una estructura que pueda girar sobre un eje con el fin de segir la trayectoria solar a lo largo del día. Salvo instalaciones especiales en laboratorios, no se emplean seguidores a dos ejes por la dificultad técnica que acarrearía desarrollar este tipo de estructuras. Las plantas solares cuyo objetivo es maximizar el vertido anual de energía eléctrica a la red cuentan con una orientación de su eje de segumiento Norte-Sur, lo cual lleva a que exista una importante diferencia entre la generación en los meses de verano y los meses de invierno, siendo mayor en los primeros. Si lo que se persigue es obtener una producción más estable a lo largo del año, la orientación más adecuda del eje sería Este-Oeste.
+Para que se produzca la concentración de la radiación solar incidente ésta debe ser perpendicular al eje que pasa por el foco y la base de la parábola. La primera consecuenca es que solo puede aprovecharse plenamente la componente normal de la radiación solar incidente (DNI). Dado que el Sol varía su posición relativa al concentrador continuamente, el conjunto reflector-tubo absorbedor está montado sobre una estructura que pueda girar sobre un eje con el fin de segir la trayectoria solar a lo largo del día. Salvo instalaciones especiales en laboratorios, no se emplean seguidores a dos ejes pues la complejidad de los colectores con movimiento basado en dos ejes es tal que no permite su rentabilidad debido a los costes de mantenimiento. Por tanto, el sistema de seguimiento más empleado consiste en mover la estructura del colector con un grado de libertad en torno a un eje que, en las plantas solares cuyo objetivo es maximizar el vertido anual de energía eléctrica a la red, cuenta con una orientación Norte-Sur, lo cual lleva a que exista una importante diferencia entre la generación en los meses de verano y los meses de invierno, siendo mayor en los primeros. Si lo que se persigue es obtener una producción más estable a lo largo del año, la orientación más adecuda del eje sería Este-Oeste.
 
-El sistema de seguimiento más empleado consiste en mover la estructura del colector con un grado
-de libertad en torno a un eje (ver Figura 6). Se ha demostrado que la complejidad de los colectores
-con movimiento basado en dos ejes es tal que no permite su rentabilidad debido a los costes de
-mantenimiento.
-
-El eje de giro se suele orientar en dirección Norte-Sur o en dirección Este-Oeste (Figura 7). Para
-nuestro dimensionado hemos optado por una orientación Norte-Sur. En caso de tener una demanda
-continuada y estable de potencia a lo largo de todo el año, la orientación Este-Oeste es más
-interesante ya que, pese a que el computo anual de energía térmica producida es menor, la potencia
-térmica útil proporcionada por un colector con esta orientación presenta menores diferencias entre
-invierno y verano. Por otro lado, cuando lo que interesa es producir la mayor cantidad de energía
-posible, por ejemplo en el caso de las centrales productoras de electricidad, resulta más interesante
-la orientación Norte-Sur. En nuestro caso ocurre que tenemos una mayor demanda en verano que en
-invierno, por lo que una orientación Norte-Sur nos proporcionará una buena cobertura de la
-demanda energética a lo largo de todo el año.
 La rotación del colector requiere un mecanismo de accionamiento, eléctrico o hidráulico,
-dependiendo en muchos casos de las dimensiones y el peso de los elementos del colector. Para
-abaratar costes se suele emplear un mismo mecanismo para mover varios módulos.
+dependiendo en muchos casos de las dimensiones y el peso de los elementos del colector. Para abaratar costes se suele emplear un mismo mecanismo para mover varios módulos.
 
-El control del movimiento se puede llevar a cabo de forma autónoma, en el propio colector,
-dotándolo de algún dispositivo para detectar la posición del Sol en el cielo. Otra opción es emplear
-algoritmos matemáticos que calculan la posición del Sol para cada momento del día, en cualquier
-día del año. Una vez calculada la posición solar, se mueve el colector hasta colocarlo correctamente
-orientado. Este método requiere algún sistema para conocer la posición exacta del colector. Lo
-normal es emplear un codificador angular.
-Dado que el colector solar se encuentra en movimiento, las conexiones del tubo absorbedor con las
-tuberías de entrada y salida de éste deben permitir el giro en los puntos de unión. Para esto se
-emplean conexiones flexibles y juntas rotativas combinadas adecuadamente. El coste de estos
-elementos es también elevado por lo que la elección de una configuración adecuada puede suponer
-un importante ahorro de costes en la instalación y el mantenimiento.
+El control del movimiento se puede llevar a cabo de forma autónoma, en el propio colector, dotándolo de algún dispositivo para detectar la posición del Sol en el cielo. Otra opción es emplear algoritmos matemáticos que calculan la posición del Sol para cada momento del día, en cualquier día del año. Una vez calculada la posición solar, se mueve el colector hasta colocarlo correctamente orientado. Este método requiere algún sistema para conocer la posición exacta del colector. Lo normal es emplear un codificador angular.
+Dado que el colector solar se encuentra en movimiento, las conexiones del tubo absorbedor con las tuberías de entrada y salida de éste deben permitir el giro en los puntos de unión. Para esto se emplean conexiones flexibles y juntas rotativas combinadas adecuadamente. El coste de estos elementos es también elevado por lo que la elección de una configuración adecuada puede suponer un importante ahorro de costes en la instalación y el mantenimiento.
 
 \subsection{El fluido caloportador}
 \label{fluidocaloportador}
