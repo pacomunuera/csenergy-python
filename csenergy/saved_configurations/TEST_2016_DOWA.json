@@ -7,8 +7,8 @@
   "fastmode": true,
   "filename": "DATOS PLANTA 2016.csv",
   "filepath": "C:/Users/paco/0_TFG/csenergy/fielddata_files/",
-  "first_date": "2016/03/01 00:00",
-  "last_date": "2016/03/31 23:00"
+  "first_date": "2016/11/01 00:00",
+  "last_date": "2016/12/31 23:00"
  },
  "model": {
   "name": "Barbero4thOrder",
@@ -24,7 +24,7 @@
  },
  "loop": {
   "scas": 4,
-  "hces": 36,
+  "hces": 4,
   "rated_tin": 566.15,
   "rated_tout": 666.15,
   "rated_pin": 2000000.0,
@@ -53,7 +53,7 @@
  },
  "HCE": {
   "Name": "Solel UVAC 3",
-  "Length": 4.05,
+  "Length": 36.45,
   "Bellows ratio": 0.971,
   "Shield shading": 1.0,
   "Absorber tube inner diameter": 0.066,

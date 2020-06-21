@@ -167,7 +167,7 @@ class ModelBarbero4thOrder(Model):
         #  Transmission Units Number, Ec. 3.30 Barbero2016
         NTU = urec * x * L * np.pi * dro / (massflow * cp)
 
-        if qabs > qcrit:
+        if qabs > 1.1 * qcrit:
 
             #  We use Barbero2016's simplified model aproximation
             #  Eq. 3.63 Barbero2016
@@ -2386,7 +2386,7 @@ class SolarFieldSimulation(object):
 
         if self.solarfield.qabs > 0:
             self.datasource.dataframe.at[row[0], 'SF.a.prth'] = \
-                10e6 * self.solarfield.act_pwr / self.solarfield.qabs
+                1e6 * self.solarfield.act_pwr / self.solarfield.qabs
         else:
             self.datasource.dataframe.at[row[0], 'SF.a.prth'] = 0
 
