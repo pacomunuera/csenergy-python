@@ -2386,7 +2386,7 @@ class SolarFieldSimulation(object):
 
         if self.solarfield.qabs > 0:
             self.datasource.dataframe.at[row[0], 'SF.a.prth'] = \
-                1e6 * self.solarfield.act_pwr / self.solarfield.qabs
+                self.solarfield.act_pwr / self.solarfield.qabs
         else:
             self.datasource.dataframe.at[row[0], 'SF.a.prth'] = 0
 

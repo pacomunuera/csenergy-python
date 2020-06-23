@@ -65,6 +65,8 @@ dfsalida = pd.DataFrame(dict_resultados, index=dni_index)
 
 print(dfsalida)
 
+dfsalida.to_csv('rendimiento_dni.csv', sep=';', decimal=',')
+
 # dfsalida.plot(figsize=(20,10), linewidth=5, fontsize=20)
 
 # rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})

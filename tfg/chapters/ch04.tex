@@ -4,15 +4,37 @@
 \section{Aplicación para el análisis paramétrico}
 \label{analisis-parametrico}
 
-Una vez que hemos confirmado que nuestro código es una herramienta válida para la simulación de un campo solar real nos proponemos a continuación aprovecharlo para realizar algunos análisis del comportamiento de los componentes del campo solar bajo diferentes condiciones o con diferetentes configuraciones. Este tipo de análisis es de especial utilidad durante la fase de diseño, cuando deben seleccionarse los diferentes componentes con el fin de alcanzar unos objetivos de rendimiento o potencia generada.
+Una vez que hemos confirmado que nuestro código es una herramienta válida para la simulación de un campo solar real, nos proponemos, a continuación, aprovecharlo para analizar el comportamiento de los componentes del campo solar bajo diferentes condiciones o con diferetentes configuraciones. Este tipo de análisis es de especial utilidad durante la fase de diseño, cuando deben seleccionarse los componentes del sistema con el fin de alcanzar unos objetivos de rendimiento o potencia generada.
 
 \subsection{Rendimiento del HCE en función de la radiación normal directa, $DNI$}
 
-En la tabla \ref{tab:rendimiento_hce_dni} se resumen las principales características de algunos de los modelos de HCE más instalados hasta nuestros días. Los datos de $\varepsilon_{ext}$ son los ofrecidos por \cite{barberofresnoDesarrolloModeloTeorico2018}.
+En la tabla \ref{tab:datos_hces} se muestran los coeficientes para el cálculo de la emisividad $\varepsilon_{ext}$ conforme a la ec.\eqref{eq:eext} y el valor de la absortividad de algunos modelos de HCE según se recogen en \cite{barberofresnoDesarrolloModeloTeorico2018}.
 
-% Please add the following required packages to your document preamble:
-% \usepackage{graphicx}
-\begin{table}[!h]
+\begin{table}[h!]
+\centering
+\caption{Constantes del modelo de emisividad equivalente para cada uno de los receptores seleccionados. *Al no disponerse de este dato, se ha empleado este valor con el fin de poder incluir el modelo en el test. Fuente \cite{barberofresnoDesarrolloModeloTeorico2018}}
+\label{tab:datos_hces}
+\resizebox{0.8\textwidth}{!}{
+\begin{tabular}{lccc}
+Receptor &
+$A_0$ &
+$A_1$ &
+Absortividad (\%) \\ \hline
+Solel UVAC 2/2008 & 1,31E-04 & 1,01E-01 & 97\\
+Solel UVAC 3/2010 & 2,06E-04 & 4,30E-02 & 96 \\
+Schott PTR70 & 1,82E-04 & 8,61E-02 & 95 \\
+Schott PTR70/2008 & 1,43E-04 & 3,45E-02 & 95,5 \\
+SkyFuel SkyTrough DSP & 1,48E-04 & 4,00E-02 & 95* \\
+ASE HEMS08 & 2,03E-04 & -1,03E-02 & 95 \\
+NREL \#6 & 1,52E-04 & 1,96E-03 & 96 
+\end{tabular}
+}
+\end{table}
+
+Si simulamos el comportamiento de un HCE de cada modelo para  diferentes valores de DNI, bajo las mismas condiciones de caudal y temperatura de entrada del HTF podemos realizar una comparativa de los rendimientos. Salvo que se diga lo contrario, en adelante emplearemos los mismos datos geográficos ya indicados cuando realizamos la simulación de validación con SAM. Para la fecha y hora de simulación se empleará el 1 de julio a las 12:00 UTC (14:00 hora local).
+
+En la tabla \ref{tab:rendimiento_hce_dni} se muestran los resultados de los rendimientos calculados para cada modelo de HCE con una temperatura de entrda de 300 ºC y un caudal de 6 kg/s.
+\begin{table}[h!]
 \centering
 \caption{Rendimiento en función de la radiación normal incidente para  distintos modelos de HCE}
 \label{tab:rendimiento_hce_dni}
@@ -40,17 +62,22 @@ En la tabla \ref{tab:rendimiento_hce_dni} se resumen las principales caracterís
 }
 \end{table}
 
-En la \ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento con el aumento de $DNI$.  Se aprecia como los  modelos de última generación presentan un buen comportamiento incluso con bajas radiaciones.
+En la Fig.\ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento con el aumento de $DNI$.  Se aprecia cómo los  modelos de última generación presentan un buen comportamiento incluso con bajas radiaciones.
 
-\begin{figure}[!h]
-\includegraphics[width=0.9\linewidth]{images/resultados_test1a.png}
-\caption{Rendimiento térmico en función de DNI para diferentes modelos de HCE} 
+\begin{figure}[h!]
+\includegraphics[width=0.9\linewidth]{images/rendimiento_dni.png}
+\caption{Rendimiento térmico en función de DNI para diferentes modelos de HCE. $T_{in}$=300 ºC, $\dot m$ = 6 kg/s} 
 \label{fig:test1a}
 \end{figure}
 
+
 \subsection{Rendimiento del HCE en función de la temperatura de entrada}
 
-\begin{table}[!h]
+Otra decisión importante que debe tomarse a la hora del diseño de  un campo solar es la temperatura nominal de operación. Intervienen varios criterios, como la temperatura y el caudal de fluido caloportador que demanda el bloque de potencia así como las limitiaciones que impone el fluido caloportador.  Un análisis del rendimiento del HCE en función de la temperatura de operación puede ayudar en la toma de decisiones y  en la selección del modelo más adecuado.
+
+En la tabla \ref{tab:rendimiento_hce_tin} se muestran los resultado de simular el funcionamiento de varios modelos de HCE con un caudal constante de fluido caloportador a diferentes temperaturas de entrada.
+
+\begin{table}[h!]
 \centering
 \caption{Rendimiento en función de la temperatura de entrada del HTF para diferentes modelos de HCE}
 \label{tab:rendimiento_hce_tin}
@@ -64,49 +91,49 @@ En la \ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento 
 \parbox{5em}{\centering  SkyFuel \\ SkyTrough DSP} &
 \parbox{5em}{\centering ASE\\ HEMS08} &
 \parbox{5em}{\centering NREL\\ \#6} \\ \hline
-473 & 0,975 & 0,986 & 0,974 & 0,982 & 0,993 & 0,993 & 0,993 \\
-483 & 0,972 & 0,985 & 0,971 & 0,980 & 0,992 & 0,992 & 0,992 \\
-493 & 0,969 & 0,983 & 0,969 & 0,978 & 0,991 & 0,990 & 0,991 \\
-503 & 0,966 & 0,981 & 0,965 & 0,976 & 0,990 & 0,989 & 0,990 \\
-513 & 0,963 & 0,979 & 0,962 & 0,973 & 0,988 & 0,988 & 0,988 \\
-523 & 0,959 & 0,977 & 0,958 & 0,970 & 0,987 & 0,986 & 0,987 \\
-533 & 0,955 & 0,975 & 0,955 & 0,967 & 0,986 & 0,984 & 0,985 \\
-543 & 0,951 & 0,973 & 0,951 & 0,964 & 0,984 & 0,982 & 0,984 \\
-553 & 0,946 & 0,970 & 0,946 & 0,960 & 0,982 & 0,980 & 0,982 \\
-563 & 0,942 & 0,967 & 0,942 & 0,956 & 0,980 & 0,978 & 0,980 \\
-573 & 0,937 & 0,964 & 0,937 & 0,952 & 0,978 & 0,976 & 0,978 \\
-583 & 0,931 & 0,961 & 0,931 & 0,947 & 0,976 & 0,973 & 0,975 \\
-593 & 0,925 & 0,957 & 0,926 & 0,943 & 0,974 & 0,970 & 0,973 \\
-603 & 0,919 & 0,953 & 0,920 & 0,938 & 0,971 & 0,967 & 0,970 \\
-613 & 0,912 & 0,949 & 0,914 & 0,932 & 0,968 & 0,963 & 0,967 \\
-623 & 0,905 & 0,945 & 0,907 & 0,926 & 0,965 & 0,960 & 0,964 \\
-633 & 0,898 & 0,941 & 0,900 & 0,920 & 0,962 & 0,956 & 0,961 \\
-643 & 0,890 & 0,936 & 0,892 & 0,913 & 0,958 & 0,951 & 0,957 \\
-653 & 0,881 & 0,931 & 0,884 & 0,906 & 0,955 & 0,947 & 0,954 \\
-663 & 0,872 & 0,925 & 0,876 & 0,898 & 0,951 & 0,942 & 0,949 \\
-673 & 0,863 & 0,919 & 0,867 & 0,890 & 0,946 & 0,937 & 0,945 \\
-683 & 0,853 & 0,913 & 0,858 & 0,882 & 0,942 & 0,931 & 0,941
+200 & 0,975 & 0,986 & 0,974 & 0,982 & 0,993 & 0,993 & 0,993 \\
+210 & 0,972 & 0,985 & 0,971 & 0,980 & 0,992 & 0,992 & 0,992 \\
+220 & 0,969 & 0,983 & 0,969 & 0,978 & 0,991 & 0,990 & 0,991 \\
+230 & 0,966 & 0,981 & 0,965 & 0,976 & 0,990 & 0,989 & 0,990 \\
+240 & 0,963 & 0,979 & 0,962 & 0,973 & 0,988 & 0,988 & 0,988 \\
+250 & 0,959 & 0,977 & 0,958 & 0,970 & 0,987 & 0,986 & 0,987 \\
+260 & 0,955 & 0,975 & 0,955 & 0,967 & 0,986 & 0,984 & 0,985 \\
+270 & 0,951 & 0,973 & 0,951 & 0,964 & 0,984 & 0,982 & 0,984 \\
+280 & 0,946 & 0,970 & 0,946 & 0,960 & 0,982 & 0,980 & 0,982 \\
+290 & 0,942 & 0,967 & 0,942 & 0,956 & 0,980 & 0,978 & 0,980 \\
+300 & 0,937 & 0,964 & 0,937 & 0,952 & 0,978 & 0,976 & 0,978 \\
+310 & 0,931 & 0,961 & 0,931 & 0,947 & 0,976 & 0,973 & 0,975 \\
+320 & 0,925 & 0,957 & 0,926 & 0,943 & 0,974 & 0,970 & 0,973 \\
+330 & 0,919 & 0,953 & 0,920 & 0,938 & 0,971 & 0,967 & 0,970 \\
+340 & 0,912 & 0,949 & 0,914 & 0,932 & 0,968 & 0,963 & 0,967 \\
+350 & 0,905 & 0,945 & 0,907 & 0,926 & 0,965 & 0,960 & 0,964 \\
+360 & 0,898 & 0,941 & 0,900 & 0,920 & 0,962 & 0,956 & 0,961 \\
+370 & 0,890 & 0,936 & 0,892 & 0,913 & 0,958 & 0,951 & 0,957 \\
+380 & 0,881 & 0,931 & 0,884 & 0,906 & 0,955 & 0,947 & 0,954 \\
+390 & 0,872 & 0,925 & 0,876 & 0,898 & 0,951 & 0,942 & 0,949 \\
+400 & 0,863 & 0,919 & 0,867 & 0,890 & 0,946 & 0,937 & 0,945 \\
+410 & 0,853 & 0,913 & 0,858 & 0,882 & 0,942 & 0,931 & 0,941
 \end{tabular}%
 }
 \end{table}
 
-\begin{figure}[!h]
-\includegraphics[width=0.9\linewidth]{images/resultados_test2a.png}
-\caption{Rendimiento térmico en función de la temperatura de entrada del HTF para diferentes modelos de HCE} 
+La representación gráfica evidencia la caía de rendimiento según aumenta la temperatura de entrada aunque, nuevamente, vemos que los modelos más modernos mantienen un mejor rendimiento a temperaturas más elevadas.
+
+\begin{figure}[h!]
+\includegraphics[width=0.9\linewidth]{images/rendimiento_temperatura.png}
+\caption{Rendimiento térmico en función de la temperatura de entrada del HTF para diferentes modelos de HCE. $DNI= 800 W/m^2$, $\dot m$ = 6 kg/s} 
 \label{fig:test2a}
 \end{figure}
 
+\subsection{Simulación con los diferentes modelos teóricos}
 
+Comparamos ahora el resultado de simular con los tres modelos: modelo de 4º Orden, modelo de $1^{er}$ Orden y modelo simplificado. En las siguientes figuras podemos comparar los resultados de temperatura, caudal, rendimiento y potencia térmica de la configuración de campo solar empleada en el apartado \ref{configuracion-simulaciones} para un día del año (se ha tomado el día 2 de marzo por tener buenas condiciones de radiación y estabilidad). 
 
-\subsection{Simulación con los diferentes modelos}
-
-Comparamos ahora el resultado de simular con los tres modelos: modelo de 4º Orden, modelo de $1^{er}$ Orden y modelo simplificado. En las figuras puede verse el restultado para un día del año (se ha tomado el día 2 de marzo por tener buenas condiciones de radiación y estabilidad). 
-
-\begin{table}[!h]
+\begin{table}[h!]
 \centering
-\caption{Temperaturas obtenidas en la simulación para cada modelo. Datos del día 2/3/2007. Condiciones estables y buena radiación}
+\caption{Temperaturas obtenidas en la simulación con cada modelo teórico. Datos del día 2/3/2007. Condiciones estables y buena radiación}
 \label{tab:temperaturas_modelos}
-\resizebox{\textwidth}{!}{%
+\resizebox{0.8\textwidth}{!}{%
 \begin{tabular}{ccccccc}
 Hora &
 \parbox{5em}{\centering DNI \\ $(W/m^2)$} &
@@ -143,19 +170,21 @@ Hora &
 }
 \end{table}
 
-\begin{figure}[!h]
+El resultado gráfico de este test puede versen en la figura Fig.\ref{fig:temperaturas_modelos}, donde se aprecia que todos los modelos encuentran soluciones similares en la simulación. El resultado era de esperar pues las temperaturas de trabajo, inferiores a 400 ºC, están dentro del rango de validez de aplicación de todos los modelos y son muy parecidas a las obtenidas con SAM.
+
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/temperaturas_modelos.png}
 \caption{Temperaturas de salida obtenidas con los tres modelos} 
 \label{fig:temperturas_modelos}
 \end{figure}
 
+En el caso de los caudales calculados los resultados son similares, tal y como se aprecia en la Fig.\ref{fig:caudales_modelos} y cuyos valores numéricos se muestran en la tabla \ref{tab:caudales_modelos}.
 
-
-\begin{table}[!h]
+\begin{table}[h!]
 \centering
 \caption{Caudales obtenidos en la simulación para cada modelo.  Datos del día 2/3/2007. Condiciones estables y buena radiación}
 \label{tab:caudales_modelos}
-\resizebox{\textwidth}{!}{%
+\resizebox{0.8\textwidth}{!}{%
 \begin{tabular}{cccccc}
 Hora &
 \parbox{5em}{\centering DNI \\ $(W/m^2)$} &
@@ -191,18 +220,18 @@ Hora &
 }
 \end{table}
 
-\begin{figure}[!h]
-\includegraphics[width=0.9\linewidth]{images/caudales_modelos.png}
+\begin{figure}[h!]
 \caption{Caudales de salida obtenidos con los tres modelos} 
+\includegraphics[width=0.9\linewidth]{images/caudales_modelos.png}
 \label{fig:caudales_modelos}
 \end{figure}
 
 
-\begin{table}[!h]
+\begin{table}[h!]
 \centering
 \caption{Potencia térmica calculada en la simulación de cada modelo.  Datos del día 2/3/2007. Condiciones estables y buena radiación}
 \label{tab:potencias_modelos}
-\resizebox{\textwidth}{!}{%
+\resizebox{0.8\textwidth}{!}{%
 \begin{tabular}{cccccc}
 Hora &
 \parbox{5em}{\centering DNI \\ $(W/m^2)$} &
@@ -239,18 +268,18 @@ Hora &
 \end{table}
 
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/potencias_modelos.png}
 \caption{Potencia térmica obtenida con cada uno de los tres modelos} 
 \label{fig:potencia_modelos}
 \end{figure}
 
 
-\begin{table}[!h]
+\begin{table}[h!]
 \centering
 \caption{Rendimientos obtenidos en la simulación de cada modelo.  Datos del día 2/3/2007. Condiciones estables y buena radiación}
 \label{tab:rendimientos_modelos}
-\resizebox{\textwidth}{!}{%
+\resizebox{0.8\textwidth}{!}{%
 \begin{tabular}{ccccc}
 Hora &
 \parbox{5em}{\centering DNI \\ $(W/m^2)$} &
@@ -285,7 +314,7 @@ Hora &
 }
 \end{table}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/rendimientos_modelos.png}
 \caption{Rendimiento térmico para cada uno de los tres modelos} 
 \label{fig:rendimientos_modelos}
@@ -295,51 +324,51 @@ Hora &
 \label{mallaintegracion}
 
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/malla0405.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 4,05 m} 
 \label{fig:malla0405}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/malla4860.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 48,60 m} 
 \label{fig:malla4860}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/malla7290.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 72,90 m} 
 \label{fig:malla7290}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/malla14580.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 145,80 m} 
 \label{fig:malla14580}
 \end{figure}
 
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/malla_variable_DNI_800.png}
 \caption{Rendimiento calculado para diferentes tamaños de malla de integración. $DNI=800 W/m^2$, $T_{in}=300 \circ C$, $\dot m = 6 kg/s$} 
 \label{fig:malla_variable_DNI_800}
 \end{figure}
 
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/desviacionmodel4malla.png}
 \caption{Desviación, para simulaciones con el Modelo de 4º Orden, según diferentes tamaños de malla. Los valores muestran la desviación, en tanto por ciento, respecto a la simulación con una malla de 4,05 m. $T_{in}=300 \circ C$, $\dot m = 6 kg/s$} 
 \label{fig:desviacionmodel4}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/desviacionmodel1malla.png}
 \caption{Desviación, para simulaciones con el Modelo de $1^{er}$ Orden, según diferentes tamaños de malla. Los valores muestran la desviación, en tanto por ciento, respecto a la simulación con una malla de 4,05 m. $T_{in}=300 \circ C$, $\dot m = 6 kg/s$} 
 \label{fig:desviacionmodel1}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/desviacionmodelsimplificadomalla.png}
 \caption{Desviación, para simulaciones con el Modelo de Simplificado, según diferentes tamaños de malla. Los valores muestran la desviación, en tanto por ciento, respecto a la simulación con una malla de 4,05 m. $T_{in}=300 \circ C$, $\dot m = 6 kg/s$} 
 \label{fig:desviacionmodelsimplificado}
@@ -354,7 +383,7 @@ Finalmente emplearemos nuestro programa de simulación en un análisis del estad
 
 La configuración de campo solar que se va a utilizar a lo largo de las siguientes simulaciones está basada en las plantas termosolares Aste 1A y 1B, que se encuentran situadas en el término municipal de Alcázar de San Juan, provincia de Ciudad Real. Sus coordenadas geográficas son (39,1°N 3,16°W) y la altitud es de 651 m sobre el nivel del mar.
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/fotoAstes.png}
 \caption{Centrales Termosolares Aste 1A (izq.) y Aste 1B (der.) Fuente: Google Earth} 
 \label{fig:astes}
@@ -380,7 +409,7 @@ Todos los lazos son idénticos, contando con 4 SCAs cada uno en una configuraci�
 La reflectividad de los espejos puede obtenerse a partir de los registros de mantenimiento de ese año. Llegados a este punto encontramos cierta anomalía en los valores, tal y como puede apreciarse en la \ref{fig:refelectividad}. Se observa cómo durante los meses de junio y julio el valor de la reflectividad promedio comienza a caer drásticamente hasta valores ligeramente inferiores al 60\%. Los valores van mejorando posteriormente, durante el mes de agosto, hasta alcanzar valores normales a partir de septiembre.
 
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/reflectividad.png}
 \caption{Reflectividad registrada durante el mantenimiento. Fuente: Propia} 
 \label{fig:reflectividad}
@@ -392,19 +421,19 @@ Respecto al estado de los tubos HCE, consideraremos que se encuentran en buen es
 
 Los datos de las figuras \ref{fig:potencia_1b} a \ref{fig:temperatura_1b} muestran el comportamiento de la planta real para un día de buena radiación y condiciones estables. Puesto que la planta no dispone de almacenamiento energético, los efectos de las inercias de arranque y parada se aprecian claramente a primera y última hora del día, así como en los altibajos de radiación en los días inestables. En esta planta, el control de caudal lo realiza manualmente el operador de sala en base a las diferentes limitaciones que el diseño de planta impone. Especialmente importantes son los gradientes, o más propiamente dicho, las rampas de calentamiento y enfriamiento que los fabricantes de los equipos recomiendan, como es el caso de la turbina, trenes de generación, bombas principales de HTF o los propios HCEs. También existe una inercia asociada al calentamiento de tuberías y tanques de expansión y rebose.  La masa total de HTF en la planta ronda las 1300 toneladas. 
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/potencia_aste1b_01052016.png}
 \caption{Potencia térmica real y simulada para el día 1/5/2016. Condiciones estables y buena radiación} 
 \label{fig:potencia_1b}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/caudal_aste1b_01052016.png}
 \caption{Caudal real y simulado para el día 1/5/2016. Condiciones estables y buena radiación} 
 \label{fig:caudal_1b}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/temperatura_aste1b_01052016.png}
 \caption{Temperaturas de operación reales y simulada para el día 1/5/2016. Condiciones estables y buena radiación} 
 \label{fig:temperatura_1b}
@@ -416,7 +445,7 @@ El fluido de trabajo es Dowtherm A, cuyas propiedades también se han descrito e
 
 Los datos meteorológicos son los recogidos a lo largo de 2016 por las tres estaciones meteorológicas con las que cuenta la planta. Al tener por triplicado las medidas de cada variable se adopta el criterio de seleccionar la mediana de las tres y no el valor medio. Esta selección la realiza el sistema de control de planta en cada momento y con este criterio se persigue conseguir una mayor robustez del sistema, pues si una estación presenta valores muy desviados de las otras dos podría darse el caso de que el valor medio estuviese muy alejado del valor  verdadero. Cuando por avería o fallo de comunicación se carece de los datos de alguna estación sí se suele adoptar el criterio de seleccionar el valor medio de las dos restantes.
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=0.9\linewidth]{images/potencia_dni_aste1b.png}
 \caption{Potencia térmica real y simulada en función de DNI cuando la planta trabaja en condiciones nominales ($T_{in}$>290 ºC, $T_{out}$>390 ºC). En el eje vertical derecho se representa el rendimiento global del bloque de potencia} 
 \label{fig:potenica_dni}

@@ -95,7 +95,7 @@
 	"Absorber material type (0=304L 1=216L 2=321H 3=B42 Copper)": 0,
    	"Absorber emittance factor A1": 0.000148,
    	"Absorber emittance factor A0": 0.0004,
-   	"Absorber absorptance": 0.96,
+   	"Absorber absorptance": 0.95,
    	"Envelope transmittance": 0.96,
    	"Min Reynolds": 2400,
    	"Brackets": 4.05
@@ -115,7 +115,7 @@
 	"Absorber material type (0=304L 1=216L 2=321H 3=B42 Copper)": 0,
    	"Absorber emittance factor A1": 0.000203,
    	"Absorber emittance factor A0": -0.0103,
-   	"Absorber absorptance": 0.96,
+   	"Absorber absorptance": 0.95,
    	"Envelope transmittance": 0.96,
    	"Min Reynolds": 2400,
    	"Brackets": 4.05

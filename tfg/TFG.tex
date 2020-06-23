@@ -19,6 +19,7 @@ hmargin=3cm
 % DEFINICIÓN DE COLORES para portada y listados de código
 \usepackage[table]{xcolor}
 \definecolor{verdeUNED}{RGB}{0, 86, 63}
+\definecolor{azulELECTRICIDAD}{RGB}{10, 170, 220}
 \definecolor{gray97}{gray}{.97}
 \definecolor{gray75}{gray}{.75}
 \definecolor{gray45}{gray}{.45}
@@ -110,6 +111,7 @@ hmargin=3cm
 % Diseño de tabla para ingeniería
 \captionsetup[table]{
 	format=upper,
+	position=above,
 	name=TABLA,
 	justification=justified,
 	labelsep=period,
@@ -126,7 +128,7 @@ hmargin=3cm
 \captionsetup[figure]{
 	format=hang,
 	name=Fig.,
-	justification=justified,
+	justification=centering,
 	singlelinecheck=off,
 	labelsep=period,
 	labelfont=small,
@@ -185,6 +187,7 @@ hmargin=3cm
 \DefineBibliographyStrings{spanish}{pages = {pp\adddot}, page = {p.\adddot}}
 
 
+\usepackage{pdfpages}
 
 
 %-------------
@@ -199,7 +202,7 @@ hmargin=3cm
 	%----------	
 	\begin{titlepage}
 		\begin{sffamily}
-			\color{verdeUNED}
+			\color{azulELECTRICIDAD}
 			\begin{center}
 				\begin{figure}[H] %incluimos el logotipo de la Universidad
 					\makebox[\textwidth][c]{\includegraphics[width=8 cm]{logo_ingenieros.png}}
@@ -237,6 +240,7 @@ hmargin=3cm
 	\thispagestyle{empty}
 	\mbox{}
 
+\includepdf{caratula_tfg.pdf}
 %----------
 %	RESUMEN Y PALABRAS CLAVE
 %----------	

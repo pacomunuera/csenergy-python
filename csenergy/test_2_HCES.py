@@ -57,7 +57,7 @@ for hce_conf in hces_configurations:
             simulation.base_loop.set_loop_values_from_HCEs()
             pr = simulation.base_loop.pr
             dict_resultados[hce_conf['Name']].append(pr)
-            tin_index.append(tin)
+            tin_index.append(tin-273)
 
             simulation.datasource.dataframe.at[row[0], 'pr'] = pr
             simulation.datasource.dataframe.at[row[0], 'tout'] = tout
@@ -67,7 +67,9 @@ dfsalida = pd.DataFrame(dict_resultados, index=tin_index)
 
 print(dfsalida)
 
-dfsalida.plot(figsize=(20,10), linewidth=5, fontsize=20)
+#dfsalida.plot(figsize=(20,10), linewidth=5, fontsize=20)
+
+dfsalida.to_csv('rendimiento_temperatura.csv', sep=';', decimal=',')
 
 # rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 # # for Palatino and other serif fonts use:
