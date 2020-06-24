@@ -1,0 +1,46 @@
+RENDIMIENTOS SIMULACIÓN 2/3/2007
+
+\begin{table}[h!]
+\centering
+\caption{Rendimientos obtenidos en la simulación de cada modelo.  Datos del día 2/3/2007. Condiciones estables y buena radiación}
+\label{tab:rendimientos_modelos}
+\resizebox{0.8\textwidth}{!}{%
+\begin{tabular}{ccccc}
+Hora &
+\parbox{5em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{5em}{\centering $\eta_{th}$ ($4^o Ord.$)} &
+\parbox{5em}{\centering $\eta_{th}$  ($1^{er} Ord.$)} &
+\parbox{5em}{\centering $\eta_{th}$ (Simplif.)} \\ \hline
+0:00  & 0   & 0,000 & 0,000 & 0,000 \\
+1:00  & 0   & 0,000 & 0,000 & 0,000 \\
+2:00  & 0   & 0,000 & 0,000 & 0,000 \\
+3:00  & 0   & 0,000 & 0,000 & 0,000 \\
+4:00  & 0   & 0,000 & 0,000 & 0,000 \\
+5:00  & 0   & 0,000 & 0,000 & 0,000 \\
+6:00  & 0   & 0,000 & 0,000 & 0,000 \\
+7:00  & 234 & 0,000 & 0,000 & 0,000 \\
+ 8:00  & 596 & 0,912 & 0,917 & 0,920 \\
+9:00  & 724 & 0,916 & 0,920 & 0,922 \\
+10:00 & 806 & 0,914 & 0,918 & 0,920 \\
+11:00 & 859 & 0,910 & 0,914 & 0,917 \\
+12:00 & 876 & 0,909 & 0,912 & 0,915 \\
+13:00 & 867 & 0,913 & 0,916 & 0,919 \\
+14:00 & 846 & 0,920 & 0,923 & 0,926 \\
+15:00 & 781 & 0,923 & 0,926 & 0,928 \\
+16:00 & 663 & 0,907 & 0,911 & 0,914 \\
+17:00 & 420 & 0,000 & 0,000 & 0,000 \\
+18:00 & 1   & 0,000 & 0,000 & 0,000 \\
+19:00 & 0   & 0,000 & 0,000 & 0,000 \\
+20:00 & 0   & 0,000 & 0,000 & 0,000 \\
+21:00 & 0   & 0,000 & 0,000 & 0,000 \\
+22:00 & 0   & 0,000 & 0,000 & 0,000 \\
+23:00 & 0   & 0,000 & 0,000 & 0,000
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure}[h!]
+\includegraphics[width=0.9\linewidth]{images/rendimientos_modelos.png}
+\caption{Rendimiento térmico para cada uno de los tres modelos} 
+\label{fig:rendimientos_modelos}
+\end{figure}
