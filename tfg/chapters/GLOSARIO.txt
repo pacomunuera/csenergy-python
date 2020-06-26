@@ -1,0 +1,36 @@
+GLOSARIO
+
+\(D_{ro}\) (m) 
+\(D_{ri}\) diámetro interior \((m)\)
+longitud \(L\) (m)
+\(\varepsilon_{ext}\) y ,  emisividad equivalente de la superficie exterior del tubo
+\(h_{ext}\) \textit{coeficiente de transferencia de calor convectivo equivalente}
+\(h_{int}\) coeficiente de transferencia de calor convectivo hacia el interior 
+\(\varepsilon_{ext}\) emisividad del tratamiento superficial exterior
+\eta_{T} rendimiento para la totalidad del receptor en el modelo simplificado
+\(c_{p}\) calor específico constante
+\dot q''_{perd}(x)
+\dot q''_{abs}
+\dot q"_{u}(x) 
+q_{abs}
+
+\(\eta(x)\) rendimiento integral hasta una distancia x de la entrada
+\eta_{opt}(\theta) rendimiento óptico
+Cg factor de concentración
+DNI radiación normal directa
+IAM
+\(\gamma_L\) factor de longitud efectiva, 
+\(\gamma_g\)  factor de interceptación geométrico
+
+\eta_{sombras} coeficiente de pérdidas por sombreado
+\eta_{bordes} coeficiente de pérdidas geométricas
+\(T_{f}\) temperatura del fluido
+T_{ro}(x)
+
+\(U_{rec}\)  \((W/m^{2}\cdot K)\) coeficiente global de transferencia de calor hacia el interior
+F'_{crit}
+U_{crit}
+
+
+
+\(\sigma\) es la constante de Stefan-Boltzmann (5.67x10-8 W/m2K4),

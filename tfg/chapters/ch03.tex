@@ -5,40 +5,53 @@
 
 El software desarrollado se basa en el paradigma de Programación Orientada a Objetos (POO) donde, a grandes rasgos, cada sistema físico se define como un objeto perteneciente a una Clase con la capacidad de recibir información, manipularla de acuerdo a unas reglas propias del sistema y devolver información.
 
-Una de las principales ventajas de esta metodología es la modularidad, de tal forma que se puede ir desarrollando jerárquica, progresiva e independientemente cada uno de los sistemas para después interconectarlos. Posteriormente se puede modificar el comportamiento de alguno de estos objetos reprogramando la Clase a la que pertenece sin que esto afecte de forma drástica al resto de objetos del modelo. Es una técnica escalable y que permite definir diferentes grados de intervención al usuario final, desde interactuar con cada objeto como si de una caja negra se tratase hasta modificar el comportamiento del sistema introduciendo sus propios métodos en las clases.
+Una de las principales ventajas de esta metodología es la modularidad, de tal forma que se puede ir desarrollando jerárquica, progresiva e independientemente cada uno de los sistemas para después interconectarlos. Posteriormente se puede modificar el comportamiento de alguno de estos objetos re-programando la Clase a la que pertenece sin que esto afecte de forma drástica al resto de objetos del modelo. Es una técnica escalable y que permite definir diferentes grados de intervención al usuario final, desde interactuar con cada objeto como si de una caja negra se tratase hasta modificar el comportamiento del sistema introduciendo sus propios métodos en las clases.
 
 Por todas estas razones, el modelado mediante POO resulta muy interesante para la simulación de sistemas en el ámbito de la ingeniería y ha sido el elegido para el desarrollo del código de este TFG 
 
 \section{Sistemas físicos y Clases para el modelado del campo solar}
 
-En los siguientes apartados iremos describiendo el campo solar desde el punto de vista de su comportamiento físico, los subsistemas que lo componen y definiremos las Clases que se deben programar para modelar cada uno de estos subsistemas. Pero en primer lugar introduciremos alguna terminología.
+En los siguientes apartados iremos describiendo el campo solar desde el punto de vista de su comportamiento físico, los subsistemas que lo componen y definiremos las Clases que se deben programar para modelar cada uno de estos subsistemas. Pero en primer lugar aclararemos alguna terminología en el contexto sistema-modelo.
 
-Se denomina HCE a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro, forman la tubería sobre la que se concentra la radiación solar. Los HCE se unen mediante soldadura en grupos de 3 o 4 y se montan sobre unidades estructurales denominadas SCE (Solar Collector Element).  
+Se denomina HCE a cada uno de los tubos absorbedores de unos 4 m de longitud con envolvente de vidrio propia que, soldados uno tras otro, forman la tubería sobre la que se concentra la radiación solar. Los HCE  se montan sobre unidades estructurales denominadas SCE (Solar Collector Element).  El modelo del HCE puede tener una dimensión longitudinal más flexible, de tal forma que una instancia de la clase HCE tenga una longitud de uno o varios HCE. Esto nos permitirá jugar con el tamaño de la malla de integración para el cálculo del rendimiento integral de un concentrador completo (formado, en realidad, por un conjunto de HCEs).
 
-Un conjunto de SCE que se mueven solidariamente entre ellos pero con capacidad de movmiento independiente de otro conjunto de SCEs se denomina SCA (Solar Collector Assembly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
+Un conjunto de SCE que se mueven solidariamente entre ellos pero con capacidad de movimiento independiente de otro conjunto de SCEs se denomina SCA (Solar Collector Assembly). El tubo absorbedor montado en cada SCA está unido mediante uniones móviles al tubo absorbedor del siguietne SCA o a las tuberías de entrada y salida del lazo. El SCA es, por tanto, la unidad mínima de seguimiento solar.
 
-\begin{verbatim}
-FIGURA LAZO - SCA
-\end{verbatim}
+Un conjunto de SCAs con su tubo absorbedor conectado en serie constituye un lazo (Clase Loop). Cada lazo consta de un número suficiente de SCAs para garantizar que, bajo condiciones de diseño, el fluido caloportador alcanza la temperatura deseada a la salida del lazo, es decir, se produce el salto térmico necesario demandado por el proceso consumidor de calor o el ciclo termodinámico de generación de energía eléctrica. Si la temperatura en el SCA sobrepasa la máxima permitida, el SCA puede desenfocar parcial o totalmente con el fin de dejar de concentrar radiación sobre el tubo absorbedor, limitando el aporte de calor y estabilizando la temperatura de salida del fluido.
 
-Un conjunto de SCAs con su tubo absorbedor conectado en serie constituye un lazo. Cada lazo consta de un numuero suficiente de SCAs para garantizar que, bajo condiciones de diseño, el fluido caloportador alcanza la temperatura deseada a la salida del lazo, es decir, se produce el salto térmico necesario. Si la temperatura en el SCA sobrepasa la máxima permitida, el SCA puede desenfocar parcial o totalmente con el fin de dejar de concentrar radiación sobre el tubo absorbedor.
+Las Clases que se describen a continuación se recogen en un fichero que puede funcionar a modo de librería. Esta librería puede referenciarse para la creación de instancias de cada tipo de objeto. Se ha denominado \textit{csenergy} a esta librería.
+
+En la Fig.\ref{fig:clasescsenergy1} se muestra esquemáticamente la relación entre las clases HCE, SCA y Loop. La clase Loop mantiene una  referencia al conjunto ordenado (lista) de SCA que lo forman y, a su vez, la clase SCA mantiene una referencia a la lista de HCEs que la forman. En sentido ascendente, cada HCE  mantiene una referencia al SCA del que forma parte y cada SCA una referencia a su lazo. 
+
+\begin{figure}[H]
+\includegraphics[width=0.9\linewidth]{images/clasescsenergy1.png}
+\caption{Esquema relacional de las Clases HCE, SCA y Loop. Se muestran los principales atributos y métodos de cada clase} 
+\label{fig:clasescsenergy1}
+\end{figure}
 
 Un subcampo o sección es un conjunto de lazos conectados en paralelo, de tal forma que se espera que el caudal que circula por cada uno de sus lazos sea el mismo. El subcampo cuenta con válvulas de regulación de caudal a su entrada, por lo que constituye la unidad mínima de control de caudal en el campo solar. En algunas ocasiones cada lazo tiene capacidad de regulación de su caudal de forma constante. En ese caso se podría decir que cada lazo actúa como un subcampo con un único lazo, pero esto no es lo habitual.
 
-Finalmente, el campo solar está formado por un conjunto de subcampos. El fluido caloportador frío entra en el campo solar y se distribuye por cada uno de los subcampos, donde se vuelve a distribuir equitativamente entre los lazos. En los lazos, el HTF se calienta y retorna a una tubería que lo conduce a la salida del subcampo, donde finalmente el HTF procendente de todos los subcampos se mezcla y se trasforta, a lo largo de una tubería denominada colector caliente, hasta el punto de consumo.
+Finalmente, el campo solar está formado por un conjunto de subcampos. El fluido caloportador frío entra en el campo solar y se distribuye por cada uno de los subcampos, donde se vuelve a distribuir equitativamente entre los lazos. En los lazos, el HTF se calienta y retorna a una tubería que lo conduce a la salida del subcampo, donde finalmente el HTF procedente de todos los subcampos se mezcla y se transporta, a lo largo de una tubería denominada colector caliente, hasta el punto de consumo. En la Fig.\ref{fig:clasescsenergy2} se esquematiza esta estructura de agregación de elementos. Cada Clase cuenta con métodos que permiten calcular los valores agregados de caudal, potencia y temperatura del fluido a partir de las aportaciones de cada uno de los subsistemas que engloba.
+
+\begin{figure}[H]
+\includegraphics[width=0.9\linewidth]{images/clasescsenergy2.png}
+\caption{Esquema relacional de las Clases SolarField, Subfield y Loop. Se muestran los principales atributos y métodos de cada clase} 
+\label{fig:clasescsenergy2}
+\end{figure}
+
 
 \subsection{Clases derivadas de Model: Clase ModelBarbero4thGrade, ModelBarbero1stGrade y ModelBarberoSimplied}
 
-Se emplean clases derivadas de la Clase Model para implementar los diferentes modelos empleados para calcular el rendimiento y para simular, por tanto, el funcionamiento de cada HCE. Es en cada una de estas clases donde se desarrolla el algoritmo que, a partir de los parámetros físicos que definen al HCE, las variables que definen el estado del HTF que circula por él y las condiciones de operación, resuelve las ecuaciones definidas en el modelo y nos permite conocer las condiciones del HTF a la salida de cada HCE.
+Se emplean clases derivadas de la Clase Model para implementar los diferentes modelos empleados para calcular el rendimiento y para simular, por tanto, el funcionamiento de cada HCE. Es en cada una de estas clases donde se desarrolla el algoritmo que, a partir de los parámetros físicos que definen al HCE, las variables que definen el estado del HTF que circula por él y las condiciones de operación, resuelve las ecuaciones definidas en el modelo y nos permite conocer el rendimiento HCE.
 
 \subsubsection{Clase ModelBarbero4thOrder}
 
-La instancia de esta clase recibe como valores de entrada un referencia a una instancia de un HCE del cual va a calcular su rendimiento, una referencia a la instancia del HTF que se está empleando y valores de condiciones meterológicas de radiación, temperatura y velocidad del viento. El HCE debe estar inicializado previamente con los valores de caudal másico, temperatura y presión de entrada y el flujo de calor absorbido \(q_{abs}\).
+La instancia de esta clase recibe como valores de entrada un referencia a una instancia de un HCE del cual va a calcular su rendimiento, una referencia a la instancia del HTF que se está empleando y valores de condiciones meteorológicas de radiación, temperatura y velocidad del viento. El HCE debe estar inicializado previamente con los valores de caudal másico, temperatura y presión de entrada y el flujo de calor absorbido \(q_{abs}\).
 
 El procedimiento de cálculo implementado en el método \emph{calc\_pr()} es el siguiente (los parámetros que se obtienen mediante métodos propios de las instancias del HCE y del HTF se explican en los apartados correspondiente más adelante): 
 \begin{itemize}
 \item
-Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) según la ec\(\eqref{eq:tro}\) a partir del coeficiente de transmisión de calor al interior \(U_{rec}\) y del flujo de radiación abosorbido por el tubo absorbedor, \(\dot q''_{abs}\), a partir de la instancia del HCE. Para el primer HCE del lazo se asume un rendimiento inicial \(\eta=1\) pero para los siguientes se emplea el rendimiento del HCE anterior, con lo cual se acelera un poco el proceso de convergencia por partirse de un valor previsiblemente más próximo.
+Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) según la ec\(\eqref{eq:tro}\) a partir del coeficiente de transmisión de calor al interior \(U_{rec}\) y del flujo de radiación adsorbido por el tubo absorbedor, \(\dot q''_{abs}\), a partir de la instancia del HCE. Para el primer HCE del lazo se asume un rendimiento inicial \(\eta=1\) pero para los siguientes se emplea el rendimiento del HCE anterior, con lo cual se acelera un poco el proceso de convergencia por partirse de un valor previsiblemente más próximo.
 
 \begin{equation}
     T_{ro} = T_f + \eta \cdot \frac{\dot q''_{abs}}{U_{rec}}
@@ -46,7 +59,7 @@ Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) s
 \end{equation}
 
 \item
-  Cálculo del flujo de pérdidas \(\dot q''_{perd}\) mediante la   ec.\(\eqref{eq:qperd}\) incrementado con las pérdidas a través de los   soportes que sujetan el tubo absorbedor, \(\dot q_{perd,soportes}\).   Las pérdidas en los soportes se modelan mediante la   ec.\(\eqref{eq:qperdidassoportes}\) que se explica en el apartado   correspondiente a la clase HCE.
+  Cálculo del flujo de pérdidas \(\dot q''_{perd}\) mediante la   ec.\(\eqref{eq:qperd}\) incrementado con las pérdidas a través de los   soportes que sujetan el tubo absorbedor, \(\dot q_{perd,soportes}\).   Las pérdidas en los soportes se modelan mediante la   ec.\(\eqref{eq:qperdidassoportes}\) que se explica en el apartado   correspondiente de la clase HCE.
 \item
   Cálculo de los parámetros de funcionamiento \(\dot q''_{crit}\),   \(U_{crit}\) y \(NTU\) para el HCE con la temperatura de pared   calculada previamente según las ecuaciones \(\eqref{eq:qcrit}\) y   \(\eqref{eq:ucrit}\) respectivamente.
 \item
@@ -56,72 +69,161 @@ Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) s
 \item
   Con el valor de \(\eta_0\) obtenido se calculan los valores de \(Z\),   \(g'(Z)\), \(g''(Z)\) y \(g'''(Z)\) dados por las ecuaciones   \(\eqref{eq:zeta}\) a \(\eqref{eq:g3primadezeta}\). 
 \item
-  Finalmente, se calcula el rendimiento \(\eta(x^*)\) según la   ec.\(\eqref{eq:modelocompleto}\), la temperatura de pared exterior   \(T_{ro}\) y se comparan con los valores iniciales. Si las diferencias   son superiores a cierto margen configurable se vuelve a realizar otra   iteración hasta conseguir la convergencia, pero previamente a cada   iteración se recalculan todos los pasos anteriores empleando la   temperatura de pared del tubo absorbedor calculada con el nuevo
-  rendmiento. 
+  Finalmente, se calcula el rendimiento \(\eta(x^*)\) según la   ec.\(\eqref{eq:modelocompleto}\), la temperatura de pared exterior   \(T_{ro}\) y se comparan con los valores iniciales. Si las diferencias   son superiores a cierto margen configurable se vuelve a realizar otra   iteración hasta conseguir la convergencia, pero previamente a cada iteración se re-calculan todos los pasos anteriores empleando la   temperatura de pared del tubo absorbedor calculada con el nuevo rendimiento. 
 \end{itemize}
 
 Para el primer HCE del lazo se emplea como temperatura del fluido \(T_f\) la temperatura del HTF a la entrada del HCE. Para los siguientes HCEs del lazo se incrementa la temperatura de entrada con la mitad del salto de temperatura que experimentó el HCE anterior.
 
 Una vez finalizado el proceso iterativo, la instancia del HCE actualiza sus valores de rendimiento, temperatura y presión de salida del HTF, quedando totalmente definido su punto de funcionamiento. Las condiciones de temperatura y presión a la salida del HCE serán las de entrada del HCE siguiente.
 
-Al calcular el rendimiento integral para todo la longitud del HCE estamos haciendo coincidir el tamaño de la malla de integración con la longitud física real del HCE. Se ha comprobado que la reducción de la malla no aumenta de forma apreciable la precisión de los cálculos y en cambio sí supone un coste computacional importante. Por el contrario, una forma de acelerar el proceso de simulación consiste en considerar artificialmente que la longitud del HCE es mayor que la real. Se trata de aumentar el tamaño de la malla de integración para reducir el número de cálculos. En este trabajo se seguirá, al igual que en \cite{1022085/7TD8VTGL}, el criterio de no superar un tramo de HCE superior a 100 m propuesto en \cite{1022085/CYH3NJEG}. 
+Al calcular el rendimiento integral para todo la longitud del HCE estamos haciendo coincidir el tamaño de la malla de integración con la longitud física real del HCE. Se ha comprobado que la reducción de la malla no aumenta de forma apreciable la precisión de los cálculos y en cambio sí supone un coste computacional importante. Por el contrario, una forma de acelerar el proceso de simulación consiste en considerar artificialmente que la longitud del HCE es mayor que la real. Se trata de aumentar el tamaño de la malla de integración para reducir el número de cálculos. En este trabajo se seguirá, al igual que en \cite{barberofresnoDesarrolloModeloTeorico2018}, el criterio de no superar un tramo de HCE superior a 100 m propuesto en \cite{forristallHeatTransferAnalysis2003} para análisis unidimensional. 
 
 \subsubsection{Clases ModelBarbero1stOrder  y ModelBarberoSimplified}
 
-El cálculo del rendimento que realizan estas dos clases es idéntico al del Modelo de 4$^o$  Orden hasta el momento de llegar al proceso iterativo, punto en el cual se calcula el rendimiento térmico directamente mediante las ecuaciones  \(\eqref{eq:primerorden}\) y \(\eqref{eq:modelosimplificado}\) respectivamente.
+El cálculo del rendimiento que realizan estas dos clases es idéntico al del Modelo de 4$^o$  Orden hasta el momento de llegar al proceso iterativo, punto en el cual se calcula el rendimiento térmico directamente mediante las ecuaciones  \(\eqref{eq:primerorden}\) y \(\eqref{eq:modelosimplificado}\) respectivamente.
+
 
 \subsection{HCE, Heat Collector Element}
 \label{heat-collector-element-hce}
 
-Físicamente, un HCE es un tubo de acero con una envolvente de vidrio de tal forma que entre el tubo de acero y la envolvente queda un espacio en el que se ha practicado el vacío. Por el interior del tubo circula el fluido caloportador (HTF, Heat Transfer Fluid) que aumenta su energía térmica al recibir el calor procedente de las paredes interiores del tubo. El tubo recibe durante el proceso de fabricación un recubrimiento selectivo que mejora sus propidades físicas para absorber la raciación solar. De cara a modelar el funcionamiento del HCE como elemento responsable de calentar el HTF de forma compatible con el Modelo físico desarrolladose se define la clase HCE que consta de los siguientes atributos:
+De cara a modelar el funcionamiento del HCE como elemento responsable de calentar el HTF de forma compatible con el Modelo físico desarrollado, se define la clase HCE, entre cuyos atributos se encuentran: la temperatura de entrada del HTF, $T_{in}$ (internamente el programa trabaja con\((K)\) como unidades de temperatura, aunque la entrada y salida de datos se realiza con $ºC$); la potencia calorífica absorbida a lo largo de todo el HCE, $q_{abs}$ (W); la potencia calorífica perdida a lo largo de todo el HCE, $q_{lost}$ (W); el rendimiento óptico del conjunto HCE+SCA, $\eta_{opt}$; el rendimiento térmico, $\eta$ y la temperatura de salida, $T_{out}$, (K). 
 
-\begin{itemize}
-\item
-  tin: Temperatura de entrada del HTF \((K)\)
-\item
-  pin: Presión de entrada del HTF \((Pa)\)
-\item
-  massflow: Caudal másico del HTF \((Kg/s)\)
-\item
-  qabs: Potencia calorífica absorbida \((W/m^2)\)
-\item
-  qlost: Potencia calorífica perdida \((W/m^2)\)
-\item
-  qlost\_brackets = Potencia calorífica perdida a través de los soportes
-  del HCE \((W/m^2)\)
-\item
-  pr: Rendimiento global del HCE ( )
-\item
-  pr\_opt: Rendimiento óptico del conjunto HCE + SCA ( )
-\item
-  tou: Temperatura de salida del HTF \((K)\)
-\item
-  pout: Presión de salida del HTF \((Pa)\)
+El caudal másico de HTF que circula por el HCE, $ \dot m_f $ (Kg/s) se obtiene mediante una referencia al SCA y, seguidamente, otra referencia al Loop que contienen al HCE. 
 
-  {[}FIGURA ESQUEMA CLASE HCE{]}
-\end{itemize}
+Con estos parámetros el comportamiento del HCE queda totalmente caracterizado en el sistema desde el punto de vista del proceso de generación. Estos atributos (pueden entenderse como variables) están relacionados entre sí según las reglas que aplique cada modelo. La temperatura de salida del HTF, $T_{out}$, aparece implícita en la ec.\ref{eq:deltaH}:
 
-Con estos parámetros el comportamiento del HCE queda totalmente caracterizado en el sistema desde el punto de vista del proceso de generación. Estos atributos (pueden entenderse como variables) están relacionados entre sí según las reglas que aplique cada modelo.
+\begin{equation}
+    \Delta H =  \dot m_f  \int^{T_{out}}_{T_{in}}C_p(T) dT 
+    \label{eq:deltaH}
+\end{equation}
+
+donde \(\Delta H\) es el incremento de entalpía del fluido, pues hemos considerado que se trata de un fluido incompresible y también se ha despreciado la participación de energía cinética. Previamente se debe calcular \(\Delta H\) según la ec.\(\eqref{eq:delta_hvalor}\):
+
+\begin{equation}
+   \Delta H =  \dot q''_{abs} \cdot \eta \cdot \pi \cdot d_{ro} \cdot L \cdot \gamma_L \cdot \gamma_g
+    \label{eq:delta_hvalor}
+\end{equation}
+
+La ec.\(\eqref{eq:deltaH}\) puede resolverse por métodos numéricos si el calor específico \(Cp\) del fluido se ha obtenido a partir de un polinomio. En el caso de que se disponga de una función que proporcione la temperatura del fluido en función de la entalpía \(T(H)\), como ocurre si se usa \(CoolProp\), se puede calcular su valor directamente a través de las funciones que ofrece esta librería como \(T_{out} = T(H_{out})\).
+
+En la ec.\ref{eq:delta_hvalor} se introducen el \textit{factor de longitud efectiva}, \(\gamma_L\) y \textit{factor de interceptación geométrico}, \(\gamma_g\) para tener en cuenta la reducción de la longitud \textit{activa} del HCE debido a los fuelles en los extremos del HCE y al sombreado del escudo térmico en las uniones de HCEs. Un valor típico para ambos factores está comprendido entre 0,96 y 0,97 \cite{zarzaApuntesMasterConsultor2006}. En el caso de que el calor absorbido sea nulo, la temperatura de salida será inferior a la de entrada y el valor \(\Delta H < 0\). En este caso, no existe reducción de la longitud efectiva del absorbedor y la energía perdida se calcula según la ec.\(\eqref{eq:delta_hvalornegativo}\) pues a lo largo de toda la superficie del HCE se experimentan pérdidas energéticas:
+
+\begin{equation}
+   \Delta H =  \dot q''_{perd} \cdot \pi \cdot d_{ro} \cdot L
+    \label{eq:delta_hvalornegativo}
+\end{equation}
+
+\subsubsection{Cálculo del flujo de calor absorbido, $\dot q''_{abs}$}
+
+La radiación que alcanza al fluido caloportador puede obtenerse mediante la ec.\ref{eq:qabs}:
+\begin{equation}
+\notag \dot q''_{abs}= \eta_{opt}(\theta) \cdot Cg \cdot DNI \cdot \eta_{sombras} \cdot \eta_{bordes}  \tag{\ref{eq:qabs}}
+\end{equation}
+
+donde \(DNI\) es la radiación normal directa cuyo valor se lee para cada  fecha de cálculo de la simulación. \(Cg\) es el factor de concentración geométrica, definido genéricamente   para sistemas de concentración como el cociente entre el área de  apertura del concentrador, \(A_c\) y la superficie del receptor,   \(A_r\). Hemos considerado como efectiva toda el área del receptor, no solo aquella donde se concentra la radiación, ya que supondremos que el flujo se reparte uniformemente por toda la superficie de tubo absorbedor. De esta manera, el área de apertura de un concentrador de longitud $L$, con una longitud de apertura de su superficie parabólica $A_p$, viene dado por la ecuación:
+
+\begin{equation}
+   A_c = A_p \cdot L
+    \label{eq:aperturaconcentrador}
+\end{equation}
+
+y la superficie del receptor, de igual longitud $L$ y diámetro exterior del tubo absorbedor $D_{ro}$, es:
+
+\begin{equation}
+   A_r = \pi \cdot D_{ro} \cdot L
+    \label{eq:superficiereceptor}
+\end{equation}
+
+De esta manera,  el factor de concentración geométrica para un colector cilindroparabólico se calcula según la ec.\(\eqref{eq:cg}\):
+
+\begin{equation}
+   Cg = \frac{A_p}{\pi \cdot D_{ro}}
+    \label{eq:cg}
+\end{equation}
+
+
+El rendimiento óptico \(\eta_{opt}(\theta)\)  depende del   ángulo de incidencia \(\theta\) y se obtiene a partir del rendimiento  óptico pico, \(\eta_{opt,peak}\) y del modificador del ángulo de   incidencia, \(IAM\) según la ec.\(\eqref{eq:rendimientooptico}\):
+
+
+\begin{equation}
+   \eta_{opt}(\theta) = \eta_{opt,peak} \cdot IAM \cdot cos(\theta)
+    \label{eq:rendimientooptico}
+\end{equation}
+
+Esta ecuación incluye también el coseno del ángulo de incidencia pues consideraremos que, en general, no está incluido este término dentro de IAM. En caso de que la expresión del $IAM$ ofrecida por el fabricante ya incluyese este efecto, debería eliminarse de la ecuación (\ref{eq:rendimientooptico}). 
+Para calcular \(\eta_{opt,peak}\) empleamos la expresión dada en la ec.\(\eqref{eq:rendimientoopticopico}\). 
+
+\begin{equation}
+   \eta_{opt,peak} = \alpha \cdot \tau \cdot \rho \cdot \gamma
+    \label{eq:rendimientoopticopico}
+\end{equation}
+
+La ecuación para \(IAM\) se ofrece en la sección correspondiente al modelado del SCA ya que es una propiedad más propia del sistema de concentración y seguimiento. La instancia del HCE hace una llamada al método \emph{get\_IAM} de su SCA asociado, aquel en el que está montado, para recibir su valor. Igualmente, en la ec.\(\eqref{eq:rendimientoopticopico}\) los parámetros \(\rho\) (reflectividad del concentrador) y \(\gamma\) (fracción solar), son parámetros del SCA y deben obtenerse de la instancia de SCA asociada al HCE. \(\alpha\) es la absortividad del receptor y \(\tau\) es la transmisividad del vidrio envolvente del tubo absorbedor. En ambos casos se trata de parámetros configurables que se introducen con el resto de características del HCE en el archivo de configuración de la simulación.
+
+El factor \(\eta_{bordes}\) contabiliza las pérdidas debidas a que en una   pequeña porción del tubo absorbedor del SCA no se produce   concentración debido al ángulo de incidencia. Un tramo del tubo   absorbedor, que puede implicar desde solo un tramo del primer HCE  hasta a varios HCEs, tendrá un flujo de radiación nulo, o muy bajo. El   tramo de tubo absorbedor que queda sin concentración (\(L_{bordes}\)   se calcula mediante la ec.\(\eqref{eq:bordes}\) a partir de la   distancia focal, \(f_l\) y de ángulo de incidencia \(\theta\):
+
+\begin{equation}
+   L_{bordes} = \frac {f_l}{tan(\theta)}
+    \label{eq:bordes}
+\end{equation}
+
+A partir de este valor el código calcula que fracción del HCE o cuantos HCEs quedan inutilizados y les asigna un rendimiento nulo.
+
+En el caso del factor \(\eta_{sombras}\), se trata de un valor que se calcula en base a la porción del concentrador que se encuentra afectado por sombras debido a que la distancia de separación entre lazos está acotada. En disposiciones de lazos habituales con eje seguimiento Norte-Sur estas sombras solo aparecen a primera y última hora del día. Su cálculo exacto según se describe en \cite{sharmaShadingAvailableEnergy2013} requeriría conocer completamente la disposición de cada lazo en cada instante, pero una aproximación suficiente se puede conseguir según la ec.(\eqref{eq:sombras}) tal y como hace SAM, \cite{gilmanSolarAdvisorModel2008}:
+
+\begin{equation}
+   \eta_{sombras} =  \frac {cos(\beta) \cdot D_L}{A_c}
+    \label{eq:sombras}
+\end{equation}
+
+donde $beta$ es el ángulo de seguimiento, $D_L$ es la distancia de separación entre lazos y $A_p$ es la apertura del concentrador.
+
+\subsubsection{Pérdidas en el tubo absorbedor, $\dot q''_{perd}$}
+
+Las pérdidas se modelan según la ec.(\ref{eq:qperd}), que repetimos a continuación:
+
+\begin{equation}
+\notag  \dot q''_{perd}(x)= \sigma \cdot \varepsilon_{ext} \cdot (T_{ro}^{4}(x)-T_{ext}^{4}) + h_{hext} \cdot (T_{ro}(x)-T_{ext}) \tag{\ref{eq:qperd}}
+\end{equation}
+
+donde   \(\varepsilon_{ext}\) es la \textit{emisividad equivalente de la superficie  exterior} del receptor. Depende de la temperatura de pared exterior del tubo y se emplea la ec.\(\eqref{eq:eext}\) para calcularla:
+
+\begin{equation}
+   \varepsilon_{ext} =  A_0 + A_1 \cdot  (t_{ro} - 273.15)
+    \label{eq:eext}
+\end{equation}
+
+Se corrige ligeramente su valor en función de la velocidad del viento, incrementando su valor un 1\% con un viento de 4 m/s y un 2\% para viento de 4 m/s. Los coeficientes \(A_0\) y \(A_1\) son los que se ofrecen en \cite{barberofresnoDesarrolloModeloTeorico2018}.
+
+Por otro lado,  \(h_{ext}\), es el \textit{coeficiente de transferencia de calor convectivo  equivalente al exterior}. Su valor puede considerarse nulo para el caso  de un HCE con vacío en su espacio anular. Nuevamente, en \cite{barberofresnoDesarrolloModeloTeorico2018} se ofrecen las ecuaciones para diferentes combinaciones de   recubrimiento, Black-Chrome o Cermet y conservación o no del vacío,   obtenidas mediante simulación CFD (Computational Fluid Dynamics) por su autor para un modelo unidimensional del HCE. A falta de datos para los modelos concretos empleados en este trabajo, en todas nuestras simulaciones consideraremos que su valor es nulo (equivalente a un caso de velocidad de viento nula), lo cual es aceptable en etapas de prediseño de plantas o durante análisis paramétrico.
+
+Se incluye en el modelado el cálculo de las pérdidas a través de los soportes que sujetan al HCE, \(\dot q_{perd,soportes}\). Su peso relativo en el total de pérdidas del campo no es muy elevado, por lo que, a falta de más datos, se hace uso de la ec.\(\eqref{eq:qperdidassoportes}\)  propuesta en \cite{forristallHeatTransferAnalysis2003}:
+
+\begin{equation}
+   \dot q_{perd,soportes} =  n \cdot \frac{\sqrt{P_b \cdot k_b \cdot A_{cs,b} \cdot \bar h_b} \cdot (T_{base}T{ext})}{L}
+    \label{eq:qperdidassoportes}
+\end{equation}
+
+donde \(P_b\) es el perímetro de la sección del soporte, \(A_{cs,b}\) es la sección transversal de la unión entre el brazo y el tubo absorbedor, \(K_b\) es la conductividad térmica del acero empleado en el brazo, \(\bar h_b\) es el coeficiente de transmisión de calor por convección medio hacia el exterior, \(T_{base}\) es la temperatura de la zona de conexión entre los brazos y el tubo absorbedor, \(L\) es la longitud del colector y \(n\) es el número de soportes por colector.
+
+\subsubsection{Otros atributos y métodos de la Clase HCE}
 
 Ya hemos visto, al hablar de la Clases para los modelos, cómo un objeto (instancia) de la clase HCE puede ser procesada por otra instancia de la clase del modelo para simular su comportamiento. Es necesario que la instancia del HCE pase los siguientes parámetros al modelo:
 
 \begin{itemize}
 \item
-  \(k_{rec}\), conductividad térmica de la pared del receptor. Se ha
-  empleado la ec.\(\eqref{eq:krec}\) válida para el acero inoxidable
+  \(k_{rec}\), conductividad térmica de la pared del receptor. Se ha  empleado la ec.\(\eqref{eq:krec}\) válida para el acero inoxidable
   321H:
-\end{itemize}
 
 \begin{equation}
     k_{rec} = 0,0153 \cdot (t - 273,15) + 14,77
     \label{eq:krec}
 \end{equation}
+\end{itemize}
 
 \begin{itemize}
 \item
   \(h_{int}\), coeficiente de transferencia de calor convectivo hacia el   interior. Para el cálculo se emplea la ec.\(\eqref{eq:hint}\) donde   \(Nu_{G}\) es el número de Nusselt obtenido mediante la correlación de   Gnielinski dada en la ec.\(\eqref{eq:nug}\), \(D_{ri}\) es el diámetro   interior del tubo absorbedor y \(k_f\) es la conductividad térmica a   la temperatura del fluido: 
-\end{itemize}
-
 \begin{equation}
     h_{int} = \frac{Nu_{G}\cdot k_f }{D_{ri}}
     \label{eq:hint}
@@ -132,122 +234,9 @@ Ya hemos visto, al hablar de la Clases para los modelos, cómo un objeto (instan
     \label{eq:nug}
 \end{equation}
 
-\begin{itemize}
 \item
   \(U_{rec}\), coeficiente de transmisión de calor al interior. Viene   dado por la ec.\(\eqref{eq:urec}\) comentada previamente. 
-\item
-qabs
-%  \(\dot q''_{abs}\), flujo de calor que absorbe el HCE. En este caso,   se trata de un parámetro que almacena cada instancia de HCE y que se   calcula según la ec.\(\eqref{eq:qabs}\) que repetimos a continuación:
 \end{itemize}
-
-\begin{equation}
-\dot q''_{abs}= \eta_{opt}(\theta) \cdot Cg \cdot DNI \cdot \eta_{sombras} \cdot \eta_{bordes} 
-\end{equation}
-
-Cada uno de los parámetros de esta ecuación se obtiene de la siguiente manera:
-
-\begin{itemize}
-\item
-  \(DNI\) es la irradiancia normal directa cuyo valor se lee para cada   fecha de cálculo de la simulación.
-\item
-  \(Cg\) es el factor de concentración geométria, definido genéricamente   para sistemas de concentración como el cociente entre el área de   apertura del concentrador, \(A_c\) y el área de apertura del receptor,   \(A_r\). Hemos considerado como efectiva toda el área del receptor, no   solo aquella donde se concentra la radiación ya que supondremo que el   flujo se reparte uniformemente por toda la superfice de tubo   absorbedor. De esta manera, el factor de concentración geométrica para   un colector cilindroparabólico es, según la ec.\(\eqref{eq:cg}\):
-\end{itemize}
-
-\begin{equation}
-   Cg = \frac{a}{\pi \dot D_{ro}}
-    \label{eq:cg}
-\end{equation}
-
-donde \(a\) es la apertura de la parábola del concentrador y \(D_{ro}\) es el diámetro exterior del tubo absorbedor.
-
-\begin{itemize}
-\item
-  \(\eta_{opt}(\theta)\), rendimiento óptico. Este parámtro depende del   ángulo de incidencia \(\theta\) y se obtiene a partir del rendimiento   óptico pico, \(\eta_{opt,peak}\) y del modificador del ángulo de   incidencia, \(IAM\) según la ec.\(\eqref{eq:rendimientooptico}\):
-\end{itemize}
-
-\begin{equation}
-   \eta_{opt}(\theta) = \eta_{opt,peak} \cdot IAM \cdot cos(\theta)
-    \label{eq:rendimientooptico}
-\end{equation}
-
-Para calcular \(\eta_{opt,peak}\) empleamos la expresión dada en la ec.\(\eqref{eq:rendimientoopticopico}\). La ecuación para \(IAM\) se ofrece en la sección correspondiente al modelado del SCAA por ser un valor característico de este componente.
-
-\begin{equation}
-   \eta_{opt,peak} = \alpha \cdot \tau \cdot \rho \cdot \gamma
-    \label{eq:rendimientoopticopico}
-\end{equation}
-
-Los parámetros \(F_0\), \(F_1\) y \(F_2\) los ofrece cada fabricante para su concentrador. El \(IAM\) es una propiedad del SCA y por tanto la instancia del HCE hace una llamada al método \emph{get\_IAM} de su SCA asociado, aquel en el que está montado, para recibir su valor.
-
-Igualmente, en la ec.\(\eqref{eq:rendimientoopticopico}\) los parámetros \(\rho\) (reflectividad del concentrador) y \(\gamma\) (fracción solar), son parámetros del SCA y deben obtenerse de la instancia de SCA asociada al HCE. \(\alpha\) es la absortividad del receptor y \(\tau\) es la transmisividad del vidrio envolvente del tubo absorbedor. En ambos casos se trata de parámetros configurables que se introducen con el resto de características del HCE en el archivo de configuración de la simulación.
-
-\begin{itemize}
-\item
-  \(\eta_{bordes}\) contabiliza las pérdidas debidas a que en una   pequeña porción del tubo absorbedor del SCA no se produce   concentración debido al ángulo de incidencia. Un tramo del tubo   absorbedor, que puede implicar desde solo un tramo del primer HCE  hasta a varios HCEs, tendrá un flujo de radiación nulo, o muy bajo. El   tramo de tubo absorbedor que queda sin concentración (\(L_{bordes}\)   se calcula mediante la ec.\(\eqref{eq:bordes}\) a partir de la   distancia focal, \(f_l\) y de ángulo de incidencia \(\theta\):
-\end{itemize}
-
-\begin{equation}
-   L_{bordes} = \frac {f_l}{tan(\theta)}
-    \label{eq:bordes}
-\end{equation}
-
-A partir de este valor el código calcula que fracción del HCE o cuantos HCEs quedan inutilizados y les asigna un rendimiento nulo.
-
-*{[}REVISAR MÉTODO DE CÁLCULO{]} \(\eta_{sombras}\) es un valor que se calcula en base a la porción del concentrador que se encuetra afectado por sombras debido a que la distancia de separación entre lazos está acotada. En disposiciones de lazos habituales con eje seguimiento Norte-Sur estas sombras solo aparecen a primera y última hora del día. Su cáculo exacto requeriria conocer totalmente la disposición de cada lazo, pero una aproximación suficiente se puede obtener mediante la ec.\(\eqref{eq:sombras}\):
-
-\begin{equation}
-   \eta_{sombras} =  \frac {sen(\alpha_s) \cdot D_L}{A_c}
-    \label{eq:sombras}
-\end{equation}
-
-Una vez que la instancia del modelo ha concluido el cálculo, el HCE ya puede cacular cuál será la temperatura de salida del HTF, \(t_{out}\), que aparece implícita en la ec.\(\eqref{eq:delta_h}\): 
-
-\begin{equation}
-   \Delta H =  {\dot m} \cdot \int_{t_{in}}^{t_{out}}Cp(t)dt
-    \label{eq:delta_h}
-\end{equation}
-
-donde \(\Delta H\) es el incremento de entalpía del H, pues hemos considerado que se trata de un fluido incompresible y también se ha despreciado la participación de energía cinética. Previamente se debe calcular \(\Delta H\) según la ec.\(\eqref{eq:delta_hvalor}\):
-
-\begin{equation}
-   \Delta H =  \dot q''_{abs} \cdot \eta \cdot \pi \cdot d_{ro} \cdot L \cdot \gamma_L \cdot \gamma_g
-    \label{eq:delta_hvalor}
-\end{equation}
-
-La ec.\(\eqref{eq:delta_h}\) puede resolverse por métodos numéricos si el calor específico \(Cp\) del fluido se ha obtenido a partir de un polinomio. En el caso de que se disponga de una función que proporcione la temperatura del fluido en función de la entalpía \(T(H)\), como ocurre si se usa \(CoolProp\), se puede calcular su valor directamente como \(T_{out} = T(H_{out})\).
-
-Se introducen el \emph{factor de longitud efectiva}, \(\gamma_L\) y \emph{factor de interceptación geométrico}, \(\gamma_g\) para tener en cuenta la reduccion de la longitud \emph{activa} del HCE debido a los fuelles en los extremos del HCE y al sombreado del escudo térmico en las uniones de HCEs. Un valor típico para ambos factores está comprendido entre 0,96 y 0,97 \cite{1022085/XAQ9AM5E}. En el caso de que el calor absorbido sea nulo, la temperatura de salida será inferior a la de entrada y el valor \(\Delta H < 0\). En este caso, no existe reducción de la longitud efectiva del absorbedor y la energía perdida se calcula según la ec.\(\eqref{eq:delta_hvalornegativo}\) pues a lo largo de toda la superficie del HCE se experimentan pérdidas energéticas:
-
-\begin{equation}
-   \Delta H =  \dot q''_{perd} \cdot \eta \cdot \pi \cdot d_{ro} \cdot L
-    \label{eq:delta_hvalornegativo}
-\end{equation}
-
-\begin{itemize}
-\item
-  \(\varepsilon_{ext}\), emisividad equivalente de la superficie   exterior del receptor. La emisividad equivalente empleada por el   modelo depende de la temperatura de pared exterior del tubo y se   emplea la ec.\(\eqref{eq:eext}\) para calcularla:
-\end{itemize}
-
-\begin{equation}
-   \varepsilon_{ext} =  A_0 + A_1 \cdot  (t_{ro} - 273.15)
-    \label{eq:eext}
-\end{equation}
-
-Se corrige ligeramente su valor en función de la velocidad del viento, incrementando su valor un 1\% con un viento de 4 m/s y un 2\% para viento de 4 m/s. Los coeficientes \(A_0\) y \(A_1\) son los que se ofrecen en \cite{1022085/7TD8VTGL}.
-
-\begin{itemize}
-\item
-  \(h_{ext}\), coeficiente de transferencia de calor convectivo   equivalente al exterior. Su valor puede considerarse nulo para el caso  de un HCE con vacío en su espacio anular. En \cite{1022085/7TD8VTGL} se ofrecen las ecuaciones para diferentes combinaciones de   recubrimiento, Black-Chrome o Cermet y conservación o no del vacío,   obtenidas mediante simulación CFD (Computational Fluid Dynamics) por   su autor para un modelo unidimensional del HCE.
-\item
-  \(\dot q_{perd,soportes}\), pérdidas a través de los soportes que  sujetan en HCE. Se hace uso de la ec.\(\eqref{eq:qperdidassoportes}\)  propuesta en \cite{1022085/CYH3NJEG}:
-\end{itemize}
-
-\begin{equation}
-   \dot q_{perd,soportes} =  n \cdot \frac{\sqrt{P_b \cdot k_b \cdot A_{cs,b} \cdot \bar h_b} \cdot (T_{base}T{ext})}{L}
-    \label{eq:qperdidassoportes}
-\end{equation}
-
-donde \(P_b\) es el perímetro de la sección del soporte, \(A_{cs,b}\) es la sección transversal de la unión entre el brazo y el tubo absorbedor, \(K_b\) es la conductividad térmica del acero empleado en el brazo, \(\bar h_b\) es el coeficiente de transmisión de calor por convección medio hacia el exterior, \(T_{base}\) es la temperatura de la zona de conexión entre los brazos y el tubo absorbedor, \(L\) es la longitud del colector y \(n\) es el número de soportes por colector.
 
 La Clase HCE también nos proporciona algunos métodos necesarios para el trabajo de procesamiento de la información, asignación y recuperación de valores de los atributos. Otro aspecto importante es que cada instancia de la clase HCE tiene un
 atributo de tipo `diccionario', en el que a modo de lista de pares clave-valor va a recibir aquellos parámetros que posteriormente serán empleados por el Modelo. Los diferentes autores que han elaborado modelos para los HCE no siempren utilizan los mismos parámetros ni idénticos identificadores. Al emplear un diccionario se facilita la tarea de implementación de nuevos Modelos, sin que sea necesario cambiar los atributos de la clase en cada ocasión. Entre los parámetros que se
@@ -360,31 +349,31 @@ La fórmula general para cada uno de estos parámetros es del tipo de la ec.\(\e
 
 En las siguientes figuras pueden verse los diferentes parametros del Dowtherm-A en función de la temperatura.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \includegraphics[scale=0.8]{images/curva_densidad.png}
 \caption{Densidad en función de la temperatura.} 
 \label{fig:curvadensidad}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \includegraphics[scale=0.8]{images/curva_viscosidad.png}
 \caption{Viscosidad dinámica en función de la temperatura.} 
 \label{fig:curvaviscosidad}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \includegraphics[scale=0.8]{images/curva_conductividad_termica.png}
 \caption{Conductividad térmica en función de la temperatura.} 
 \label{fig:curvaconductividad}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \includegraphics[scale=0.8]{images/curva_entalpia.png}
 \caption{Entalpía en función de la temperatura.} 
 \label{fig:curvaentalpia}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \includegraphics[scale=0.8]{images/curva_temperatura_entalpia.png}
 \caption{Temperatura en función de la entalpía.} 
 \label{fig:curvatemperatura}
