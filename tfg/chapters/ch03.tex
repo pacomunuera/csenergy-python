@@ -440,7 +440,7 @@ Estas clases implementan métodos adecuados para la adquisición de datos desde 
 
 La Clase \texttt{Site} (emplazamiento), contiene la información relativa al lugar donde está ubicada la planta. Los datos de latitud, longitud y altitud son importantes a la hora de calcular la trayectoria solar para cada fecha. Nos ofrece un método para calcular la posición del sol en cada fecha del año en base a los parámetros que almacenan las coordenadas geográficas. 
 
-Esta clase cuenta también con el  método $\texttt{get\_solarposition}$, que mediante una llamada a la función $\texttt{pvlib.solarposition.get\_solarposition}$ de la librería \emph{pvlib-python} que nos permite obtener información relativa a la posición solar para cada fecha del año.
+Esta clase cuenta también con el  método $\texttt{get\_solarposition}$, que mediante una llamada a la función $\texttt{pvlib.solarposition.get\_solarposition}$ de la librería \emph{pvlib-python} nos permite obtener información relativa a la posición solar para cada fecha del año. Esta librería es una implementación en \emph{Python 3} del algoritmo  \emph{Solar Position Algorithm}, SPA,  desarrollado por el \emph{National Renewable Energy Laboratory} (NREL) para el cálculo de la posición solar para cualquier fecha y coordenadas geográficas entre los años 2000 a. C. y 6000 d. C., con una incertidumbre de $\pm 0,0003^\circ$ \cite{redaSolarPositionAlgorithm2008}. Este algoritmo ha sido testado en innumerables aplicaciones en todo el mundo. Los datos de la implementación en \emph{Python} que nosotros hemos obtenido son compatibles con los que se obtienen en SAM,  donde la implementación es en \emph{C++}.
 
 
 \section{Procedimiento para realizar una simulación}

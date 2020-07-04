@@ -1,4 +1,20 @@
-\chapter{Conclusiones}
+\chapter{Conclusiones y trabajo futuro}
 \label{conclusiones}
 
-Conclusiones y trabajo futuro.
+Tal y como se indicaba en el primer capítulo, el objetivo de este trabajo era ganar conocimiento y experiencia para una mejor comprensión del funcionamiento de un campo solar de tecnología CCP y poder así desarrollar herramientas de simulación adecuadas para estos sistemas tan complejos.  Hemos podido ver que el desarrollo desde cero de una aplicación para la simulación de un campo solar de CCP requiere sortear un buen número de obstáculos, especialmente si se quiere dotar de cierta versatilidad al código y que éste tenga un carácter general, no exclusivo de unos modelos y configuraciones particulares.
+
+Nuestro principal objetivo se ha cumplido, pues disponemos de un código que nos permite implementar los modelos teóricos de partida y realizar diferentes simulaciones que nos ayudan a comprender el comportamiento de estos sistemas. El código desarrollado permite simular desde un único HCE hasta un campo solar completo, incluyendo cambios en el tipo de fluido caloportador, diferentes opciones de entrada de datos e incluso que cada HCE del campo solar tuviese una configuración diferente.
+
+No obstante, a lo largo del desarrollo, según el número de líneas de código iba creciendo y creciendo, hemos podido comprobar que se requiere un desarrollo mucho más largo y profundo hasta poder alcanzar otras funcionalidades de las que disponen herramientas como SAM, cuya primera versión se remonta a 2007 y sigue siendo desarrollado por parte de un equipo multidisciplinar de científicos. No obstante, pese a las limitaciones funcionales de nuestro código, creemos que son acertadas ciertas bases sobre las que se asienta filosofía, como la Programación Orientación a Objetos que permite su desarrollo modular y también trabajar con los distintos elementos del sistema para realizar otro tipo de simulaciones, no solo de una planta completa de generación de energía térmica y eléctrica.
+
+De cara al futuro, son muchas las mejoras que se podrían realizar, comenzando por una optimización del código, que redujese los tiempos de cálculo. No era nuestro objetivo obtener una herramienta con fines de producción, sino más bien didácticos. Por este motivo, el código tampoco cuenta con una programación \emph{a la defensiva} que evite la introducción de datos inválidos, lo que hubiera multiplicado el número de líneas de código y horas de trabajo persiguiendo un objetivo que carece de interés científico.
+
+Para el futuro, consideramos que algunas de las líneas de trabajo más interesantes serían:
+
+\begin{itemize}
+\item
+Desarrollar o acoplar nuestro campo solar con un módulo que simule el ciclo de potencia. Someramente, nuestro código facilitaría los datos de caudal y temperatura de HTF disponibles, mientras que el módulo de simulación del ciclo de potencia le devolvería el caudal aprovechado y la temperatura de retorno, más fría, una vez extraída la energía del HTF.
+\item
+Si se desarrollan módulos adicionales para la simulación del ciclo de potencia, los consumos auxiliares, bombeos, almacenamiento térmico\ldots sería posible utilizar este código para realizar un estudio del funcionamiento óptimo del campo solar, con el fin de maximizar el rendimiento del conjunto.
+\end{itemize}
+

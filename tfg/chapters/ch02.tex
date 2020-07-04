@@ -173,25 +173,30 @@ La ec.\(\eqref{eq:primerorden}\) presenta el Modelo de Primer Orden. Para llegar
     \label{eq:rendimiento0aproximado}
 \end{equation}
 
-En esta ecuación se han reagrupado variables en diferentes términos que cuentan con sentido físico. De este modo, se definen:
+ \(F'_{crit}\) se asemeja al parámetro empleado en el modelo desarrollado por Hottel y Whillier en \cite{hottelEvaluationFlatplateSolar1955}.
+
+\begin{equation}
+    F'_{crit} = \frac{1}{\frac{4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe}}{U_{rec}} + \frac{h_{ext}}{U_{rec}} +1} = \frac{1}{\frac{U_{crit}}{U_{rec}}+1}
+    \label{eq:fcrit}
+\end{equation}
+
+Además, en $\eqref{eq:rendimiento0aproximado}$ y \eqref{eq:fcrit} se han reagrupado variables en diferentes términos que cuentan con sentido físico. De este modo, se definen:
 
 \begin{equation}
     \dot q''_{crit} = \sigma \cdot \varepsilon_{ext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)+h_{ext} \cdot \left(T_{fe}- T_{ext}\right)
     \label{eq:qcrit}
 \end{equation}
-
 y
-
 \begin{equation}
     U_{crit} = 4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe} + h_{ext}
     \label{eq:ucrit}
 \end{equation}
 
-Los coeficientes \(\dot q''_{crit}\) y \(U_{crit}\) son valores de referencia en el estudio del comportamiento del colector, pues cuando \(\dot q''_{abs}\) se aproxima a \(\dot q''_{crit}\) el rendimiento del colector se hace nulo y cuando \(U_{rec}\) se aproxima a \(U_{crit}\), el rendimiento aproxima a la mitad. Por otra parte, \(F'_{crit}\) se asemeja al parámetro empleado en el modelo desarrollado por Hottel y Whillier en \cite{hottelEvaluationFlatplateSolar1955}.
+Los coeficientes \(\dot q''_{crit}\) y \(U_{crit}\) son valores de referencia en el estudio del comportamiento del colector, pues cuando \(\dot q''_{abs}\) se aproxima a \(\dot q''_{crit}\) el rendimiento del colector se hace nulo y cuando \(U_{rec}\) se aproxima a \(U_{crit}\), el rendimiento aproxima a la mitad, tal y como se aprecia si sustituimos $\eqref{eq:fcrit}$ en $\eqref{eq:rendimiento0aproximado}$ para obtener $\eqref{eq:rendimiento0aproximado2}$:
 
 \begin{equation}
-    F'_{crit} = \frac{1}{\frac{4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe}}{U_{rec}} + \frac{h_{ext}}{U_{rec}} +1} = \frac{1}{\frac{U_{crit}}{U_{rec}}+1}
-    \label{eq:fcrit}
+    \eta_{0} = \frac{1}{\frac{U_{crit}}{U_{rec}}+1} \cdot \left[1-\frac{\dot q''_{crit}}{\dot q''_{abs}}\right] 
+    \label{eq:rendimiento0aproximado2}
 \end{equation}
 
 El Modelo de Primer Orden presenta la ventaja de que el cálculo de \(\eta(x^{*})\) es explícito, con la reducción del coste computacional que esto conlleva. Por otro lado, también nos ofrece una forma de calcular un valor aproximado del rendimiento a la entrada del colector, \(\eta_{0}\).
