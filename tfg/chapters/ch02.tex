@@ -3,7 +3,7 @@
 
 \section{Modelo de rendimiento térmico de 4$^{\circ}$Orden para caracterización de un sistema de captación solar}
 
-Hay dos tendencias principales en el desarrollo de modelos analíticos que describan el comportamiento de un captador solar: por un lado, modelos empíricos o semiempíricos basados en resultados de ensayos y, en mayor o meno medida, aproximaciones para captadores concretos (véase por ejemplo \cite{patnodeSimulationPerformanceEvaluation2006}, \cite{dudleyTestResultsSEGS1994}, \cite{burkholderHeatLossTesting2009} o \cite{burkholderHeatLossTestingSolel2008}) y, por otro lado, modelos teóricos más generales como los de  \cite{hottelEvaluationFlatplateSolar1955}, \cite{fraidenraichImprovedSolutionsTemperature1997a} o \cite{kalogirouDetailedThermalModel2012}. El esquema de desarrollo de un modelo teórico se basa  en estimar primero la radiación absorbida teniendo en cuenta las pérdidas ópticas que se producen en el trayecto de dicha radiación desde el plano de apertura hasta la superficie del tubo absorbedor. Posteriormente, las pérdidas térmicas suelen contabilizarse en términos de un coeficiente de pérdidas \cite{duffieSolarEngineeringThermal2006}. En el caso de que exista concentración, debe tenerse en cuenta que el mecanismo dominante para las pérdidas energéticas es el de radiación, regido por la ley de Steffan-Boltzmann, que se caracteriza por una dependencia de la cuarta potencia de la temperatura del colector.  Además, debido a que los captadores suelen contar con una dimensión longitudinal de tamaño considerable, no se puede despreciar la variación que experimentan las propiedades físicas del fluido caloportador y los componentes del colector solar a lo largo de éste, debido a la variación de temperatura que el fluido va experimentando según circula por el tubo absorbedor. Estas son algunas de las razones que dificultan la obtención de una expresión para el rendimiento integral del conjunto. 
+Hay dos tendencias principales en el desarrollo de modelos analíticos que describan el comportamiento de un captador solar: por un lado, modelos empíricos o semiempíricos basados en resultados de ensayos y, en mayor o menor medida, aproximaciones para captadores concretos (véase por ejemplo \cite{patnodeSimulationPerformanceEvaluation2006}, \cite{dudleyTestResultsSEGS1994}, \cite{burkholderHeatLossTesting2009} o \cite{burkholderHeatLossTestingSolel2008}) y, por otro lado, modelos teóricos más generales como los de  \cite{hottelEvaluationFlatplateSolar1955}, \cite{fraidenraichImprovedSolutionsTemperature1997a} o \cite{kalogirouDetailedThermalModel2012}. El esquema de desarrollo de un modelo teórico se basa  en estimar primero la radiación absorbida teniendo en cuenta las pérdidas ópticas que se producen en el trayecto de dicha radiación desde el plano de apertura hasta la superficie del tubo absorbedor. Posteriormente, las pérdidas térmicas suelen contabilizarse en términos de un coeficiente de pérdidas \cite{duffieSolarEngineeringThermal2006}. En el caso de que exista concentración, debe tenerse en cuenta que el mecanismo dominante para las pérdidas energéticas es el de radiación, regido por la ley de Steffan-Boltzmann, que se caracteriza por una dependencia de la cuarta potencia de la temperatura del colector.  Además, debido a que los captadores suelen contar con una dimensión longitudinal de tamaño considerable, no se puede despreciar la variación que experimentan las propiedades físicas del fluido caloportador y los componentes del colector solar a lo largo de éste, debido a la variación de temperatura que el fluido va experimentando según circula por el tubo absorbedor. Estas son algunas de las razones que dificultan la obtención de una expresión para el rendimiento integral del conjunto. 
 
 El modelo de partida desarrollado en \cite{barberofresnoDesarrolloModeloTeorico2018} tiene un carácter general que permite que sea aplicado a receptores térmicos de radiación solar de cualquier tecnología, tanto para concentradores cilindroparabólicos como para concentradores lineales Fresnel o receptores de torre central. En este trabajo nos centramos en los aspectos relativos a los CCP y a continuación revisaremos las características del modelo para este tipo concreto de receptores.
 
@@ -19,7 +19,7 @@ El esquema propuesto parte del balance energético del modelo de tubo desnudo, e
 donde \(\dot q''_{perd}\) es la energía perdida para una sección a una distancia \(x\) de la entrada al receptor, \(\dot q''_{abs}\) es la radiación absorbida y \(\dot q''_{u}\) es la energía útil . En la Fig.$\ref{fig:receptormodelo}$ vemos una representación del modelo donde el sentido de flujo de la energía viene indicado por las flechas.
 
 \begin{figure}[H]
-	\caption{Esquema del receptor empleado para el modelo. Fuente:\parencite{barberofresnoDesarrolloModeloTeorico2018}}
+	\caption[Esquema del receptor empleado para el modelo]{Esquema del receptor empleado para el modelo. Fuente:\parencite{barberofresnoDesarrolloModeloTeorico2018}}
 	\includegraphics[scale=0.8]{images/receptor_para_modelo.png}
 	\label{fig:receptormodelo}
 \end{figure}
@@ -40,7 +40,7 @@ El rendimiento óptico \(\eta_{opt}\), las pérdidas geométricas \(\eta_{bordes
 donde \(U_{rec}\) es el coeficiente global de transferencia de calor hacia el interior, cuya expresión se muestra en la ec.\(\eqref{eq:urec}\):
 
 \begin{equation}
-    U_{rec} = \frac{1}{\frac{1}{h_{int}} + \frac{D_{ro}\cdot(\frac{D_{ro}}{D_{ri})})}{2\cdot k_{rec}}} \label{eq:urec}
+    U_{rec} = \frac{1}{\frac{1}{h_{int}} + \frac{D_{ro}\cdot \ln (\frac{D_{ro}}{D_{ri}})}{2\cdot k_{rec}}} \label{eq:urec}
 \end{equation}
 
 Como aproximación se considera que \(U_{rec}\) \((W/m^{2}\cdot K)\) es constante a lo largo de la longitud del tubo. \(D_{ro}\) y \(D_{ri}\) son el diámetro exterior e interior respectivamente del tubo absorbedor,  \((m)\). \(h_{int}\) \((W/m^{2}\cdot K)\) es el coeficiente de transferencia de calor convectivo hacia el interior  y \(k_{rec}\) es conductivdad del material del receptor, en \((W/m\cdot K)\)
@@ -48,12 +48,12 @@ Como aproximación se considera que \(U_{rec}\) \((W/m^{2}\cdot K)\) es constant
 Para el cálculo de las pérdidas de calor se empleará la ec.\(\eqref{eq:qperd}\), en la que se tiene en cuenta un término radiativo, con dependencia de  la cuarta potencia de las temperaturas, y otro convectivo con dependencia de 1$^{er}$ grado. 
 
 \begin{equation}
-    \dot q''_{perd}(x)= \sigma \cdot \varepsilon_{ext} \cdot (T_{ro}^{4}(x)-T_{ext}^{4}) + h_{hext} \cdot (T_{ro}(x)-T_{ext}) \label{eq:qperd}
+    \dot q''_{perd}(x)= \sigma \cdot \varepsilon_{ext} \cdot (T_{ro}^{4}(x)-T_{ext}^{4}) + h_{ext} \cdot (T_{ro}(x)-T_{ext}) \label{eq:qperd}
 \end{equation}
 
-donde \(\sigma\) es la constante de Stefan-Boltzmann (5.67x10-8 W/m2K4), \(\varepsilon_{ext}\) es la emisividad del tratamiento superficial exterior y \(h_{hext}\) es el coeficiente de convección exterior. Estas dos últimas constantes son características de cada receptor y variables, por ejemplo, en función de las condiciones de degradación del recubrimiento selectivo o del viento exterior. Deben ser halladas experimentalmente en laboratorio.
+donde \(\sigma\) es la constante de Stefan-Boltzmann ($5,67x10^{-8} W/m^2K^4$), \(\varepsilon_{ext}\) es la emisividad del tratamiento superficial exterior y \(h_{ext}\) es el coeficiente de convección exterior. Estas dos últimas constantes son características de cada receptor y variables, por ejemplo, en función de las condiciones de degradación del recubrimiento selectivo o del viento exterior. Deben ser halladas experimentalmente en laboratorio.
 
-La última ecuación necesaria es la ec.\(\eqref{eq:deltaT}\), donde se calcula el incremento de temperatura que experimenta el fluido, considerando despreciables los cambios en energía cinética y un calor específico a presión constante, \(c_{p}\) (J/Kg·K). Denominando \(T_{f}(x)\) a la tempertura del fluido en la sección a distancia \(x\) de la entrada y \(T_{fe}\) a la temperatura del fluido a la entrada, tenemos:
+La última ecuación necesaria es la ec.\(\eqref{eq:deltaT}\), donde se calcula el incremento de temperatura que experimenta el fluido, considerando despreciables los cambios en energía cinética y un calor específico a presión constante, \(c_{p}\) (J/kg·K). Denominando \(T_{f}(x)\) a la tempertura del fluido en la sección a distancia \(x\) de la entrada y \(T_{fe}\) a la temperatura del fluido a la entrada, tenemos:
 
 \begin{equation}
     \pi \cdot D_{ro} \cdot x \cdot \dot q''_{abs} \cdot \eta(x)= \dot{m} \cdot c_{p} \cdot (T_{f}(x)-T_{fe}) \label{eq:deltaT}
@@ -151,7 +151,7 @@ La resolución de esta ecuación requiere un largo desarrollo, en el que se intr
 Para la resolución de este modelo es preciso conocer previamente diferentes parámetros, muchos de los cuales pueden obtenerse directamente de las características geométricas y físicas de los materiales con los que está construido el HCE. De especial importancia son \(\varepsilon_{ext}\) y \(h_{ext}\) pues son dos coeficientes que de forma global vienen a caracterizar las pérdidas energéticas del receptor. Para obtener las ecuaciones que los caracterizan se parte de la expresión del coeficiente global del pérdidas al exterior dada por la ec.\(\eqref{eq:uext}\) de la siguiente forma:
 
 \begin{equation}
-    U_{ext} = h_{hext} + \sigma \cdot \varepsilon_{ext} \cdot \left(T_{ro}^2 + T_{ext}^2 \right) \cdot \left(T_{ro} + T_{ext} \right)
+    U_{ext} = h_{ext} + \sigma \cdot \varepsilon_{ext} \cdot \left(T_{ro}^2 + T_{ext}^2 \right) \cdot \left(T_{ro} + T_{ext} \right)
     \label{eq:uext}
 \end{equation}
 
@@ -176,18 +176,18 @@ La ec.\(\eqref{eq:primerorden}\) presenta el Modelo de Primer Orden. Para llegar
 En esta ecuación se han reagrupado variables en diferentes términos que cuentan con sentido físico. De este modo, se definen:
 
 \begin{equation}
-    \dot q''_{crit} = \sigma \cdot \varepsilon_{ext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)+h_{hext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)
+    \dot q''_{crit} = \sigma \cdot \varepsilon_{ext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)+h_{ext} \cdot \left(T_{fe}- T_{ext}\right)
     \label{eq:qcrit}
 \end{equation}
 
 y
 
 \begin{equation}
-    U_{crit} = 4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe} + h_{hext}
+    U_{crit} = 4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe} + h_{ext}
     \label{eq:ucrit}
 \end{equation}
 
-Los coeficientes \(\dot q''_{crit}\) y \(U_{crit}\) son valores de referencia en el estudio del comportamiento del colector, pues cuando \(\dot q''_{abs}\) y \(U_{rec}\) se aproximan a ellos el rendimiento del colector se hace nulo. Por otra parte, \(F'_{crit}\) se asemeja al parámetro empleado en el modelo desarrollado por Hottel y Whillier en \cite{hottelEvaluationFlatplateSolar1955}.
+Los coeficientes \(\dot q''_{crit}\) y \(U_{crit}\) son valores de referencia en el estudio del comportamiento del colector, pues cuando \(\dot q''_{abs}\) se aproxima a \(\dot q''_{crit}\) el rendimiento del colector se hace nulo y cuando \(U_{rec}\) se aproxima a \(U_{crit}\), el rendimiento aproxima a la mitad. Por otra parte, \(F'_{crit}\) se asemeja al parámetro empleado en el modelo desarrollado por Hottel y Whillier en \cite{hottelEvaluationFlatplateSolar1955}.
 
 \begin{equation}
     F'_{crit} = \frac{1}{\frac{4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^{3}_{fe}}{U_{rec}} + \frac{h_{ext}}{U_{rec}} +1} = \frac{1}{\frac{U_{crit}}{U_{rec}}+1}
@@ -222,7 +222,7 @@ Se ha considerado que los parámetros característicos \(U_{rec}\), \(\varepsilo
 \item La caracterización de los tubos absorbedores empleados en CCP es compatible con el desarrollo del modelo basada en un tubo desnudo (para los que posteriormente se emplearán unos coeficientes de trasmisión de calor adecuados para los tubos con cubierta de vidrio). 
 \item La suposición de fluido incompresible, en la que se desprecia el término de pérdida de carga y de energía cinética sobre el término energético, es adecuada para plantas que operan con aceite térmico,  dado que los circuitos están presurizados para mantener en todo momento el fluido en estado de líquido saturado y los caudales de operación tienen un número de Reynolds alto que garantiza un estado de mezcla homogénea. 
 \item El flujo puede suponerse uniforme en el interior del tubo absorbedor. 
-\item Dada la longitud real del tubo absorbedor en una planta CCP, puede despreciarse el efecto de transmisión de calor longitudinal. 
+\item El reducido gradiente de temperatura y espesor del tubo absorbedor permiten que pueda despreciarse el efecto de transmisión de calor longitudinal. 
 \end{itemize}
 
 Según lo visto, el modelo resulta aplicable a la simulación de un campo solar de concentradores cilindroparabólicos bajo las condiciones normales de operación. Por otro lado, la simulación se realizará también para el cálculo con intervalos horarios en los que se supondrá condiciones estacionarias de planta y se descartarán aquellos periodos de arranque y parada o cambios abruptos en los que las inercias propias del sistema y la intervención de los operadores de planta producirían que el comportamiento instantáneo no se correspondiese con el simulado.

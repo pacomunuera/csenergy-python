@@ -128,8 +128,9 @@ hmargin=3cm
 \captionsetup[figure]{
 	format=hang,
 	name=Fig.,
-	justification=centering,
-	singlelinecheck=off,
+	justification=justified,
+	width=.9\linewidth,
+	singlelinecheck=on,
 	labelsep=period,
 	labelfont=small,
 	font=small		
@@ -142,6 +143,7 @@ hmargin=3cm
 % LISTADOS DE CÓDIGO
 % soporte y estilo para listados de código. Más información en https://es.wikibooks.org/wiki/Manual_de_LaTeX/Listados_de_código/Listados_con_listings
 \usepackage{listings}
+
 
 % definimos un estilo de listings
 \lstdefinestyle{estilo}{ frame=Ltb,
@@ -197,75 +199,71 @@ hmargin=3cm
 \begin{document}
 	\pagenumbering{roman}
 	
-	%----------
-	%	PORTADA
-	%----------	
-	\begin{titlepage}
-		\begin{sffamily}
-			\color{azulELECTRICIDAD}
-			\begin{center}
-				\begin{figure}[H] %incluimos el logotipo de la Universidad
-					\makebox[\textwidth][c]{\includegraphics[width=8 cm]{logo_ingenieros.png}}
-				\end{figure}
-				\vspace{2.5cm}
-				\begin{Large}
-					Grado en Ingeniería Eléctrica\\			
-					2020\\
-					\vspace{2cm}		
-					\textsl{Trabajo Fin de Grado}
-					\bigskip
-					
-				\end{Large}
-				{\Huge Simulación de un campo solar de concentradores cilindroparabólicos con Python}\\
-				\vspace*{0.5cm}
-				\rule{10.5cm}{0.1mm}\\
-				\vspace*{0.9cm}
-				{\LARGE Francisco José Munuera Pérez}\\ 
-				\vspace*{1cm}
-				\begin{Large}
-					Tutor\\
-					Rubén Barbero Fresno\\
-					ETS de Ingenieros, UNED\\
-				\end{Large}
-			\end{center}
-			\vfill
-			\color{black}
-
-			\includegraphics[width=4.2cm]{images/creativecommons.png}\\ % logotipo de creativecommons
-			Esta obra se encuentra sujeta a la licencia Creative Commons \textbf{Reconocimiento - No Comercial - Sin Obra Derivada}
-		\end{sffamily}
-	\end{titlepage}
-	
-	\newpage %página en blanco o de cortesía
-	\thispagestyle{empty}
-	\mbox{}
+% PORTADA
 
 \includepdf{caratula_tfg.pdf}
+
+\newpage %página en blanco o de cortesía
+\thispagestyle{empty}
+\mbox{}
+	
+
 %----------
 %	RESUMEN Y PALABRAS CLAVE
 %----------	
-\renewcommand\abstractname{\large\bfseries\filcenter\uppercase{Resumen}}
+\renewcommand\abstractname{\large\bfseries\filcenter\uppercase{Resumen - Abstract}}
 \begin{abstract}
 \thispagestyle{plain}
-\setcounter{page}{3}
+\setcounter{page}{2}
 	
+\paragraph{Palabras clave:}
+Energía solar de concentración; Python; Concentrador Cilindroparabólico; CCP
 	
-	\textbf{Palabras clave:}
-	Energía solar de concentración; Python; Campo solar
-	
-	\vfill
+En este trabajo se desarrolla una librería software en Python 3 en la que se implementan las clases necesarias para el modelado de un campo solar de colectores cilindroparabólicos (CCP). 
+
+Se sigue una metodología basada en la Programación Orientada a Objetos, en la que cada sistema físico se modela mediante una Clase. El principal modelo matemático empleado para el calculo del rendimiento del concentrador solar es el Modelo de 4º Orden propuesto en \cite{barberofresnoDesarrolloModeloTeorico2018}. 
+
+A partir del código desarrollado se muestran algunos ejemplos de aplicación para el análisis paramétrico de CCP y el análisis del rendimiento de un campo solar real.
+
+\paragraph{Keywords:}
+Concentrated Solar Energy; Python; Parabolic Trough Collectors; PTC
+
+A software library in Python 3 is developed for the modelling of  solar field of parabolic-trough collectors (PTC)
+
+A methodology based on Object Oriented Programming (OOP) is followed and each physical system is modeled through a Class. The main mathematical model used to calculate the performance of the solar concentrator is the 4th Order Model proposed in \cite{barberofresnoDesarrolloModeloTeorico2018}.
+
+Some application of the code are shown, including parametric analysis of PTC and the analysis of the performance of a real solar field.
+
+\vfill
 \end{abstract}
-	\newpage %página en blanco o de cortesía
-	\thispagestyle{empty}
-	\mbox{}
+	
+				
+
+
+
+			
+			
+
 
 
 %----------
 %	DEDICATORIA
 %----------	
-\chapter*{Dedicatoria}
+\chapter*{Agradecimientos}
 
-\setcounter{page}{5}
+Agradezco encarecidamente al profesor Rubén Barbero su dedicación, cercanía y paciencia. 
+
+También quisiera mostrar mi agradecimiento y admiración por todas aquellas personas que comparten sus conocimientos y herramientas de forma desinteresada. Resulta sorprendente y esperanzador descubrir la cantidad de contenidos, explicaciones, tutoriales y herramientas de código que muchos hombres y mujeres     comparten públicamente, ayudando así al progreso de toda la comunidad.
+
+\begin{figure}[b!]
+\centering
+\captionsetup{justification=centering}
+\includegraphics[width=4.2cm]{images/creativecommons.png}
+\caption*{Esta obra se encuentra sujeta a la licencia Creative Commons \\
+ \textbf{Reconocimiento - No Comercial - Sin Obra Derivada}}
+\end{figure}
+
+\setcounter{page}{4}
 		
 	\vfill
 	
@@ -313,12 +311,13 @@ hmargin=3cm
 %	TRABAJO
 %----------	
 \clearpage
-\pagenumbering{arabic} % numeración con múmeros arábigos para el resto de la publicación	
+\pagenumbering{arabic} % numeración con números arábigos para el resto de la publicación	
 
 \input{chapters/ch01}
 \input{chapters/ch02}
 \input{chapters/ch03}
 \input{chapters/ch04}
+\input{chapters/ch05}
 
 
 %----------
@@ -339,20 +338,22 @@ hmargin=3cm
 %----------	
 
 % Si tu trabajo incluye anexos, puedes descomentar las siguientes líneas
-\chapter* {Anexo A. Glosario}
-\pagenumbering{gobble} % Las páginas de los anexos no se numeran
+\addcontentsline{toc}{chapter}{Glosario}
+\input{chapters/glosario}
+%\pagenumbering{gobble} % Las páginas de los anexos no se numeran
 
-\begin{tabbing}	
-CCP \quad\= Colector Cilindro-Parabólico  \\
-HCE \> Heat Collector Element \\
-HTF \> Heat Transfer Fluid \\
-IPH \> Industrial Process Heat \\
-SAM\> System Advisor Model \\
-SCA \> Solar Collector Assembly\\
-SCE \> Solar Collector Element \\
-TFG	\>Trabajo de Fin de Grado \\
-UNED \> Universidad Nacional de Educación a Distancia \\
-\end{tabbing}
+
+\clearpage
+\addcontentsline{toc}{chapter}{Código Fuente: csenergy.py}
+\chapter* {Anexo B. Código Fuente: csenergy.py}
+%\includepdf[pages=-] {chapters/csenergy.pdf}
+
+\clearpage
+\addcontentsline{toc}{chapter}{Código Fuente: interface.py}
+\chapter* {Anexo C. Código Fuente: interface.py}
+%\includepdf[pages=-] {chapters/interface.pdf}
+
+
 
 
 \end{document}

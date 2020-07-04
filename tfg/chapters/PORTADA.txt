@@ -1,0 +1,42 @@
+	%----------
+	%	PORTADA
+	%----------	
+	\begin{titlepage}
+		\begin{sffamily}
+			\color{azulELECTRICIDAD}
+			\begin{center}
+				\begin{figure}[H] %incluimos el logotipo de la Universidad
+					\makebox[\textwidth][c]{\includegraphics[width=8 cm]{logo_ingenieros.png}}
+				\end{figure}
+				\vspace{2.5cm}
+				\begin{Large}
+					Grado en Ingeniería Eléctrica\\			
+					2020\\
+					\vspace{2cm}		
+					\textsl{Trabajo Fin de Grado}
+					\bigskip
+					
+				\end{Large}
+				{\Huge Simulación de un campo solar de concentradores cilindroparabólicos con Python}\\
+				\vspace*{0.5cm}
+				\rule{10.5cm}{0.1mm}\\
+				\vspace*{0.9cm}
+				{\LARGE Francisco José Munuera Pérez}\\ 
+				\vspace*{1cm}
+				\begin{Large}
+					Tutor\\
+					Rubén Barbero Fresno\\
+					ETS de Ingenieros, UNED\\
+				\end{Large}
+			\end{center}
+			\vfill
+			\color{black}
+
+			\includegraphics[width=4.2cm]{images/creativecommons.png}\\ % logotipo de creativecommons
+			Esta obra se encuentra sujeta a la licencia Creative Commons \textbf{Reconocimiento - No Comercial - Sin Obra Derivada}
+		\end{sffamily}
+	\end{titlepage}
+	
+	\newpage %página en blanco o de cortesía
+	\thispagestyle{empty}
+	\mbox{}

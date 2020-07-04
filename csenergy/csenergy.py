@@ -1,33 +1,25 @@
 # -*- coding: utf-8 -*-
+
 """
-Created on Mon Dec 30 08:26:43 2019
+csenergy.py: A Python 3 library for modeling of parabolic-trough solar
+collectors
 @author: pacomunuera
+2020
 """
 
 import numpy as np
 import scipy as sc
-from scipy import constants
-import math as mt
-from decimal import Decimal
 from CoolProp.CoolProp import PropsSI
 import CoolProp.CoolProp as CP
-import copy
 import pandas as pd
 import pvlib as pvlib
-from pvlib import iotools
-from pvlib import solarposition
-from pvlib import irradiance
-from pvlib import iam
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from datetime import datetime, timedelta
-import time
 import os.path
-import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import rc
-import pytz
-#  import pint
+import json
 
 
 class Model:
@@ -50,6 +42,7 @@ class Model:
 
         if (hce.parameters['coating'] == 'CERMET' and
             hce.parameters['annulus'] == 'VACUUM'):
+
             if wind > 0:
                 eext = 1.69E-4*reext**0.0395*tro+1/(11.72+3.45E-6*reext)
                 hext = 0.
@@ -112,22 +105,17 @@ class ModelBarbero4thOrder(Model):
             tf = hce.tin + 0.5 * (hce.sca.hces[hce.hce_order - 1].tout -
                                   hce.sca.hces[hce.hce_order - 1].tin)
 
-        tri = tf  #  Absorber tube inner surface temperature
         massflow = hce.sca.loop.massflow
-        wspd = row[1]['Wspd']  #  Wind speed
-        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
-        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
+        wspd = row[1]['Wspd']  # Wind speed
+        text = row[1]['DryBulb']  # Dry bulb ambient temperature
+        sigma = sc.constants.sigma  # Stefan-Bolztmann constant
         dro = hce.parameters['Absorber tube outer diameter']
         dri = hce.parameters['Absorber tube inner diameter']
-        dgo = hce.parameters['Glass envelope outer diameter']
-        dgi = hce.parameters['Glass envelope inner diameter']
-        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
-            hce.parameters['Shield shading'])
-        A = hce.sca.parameters['Aperture']
-        x = 1 #  Calculation grid fits hce longitude
 
-        #  HCE wall thermal conductivity
-        # krec = hce.get_krec(tf)
+        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
+             hce.parameters['Shield shading'])
+
+        x = 1  # Calculation grid fits hce longitude
 
         #  Specific Capacity
         cp = htf.get_specific_heat(tf, hce.pin)
@@ -136,8 +124,8 @@ class ModelBarbero4thOrder(Model):
         # hint = hce.get_hint(tf, hce.pin, htf)
 
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-        # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
         urec = hce.get_urec(tf, hce.pin, htf)
+
         #  We suppose thermal performance, pr = 1, at first if  the hce is
         #  the first one in the loop or pr_j = pr_j-1 if there is a previous
         #  HCE in the loop.
@@ -156,7 +144,6 @@ class ModelBarbero4thOrder(Model):
         # qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text) + \
         #     qlost_brackets
         qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
-
 
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
         qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -218,8 +205,8 @@ class ModelBarbero4thOrder(Model):
                 z = pr0 + (1 / f0)
 
                 #  Eq. 3.40, 3.41 & 3.42 Babero2016
-                g1 = 1 + f1 + 2 * f2 * z + 3 * f3 * z**2 + 4 * f4 *z**3
-                g2 = 2 * f2 + 6 * f3 * z + 12 * f4 *z**2
+                g1 = 1 + f1 + 2 * f2 * z + 3 * f3 * z**2 + 4 * f4 * z**3
+                g2 = 2 * f2 + 6 * f3 * z + 12 * f4 * z**2
                 g3 = 6 * f3 + 24 * f4 * z
 
                 #  Eq. 3.39 Barbero2016
@@ -236,17 +223,10 @@ class ModelBarbero4thOrder(Model):
                 hce.set_pout(htf)
                 tf = 0.5 * (hce.tin + hce.tout)
 
-                #  HCE wall thermal conductivity
-                # krec = hce.get_krec(tf)
-
                 #  Specific Capacity
                 cp = htf.get_specific_heat(tf, hce.pin)
 
-                #  Internal transmission coefficient.
-                # hint = hce.get_hint(tf, hce.pin, htf)
-
                 #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-                # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
                 urec = hce.get_urec(tf, hce.pin, htf)
 
                 #  HCE emittance
@@ -255,42 +235,24 @@ class ModelBarbero4thOrder(Model):
                 #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
 
-                #  We calculate tro again.
-                # kt = htf.get_thermal_conductivity(tro1, hce.pin)
-
-                # gx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
-                #                   (2.3 * np.log10(dro/dri))) -
-                #                   sigma * hce.get_eext(tro1, wspd) *
-                #                   (tro1**4 - text**4) - hce.get_hext(wspd) -
-                #                   hce.get_qlost_brackets(tro1, text))
-
-                # root = sc.optimize.newton(gx,
-                #                           tro1,
-                #                           maxiter=100000)
-
-                # tro2 = root
-
                 tro2 = tf + qabs * pr / urec
                 errtro = abs(tro2-tro1)
                 tro1 = tro2
 
-                #  Increase qlost with the thermal power lost througth bracktets
+                #  Increase qlost with thermal power lost througth bracktets
                 qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
                 #  Thermal power loss. Eq. 3.23 Barbero2016
-                # qlost = sigma * eext * (tro1**4 - text**4) + \
-                #     hext * (tro1 - text) + qlost_brackets
                 qlost = sigma * eext * (tro1**4 - text**4)
 
                 #  Critical Thermal power loss. Eq. 3.50 Barbero2016
                 qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
 
-                #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+                #  Critical Internal heat transfer coeff. Eq. 3.51 Barbero2016
                 ucrit = 4 * sigma * eext * tf**3 + hext
 
                 #  Transmission Units Number, Ec. 3.30 Barbero2016
                 NTU = urec * x * L * np.pi * dro / (massflow * cp)
-
 
             if step == 1000:
                 print('No se alcanzó convergencia. HCE', hce.get_index())
@@ -307,34 +269,13 @@ class ModelBarbero4thOrder(Model):
             tro1 = tf - 5
             while (errtro > self.max_err_tro):
 
-                # hce.pr = 0.0
-                # tro = 0.5 * (hce.tin + hce.tout)
-                # #  HCE emittance
-                # eext = hce.get_eext(tro, wspd)
-                # #  External Convective Heat Transfer equivalent coefficient
-                # hext = hce.get_hext(wspd)
-
-                # #  Thermal power lost. Eq. 3.23 Barbero2016
-                # qlost = sigma * eext * (tro**4 - text**4) + \
-                #     hext * (tro - text) + hce.get_qlost_brackets(tro, text)
-
-                # #  Thermal power lost througth  bracktets
-                # qlost_brackets = hce.get_qlost_brackets(tro, text)
-
-                # hce.qlost = qlost
-                # hce.qlost_brackets =  qlost_brackets
-                # hce.set_tout(htf)
-                # hce.set_pout(htf)
-                # errtro = abs(tro - 0.5 * (hce.tin + hce.tout))
-
-
                 kt = htf.get_thermal_conductivity(tro1, hce.pin)
 
                 fx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
                                     np.log(dro/dri)) -
-                                  sigma * hce.get_eext(tro1, wspd) *
-                                  (tro1**4 - text**4) - hce.get_hext(wspd) -
-                                  hce.get_qlost_brackets(tro1, text))
+                                   sigma * hce.get_eext(tro1, wspd) *
+                                   (tro1**4 - text**4) - hce.get_hext(wspd) -
+                                   hce.get_qlost_brackets(tro1, text))
 
                 root = sc.optimize.newton(fx,
                                           tro1,
@@ -346,9 +287,6 @@ class ModelBarbero4thOrder(Model):
                 hext = hce.get_hext(wspd)
 
                 #  Thermal power lost. Eq. 3.23 Barbero2016
-                # qlost = sigma * eext * (tro2**4 - text**4) + \
-                #     hext * (tro2 - text) + hce.get_qlost_brackets(tro2, text)
-
                 qlost = sigma * eext * (tro2**4 - text**4) + \
                     hext * (tro2 - text)
 
@@ -391,24 +329,12 @@ class ModelBarbero1stOrder(Model):
         sigma = sc.constants.sigma  # Stefan-Bolztmann constant
         dro = hce.parameters['Absorber tube outer diameter']
         dri = hce.parameters['Absorber tube inner diameter']
-        dgo = hce.parameters['Glass envelope outer diameter']
-        dgi = hce.parameters['Glass envelope inner diameter']
-        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
-            hce.parameters['Shield shading'])
-        A = hce.sca.parameters['Aperture']
-        x = 1 #  Calculation grid fits hce longitude
-
-        #  HCE wall thermal conductivity
-        # krec = hce.get_krec(tf)
+        x = 1  # Calculation grid fits hce longitude
 
         #  Specific Capacity
         cp = htf.get_specific_heat(tf, hce.pin)
 
-        #  Internal transmission coefficient.
-        # hint = hce.get_hint(tf, hce.pin, htf)
-
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-        # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
         urec = hce.get_urec(tf, hce.pin, htf)
         #  We suppose performance, pr = 1, at first
         pr = 1.0
@@ -434,7 +360,6 @@ class ModelBarbero1stOrder(Model):
         ucrit = 4 * sigma * eext * tf**3 + hext
 
         #  Ec. 3.63
-        ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
         fcrit = 1 / (1 + (ucrit / urec))
 
         #  Ec. 3.64
@@ -443,8 +368,8 @@ class ModelBarbero1stOrder(Model):
 
         if qabs > qcrit:
             hce.pr = ((1 - (qcrit / qabs)) *
-                  (1 / (NTUperd * x)) *
-                  (1 - np.exp(-NTUperd * fcrit * x)))
+                      (1 / (NTUperd * x)) *
+                      (1 - np.exp(-NTUperd * fcrit * x)))
             hce.pr = hce.pr * (1 - qlost_brackets / qabs)
             hce.qlost = qlost
             hce.qlost_brackets = qlost_brackets
@@ -457,27 +382,6 @@ class ModelBarbero1stOrder(Model):
             tf = 0.5 * (hce.tin + hce.tout)
             tro1 = tf - 5
             while (errtro > self.max_err_tro):
-
-                # hce.pr = 0.0
-                # tro = 0.5 * (hce.tin + hce.tout)
-                # #  HCE emittance
-                # eext = hce.get_eext(tro, wspd)
-                # #  External Convective Heat Transfer equivalent coefficient
-                # hext = hce.get_hext(wspd)
-
-                # #  Thermal power lost. Eq. 3.23 Barbero2016
-                # qlost = sigma * eext * (tro**4 - text**4) + \
-                #     hext * (tro - text) + hce.get_qlost_brackets(tro, text)
-
-                # #  Thermal power lost througth  bracktets
-                # qlost_brackets = hce.get_qlost_brackets(tro, text)
-
-                # hce.qlost = qlost
-                # hce.qlost_brackets =  qlost_brackets
-                # hce.set_tout(htf)
-                # hce.set_pout(htf)
-                # errtro = abs(tro - 0.5 * (hce.tin + hce.tout))
-
 
                 kt = htf.get_thermal_conductivity(tro1, hce.pin)
 
@@ -496,10 +400,6 @@ class ModelBarbero1stOrder(Model):
                 #  External Convective Heat Transfer equivalent coefficient
                 hext = hce.get_hext(wspd)
 
-                #  Thermal power lost. Eq. 3.23 Barbero2016
-                # qlost = sigma * eext * (tro2**4 - text**4) + \
-                #     hext * (tro2 - text) + hce.get_qlost_brackets(tro2, text)
-
                 qlost = sigma * eext * (tro2**4 - text**4) + \
                     hext * (tro2 - text)
 
@@ -507,7 +407,7 @@ class ModelBarbero1stOrder(Model):
                 qlost_brackets = hce.get_qlost_brackets(tro2, text)
 
                 hce.qlost = qlost
-                hce.qlost_brackets =  qlost_brackets
+                hce.qlost_brackets = qlost_brackets
                 hce.set_tout(htf)
                 hce.set_pout(htf)
                 tf = 0.5 * (hce.tin + hce.tout)
@@ -527,7 +427,6 @@ class ModelBarberoSimplified(Model):
         if qabs is None:
             qabs = hce.qabs
 
-        tin = hce.tin
         #  If the hce is the first one in the loop tf = tin, else
         #  tf equals tin plus half the jump of temperature in the previous hce
         if hce.hce_order == 0:
@@ -536,32 +435,15 @@ class ModelBarberoSimplified(Model):
             tf = hce.tin + 0.5 * (hce.sca.hces[hce.hce_order - 1].tout -
                                   hce.sca.hces[hce.hce_order - 1].tin)
 
-
-        tri = tf  #  Absorber tube inner surface temperature
-        massflow = hce.sca.loop.massflow
-        wspd = row[1]['Wspd']  #  Wind speed
-        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
-        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
-        dro = hce.parameters['Absorber tube outer diameter']
-        dri = hce.parameters['Absorber tube inner diameter']
-        dgo = hce.parameters['Glass envelope outer diameter']
-        dgi = hce.parameters['Glass envelope inner diameter']
-        L = (hce.parameters['Length'] * hce.parameters['Bellows ratio'] *
-            hce.parameters['Shield shading'])
-        A = hce.sca.parameters['Aperture']
-        x = 1 #  Calculation grid fits hce longitude
-
-        #  HCE wall thermal conductivity
-        # krec = hce.get_krec(tf)
+        wspd = row[1]['Wspd']  # Wind speed
+        text = row[1]['DryBulb']  # Dry bulb ambient temperature
+        sigma = sc.constants.sigma  # Stefan-Bolztmann constant
+        x = 1  # Calculation grid fits hce longitude
 
         #  Specific Capacity
         cp = htf.get_specific_heat(tf, hce.pin)
 
-        #  Internal transmission coefficient.
-        # hint = hce.get_hint(tf, hce.pin, htf)
-
         #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
-        # urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
         urec = hce.get_urec(tf, hce.pin, htf)
 
         #  We suppose performance, pr = 1, at first
@@ -601,24 +483,6 @@ class ModelBarberoSimplified(Model):
         hce.qlost_brackets = qlost_brackets
         hce.set_tout(htf)
         hce.set_pout(htf)
-
-
-# class ModelHottelWhilier(Model):
-
-#         def __ini__(self, simulation):
-#             super(Model, self).__init__(simulation)
-
-
-# class ModelNaumFrainderaich(Model):
-
-#         def __ini__(self, simulation):
-#             super(Model, self).__init__(simulation)
-
-
-# class ModelASHRAE(Model):
-
-#         def __ini__(self, simulation):
-#             super(Model, self).__init__(simulation)
 
 
 class HCE(object):
@@ -667,11 +531,11 @@ class HCE(object):
                  self.parameters['Absorber tube outer diameter'])
 
         else:
-            q =  ( -1 * (self.qlost) * np.pi *
-                  self.parameters['Length'] *
-                  self.parameters['Bellows ratio'] *
-                  self.parameters['Shield shading'] *
-                  self.parameters['Absorber tube outer diameter'])
+            q = (-1 * (self.qlost) * np.pi *
+                 self.parameters['Length'] *
+                 self.parameters['Bellows ratio'] *
+                 self.parameters['Shield shading'] *
+                 self.parameters['Absorber tube outer diameter'])
 
         self.tout = htf.get_temperature_by_integration(
             self.tin, q, self.sca.loop.massflow, self.pin)
@@ -679,45 +543,47 @@ class HCE(object):
 
     def set_pout(self, htf):
 
-        # TO-DO CÁLCULLO PERDIDA DE CARGA:
-        # Ec. Colebrook-White para el cálculo del factor de fricción de Darcy
+        '''
+        TO-DO: CÁLCULLO PERDIDA DE CARGA:
 
-        # re_turbulent = 2300
+        Ec. Colebrook-White para el cálculo del factor de fricción de Darcy
+        re_turbulent = 2300
 
-        # k = self.parameters['Inner surface roughness']
-        # D = self.parameters['Absorber tube inner diameter']
-        # re = htf.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
+        k = self.parameters['Inner surface roughness']
+        D = self.parameters['Absorber tube inner diameter']
+        re = htf.get_Reynolds(D, self.tin, self.pin, self.sca.loop.massflow)
 
+        if re < re_turbulent:
+            darcy_factor = 64 / re
 
-        # if re < re_turbulent:
-        #     darcy_factor = 64 / re
+        else:
+            # a = (k /  D) / 3.7
+            a = k / 3.7
+            b = 2.51 / re
+            x = 1
 
-        # else:
-        #     # a = (k /  D) / 3.7
-        #     a = k / 3.7
-        #     b = 2.51 / re
-        #     x = 1
+            fx = lambda x: x + 2 * np.log10(a + b * x )
 
-        #     fx = lambda x: x + 2 * np.log10(a + b * x )
+            dfx = lambda x: 1 + (2 * b) / (np.log(10) * (a + b * x))
 
-        #     dfx = lambda x: 1 + (2 * b) / (np.log(10) * (a + b * x))
+            root = sc.optimize.newton(fx,
+                                      x,
+                                      fprime=dfx,
+                                      maxiter=10000)
 
-        #     root = sc.optimize.newton(fx,
-        #                               x,
-        #                               fprime=dfx,
-        #                               maxiter=10000)
+            darcy_factor = 1 / (root**2)
 
-        #     darcy_factor = 1 / (root**2)
+        rho = htf.get_density(self.tin, self.pin)
+        v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
+        g = sc.constants.g
 
-        # rho = htf.get_density(self.tin, self.pin)
-        # v = 4 * self.sca.loop.massflow / (rho * np.pi * D**2)
-        # g = sc.constants.g
+        # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
+        deltap_mcl = darcy_factor * (self.parameters['Length'] / D) * \
+            (v**2 / (2 * g))
+        deltap = deltap_mcl * rho * g
+        self.pout = self.pin - deltap
+        '''
 
-        # # Ec. Darcy-Weisbach para el cálculo de la pérdida de carga
-        # deltap_mcl = darcy_factor * (self.parameters['Length'] / D) * \
-        #     (v**2 / (2 * g))
-        # deltap = deltap_mcl * rho * g
-        # self.pout = self.pin - deltap
         self.pout = self.pin
 
     def set_pr_opt(self, solarpos):
@@ -728,8 +594,7 @@ class HCE(object):
         self.pr_opt = pr_opt_peak * IAM * np.cos(np.radians(aoi))
 
     def set_qabs(self, aoi, solarpos, row):
-        ''' Total solar power that reach de absorber tube per longitude unit'''
-
+        """Total solar power that reach de absorber tube per longitude unit."""
         dni = row[1]['DNI']
         cg = (self.sca.parameters['Aperture'] /
               (np.pi*self.parameters['Absorber tube outer diameter']))
@@ -741,10 +606,10 @@ class HCE(object):
 
     def get_krec(self, t):
 
-        # From Choom S. Kim for A
+        # From Choom S. Kim for A316
         #  kt = 100*(0.1241+0.00003279*t)
 
-        # Ec. 4.22 Conductividad para el acero 321H, ver otras opciones.
+        # Ec. 4.22 Conductividad para el acero 321H.
         kt = 0.0153 * (t - 273.15) + 14.77
 
         return kt
@@ -787,7 +652,6 @@ class HCE(object):
             pr_borders = 0.0
 
         else:
-            # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
             sca_unused_length = (self.sca.parameters["Focal Len"] *
                                  np.tan(np.radians(aoi)))
 
@@ -801,8 +665,9 @@ class HCE(object):
                 pr_borders = 0.0
 
             elif self.hce_order == unused_hces:
-                pr_borders = 1 - ((sca_unused_length % self.parameters["Length"]) /
-                                  self.parameters["Length"])
+                pr_borders = 1 - \
+                    ((sca_unused_length % self.parameters["Length"]) /
+                     self.parameters["Length"])
             else:
                 pr_borders = 1.0
 
@@ -830,7 +695,7 @@ class HCE(object):
             print("ERROR shading",  shading)
 
         s2 = self.get_pr_shadows2(solarpos)
-        # print("s1", shading, "s2", s2)
+
         return shading
 
     def get_pr_shadows2(self, solarpos):
@@ -844,16 +709,8 @@ class HCE(object):
 
         #  Surface tilt
         beta = beta0 + 180 * sigmabeta
-        # aoi = pvlib.irradiance.aoi(beta,
-        #                            surface_azimuth,
-        #                            solarpos['zenith'][0],
-        #                            solarpos['azimuth'][0])
 
         surface_azimuth = self.sca.get_surface_azimuth(solarpos)
-
-        # Hs = abs(self.sca.parameters['Aperture'] -
-        #        self.sca.loop.parameters['row_spacing'] *
-        #        np.cos(np.radians(beta0)))
 
         Ls = abs(len(self.sca.loop.scas) * self.sca.parameters['SCA Length'] -
                   abs(self.sca.loop.parameters['row_spacing'] *
@@ -861,13 +718,6 @@ class HCE(object):
                                         solarpos['azimuth'][0]))))
 
         ls = Ls / (len(self.sca.loop.scas) * self.sca.parameters['SCA Length'])
-
-        # if solarpos['zenith'][0] < 90:
-        #     shading = 1 - (Ls * Hs / (len(self.sca.loop.scas) *
-        #                               self.sca.parameters['SCA Length'] *
-        #                               self.sca.parameters['Aperture']))
-        # else:
-        #     shading = 0
 
         if solarpos['zenith'][0] < 90:
             shading = min(abs(np.cos(np.radians(beta0))) * \
@@ -884,18 +734,6 @@ class HCE(object):
         return 0.0
 
     def get_hint(self, t, p, fluid):
-
-        #  Prandtl number
-        # prf = fluid.get_prandtl(t, p)
-        # kf = fluid.get_thermal_conductivity(t, p)
-        # mu = fluid.get_dynamic_viscosity(t, p)
-        # dri = self.parameters['Absorber tube inner diameter']
-        # #  Reynolds number for absorber tube inner diameter, dri
-        # redri = 4 * self.sca.loop.massflow / (mu * np.pi * dri)
-        # #  Nusselt num. Dittus-Boelter correlation. Eq. 4.14 Barbero2016
-        # nudb = 0.023 * redri**0.8 * prf** 0.4
-        # #  Internal transmission coefficient.
-        # hint = kf * nudb / dri
 
         #  Gnielinski correlation. Eq. 4.15 Barbero2016
         kf = fluid.get_thermal_conductivity(t, p)
@@ -1082,12 +920,12 @@ class SCA(object):
 
     def get_surface_azimuth(self, solarpos):
 
-        if self.loop.parameters['Tracking Type'] == 1: # N-S single axis tracker
+        if self.loop.parameters['Tracking Type'] == 1:  # N-S single axis
             if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-                surface_azimuth = 90 # Surface facing east
+                surface_azimuth = 90  # Surface facing east
             else:
-                surface_azimuth = 270 # Surface facing west
-        elif self.loop.parameters['Tracking Type'] == 2:  # E-W single axis tracker
+                surface_azimuth = 270  # Surface facing west
+        elif self.loop.parameters['Tracking Type'] == 2:  # E-W single axis
             surface_azimuth = 180  # Surface facing the equator
 
         return surface_azimuth
@@ -1270,46 +1108,6 @@ class __Loop__(object):
         self.wasted_power = 0.0
 
 
-    def show_parameter_vs_x(self, parameters = None):
-
-        data = []
-
-        for s in self.scas:
-            for h in s.hces:
-                data.append({'num': h.hce_order,
-                             'tin': h.tin,
-                             'tout': h.tout,
-                             'pin': round(h.pin/100000,3),
-                             'pout': round(h.pout/100000,3),
-                             'pr': h.pr,
-                             'qabs': h.qabs,
-                             'qlost': h.qlost})
-
-        loop_df = pd.DataFrame(data)
-
-        if parameters:
-
-            loop_df[parameters].plot(
-                figsize=(20,10), linewidth=5, fontsize=20)
-            plt.xlabel('HCE order', fontsize=20)
-
-        else:
-
-            loop_df[['num', 'tin', 'tout', 'pin', 'pout',
-                     'pr', 'qabs', 'qlost']].plot(
-                figsize=(20,10), linewidth=5, fontsize=20)
-
-            plt.xlabel('HCE order', fontsize=20)
-
-
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-        # pd.set_option('display.max_colwidth', -1)
-        print(loop_df[['num', 'tin', 'tout', 'pin', 'pout',
-                       'pr', 'qabs', 'qlost']])
-        #print(self.datasource.dataframe)
-
     def check_min_massflow(self, htf):
 
         dri = self.parameters['Absorber tube inner diameter']
@@ -1424,12 +1222,11 @@ class BaseLoop(__Loop__):
             pr_borders = 0.0
 
         else:
-            # Llamado "bordes" en Tesis. Pérdidas de los HCE de cabecera según aoi
             sca_unused_length = (self.parameters_sca["Focal Len"] *
                                  np.tan(np.radians(aoi)))
 
-            pr_borders = 1 - sca_unused_length / (self.parameters['hces'] * \
-                                              self.parameters_hce["Length"])
+            pr_borders = 1 - sca_unused_length / \
+                (self.parameters['hces'] * self.parameters_hce["Length"])
 
             if pr_borders > 1.0 or pr_borders < 0.0:
                 print("ERROR pr_geo out of limits", pr_borders)
@@ -1461,50 +1258,6 @@ class BaseLoop(__Loop__):
 
     def get_pr_shadows2(self, solarpos):
 
-        # sigmabeta = 0.0
-        # beta0 = 0.0
-
-        # if self.parameters['Tracking Type'] == 1:  # N-S single axis tracker
-        #     if solarpos['azimuth'][0] > 0 and solarpos['azimuth'][0] <= 180:
-        #         surface_azimuth = 90  # Surface facing east
-        #     else:
-        #         surface_azimuth = 270  # Surface facing west
-        # elif self.parameters['Tracking Type'] == 2:  # E-W single axis tracker
-        #     surface_azimuth = 180  # Surface facing the equator
-
-        # #  En esta fórmula asumo que el seguimiento del SCA es perfecto
-        # #  pero hay que ver la posibilidad de modelar cierto error o desfase
-        # beta0 = np.degrees(np.arctan(
-        #     np.tan(np.radians(solarpos['zenith'][0])) *
-        #     np.cos(np.radians(surface_azimuth -
-        #                       solarpos['azimuth'][0]))))
-        # if beta0 >= 0:
-        #     sigmabeta = 0
-        # else:
-        #     sigmabeta = 1
-
-        # #  Surface tilt
-        # beta = beta0 + 180 * sigmabeta
-        # # aoi = pvlib.irradiance.aoi(beta,
-        # #                            surface_azimuth,
-        # #                            solarpos['zenith'][0],
-        # #                            solarpos['azimuth'][0])
-
-        # Hs = abs(self.parameters_sca['Aperture'] -
-        #        self.parameters['row_spacing'] *
-        #        np.cos(np.radians(beta)))
-
-        # Ls = abs(len(self.scas) * self.parameters_sca['SCA Length'] -
-        #          abs(self.parameters['row_spacing'] *
-        #              np.tan(np.radians(surface_azimuth -
-        #                                solarpos['azimuth'][0]))))
-
-        # shading = (Ls * Hs / (len(self.scas) *
-        #                         self.parameters_sca['SCA Length'] *
-        #                         self.parameters_sca['Aperture']))
-
-        # return shading
-
         beta0 = self.get_tracking_angle(solarpos)
 
         if beta0 >= 0:
@@ -1514,16 +1267,8 @@ class BaseLoop(__Loop__):
 
         #  Surface tilt
         beta = beta0 + 180 * sigmabeta
-        # aoi = pvlib.irradiance.aoi(beta,
-        #                            surface_azimuth,
-        #                            solarpos['zenith'][0],
-        #                            solarpos['azimuth'][0])
 
         surface_azimuth = self.get_surface_azimuth(solarpos)
-
-        # Hs = abs(self.sca.parameters['Aperture'] -
-        #        self.sca.loop.parameters['row_spacing'] *
-        #        np.cos(np.radians(beta0)))
 
         Ls = abs(len(self.scas) * self.parameters_sca['SCA Length'] -
                   abs(self.parameters['row_spacing'] *
@@ -1531,13 +1276,6 @@ class BaseLoop(__Loop__):
                                         solarpos['azimuth'][0]))))
 
         ls = Ls / (len(self.scas) * self.parameters_sca['SCA Length'])
-
-        # if solarpos['zenith'][0] < 90:
-        #     shading = 1 - (Ls * Hs / (len(self.sca.loop.scas) *
-        #                               self.sca.parameters['SCA Length'] *
-        #                               self.sca.parameters['Aperture']))
-        # else:
-        #     shading = 0
 
         if solarpos['zenith'][0] < 90:
             shading = min(abs(np.cos(np.radians(beta0))) * \
@@ -1547,7 +1285,6 @@ class BaseLoop(__Loop__):
             shading = 0
 
         return shading
-
 
 
     def get_solar_fraction(self):
@@ -1773,12 +1510,9 @@ class Subfield(object):
         return 'SB.' + self.name
 
 class SolarField(object):
-    '''
-    Parabolic Trough Solar Field
-    '''
 
-    def __init__(self, subfield_settings, loop_settings, sca_settings, hce_settings):
-
+    def __init__(self, subfield_settings, loop_settings, sca_settings,
+                 hce_settings):
 
         self.subfields = []
         self.total_loops = 0
@@ -1824,7 +1558,7 @@ class SolarField(object):
                             HCE(self.subfields[-1].loops[-1].scas[-1], h,
                                 hce_settings))
 
-        # FUTURE WORK
+        # TO-DO: FUTURE WORK
         self.storage_available = False
         self.operation_mode = "subfield_heating"
 
@@ -1923,32 +1657,32 @@ class SolarField(object):
             / self.massflow
 
     def set_tout(self, htf):
-        '''
+        """
         Calculates HTF output temperature throughout the solar plant as a
         weighted average based on the enthalpy of the mass flow in  each
         subfield of the solar field
-        '''
+        """
         self.tout = htf.get_temperature(
             np.sum([sb.massflow * htf.get_enthalpy(sb.tout, sb.pout) for sb in
              self.subfields]) / self.massflow, self.pout)
 
     def set_act_tout(self, htf):
-        '''
+        """
         Calculates HTF output temperature throughout the solar plant as a
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
-        '''
+        """
         self.act_tout = htf.get_temperature(
             np.sum([sb.act_massflow *
                     tf.get_enthalpy(sb.act_tout, sb.act_pout) for sb in
              self.subfields]) / self.act_massflow, self.act_pout)
 
     def set_tin(self, htf):
-        '''
+        """
         Calculates HTF output temperature throughout the solar plant as a
         weighted average based on the enthalpy of the mass flow in each
         loop of the solar field
-        '''
+        """
         self.tin = tf.get_temperature(
             np.sum([sb.massflow *
                     tf.get_enthalpy(sb.tin, sb.pin) for sb in
@@ -1996,11 +1730,11 @@ class SolarField(object):
 
 
 class SolarFieldSimulation(object):
-    '''
+    """
     Definimos la clase simulacion para representar las diferentes
     pruebas que lancemos, variando el archivo TMY, la configuracion del
     site, la planta, el modo de operacion o el modelo empleado.
-    '''
+    """
 
     def __init__(self, settings):
 
@@ -2011,7 +1745,6 @@ class SolarFieldSimulation(object):
         self.fastmode = settings['simulation']['fastmode']
         self.tracking = True
         self.solarfield = None
-        self.powersystem = None
         self.htf = None
         self.coldfluid = None
         self.site = None
@@ -2468,10 +2201,6 @@ class SolarFieldSimulation(object):
 
     def show_report(self, keys= None):
 
-        # from IPython.display import display, Math, Latex
-        # display(Math(r'F(k) = \int_{-\infty}^{\infty} f(x) e^{2\pi i k} dx'))
-
-
         self.report_df[keys].plot(
                         figsize=(20,10), linewidth=5, fontsize=20)
         plt.xlabel('Date', fontsize=20)
@@ -2521,13 +2250,6 @@ class SolarFieldSimulation(object):
 
         self.report_df = self.datasource.dataframe
 
-        # self.report_df = self.datasource.dataframe[
-        #     (self.datasource.dataframe.index >= self.first_date) &
-        #     (self.datasource.dataframe.index <= self.last_date)]
-
-        # self.report_df = self.report_df[keys]
-
-
         try:
             initialdir = "./simulations_outputs/"
             prefix = datetime.today().strftime("%Y%m%d %H%M%S ")
@@ -2545,34 +2267,6 @@ class SolarFieldSimulation(object):
         except Exception:
             raise
             print('Error saving results, unable to save file: %r', path)
-
-        # self.show_report(keys_graphics_power)
-        # self.show_report(keys_graphics_temp)
-
-
-    def testgeo(self):
-
-
-        for row in self.datasource.dataframe.iterrows():
-
-            solarpos = self.site.get_solarposition(row)
-
-            for s in self.base_loop.scas:
-                aoi = s.get_aoi(solarpos)
-                self.datasource.dataframe.at[row[0], 'sol.ze'] = round(solarpos['zenith'][0],2)
-                self.datasource.dataframe.at[row[0], 'sol.az'] = round(solarpos['azimuth'][0],2)
-                self.datasource.dataframe.at[row[0], 'aoi'] = round(aoi,2)
-
-        self.datasource.dataframe[['sol.ze', 'sol.az', 'aoi']].plot(figsize=(20,10), linewidth=5, fontsize=20)
-        plt.xlabel('Date', fontsize=20)
-
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-        pd.set_option('display.max_colwidth', -1)
-
-        print(self.datasource.dataframe)
-
 
     def show_message(self):
 
@@ -2660,7 +2354,6 @@ class LoopSimulation(object):
 
             self.simulate_base_loop(solarpos, row)
 
-            # self.gather_data(row, solarpos)
             str_data = ("{0} Ang. Zenith: {1:.2f} DNI: {2} W/m2 " +
                          "Qm: {3:.1f}kg/s Tin: {4:.1f}K Tout: {5:1f}K")
 
@@ -2670,30 +2363,11 @@ class LoopSimulation(object):
 
         print(self.datasource.dataframe)
 
-        self.datasource.dataframe[['Z','E','aoi']].plot(
-            use_index = False,
-            x = 'Z',
-            y = 'aoi',
-            figsize=(20,10), linewidth=5, fontsize=20)
-
-        rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-        ## for Palatino and other serif fonts use:
-        ## rc('font',**{'family':'serif','serif':['Palatino']})
-        rc('text', usetex=True)
-
-        plt.ylabel('Performance, pr', fontsize=20)
-        plt.xlabel('$q_{abs} [kW]$', fontsize=20)
-
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-
         flag_1 = datetime.now()
         delta_t = flag_1 - flag_0
         print("Total runtime: ", delta_t.total_seconds())
 
         self.save_results()
-
 
     def simulate_base_loop(self, solarpos, row):
 
@@ -2742,8 +2416,6 @@ class LoopSimulation(object):
         self.datasource.dataframe.at[row[0], 'E'] = solarpos['elevation'][0]
         self.datasource.dataframe.at[row[0], 'aoi'] = aoi
 
-
-
     def save_results(self):
 
 
@@ -2778,22 +2450,6 @@ class LoopSimulation(object):
         print("HTF:", self.parameters['HTF']['name'])
         print("---------------------------------------------------")
 
-
-
-class Air(object):
-
-
-    def get_cinematic_viscosity(self, t):
-
-        # t: air temperature [K]
-        return 8.678862e-11 * t**2 + 4.069284e-08 * t + -4.288741e-06
-
-
-    def get_reynolds(self, t, L, v):
-
-        nu = self.get_cinematic_viscosity(t)
-
-        return v * L / nu
 
 class Fluid:
 
@@ -2867,7 +2523,6 @@ class Fluid:
         alpha = kf / (rho * cp)
 
         # #  Prandtl number
-        # prandtl = mu / alpha
         prandtl = cp * mu / kf
 
         return prandtl
@@ -2980,22 +2635,15 @@ class FluidTabular(Fluid):
 
         poly = np.polynomial.polynomial.Polynomial(self.rho)
 
-        # return poly(t) * (p * 1.0e-4)**1.0e-3
         return poly(t)
 
     def get_dynamic_viscosity(self, t, p):
 
         poly = np.polynomial.polynomial.Polynomial(self.mu)
 
-        # if t > self.tmax:
-        #     mu_  = poly(self.tmax)
-        # else:
-        #     mu_ = poly(t)
+        mu = poly(t)
 
-        # mu_ = 0.00012
-
-        mu_ = poly(t)
-        return mu_
+        return mu
 
     def get_specific_heat(self, t, p):
 
@@ -3040,7 +2688,6 @@ class FluidTabular(Fluid):
     def get_temperature_by_integration(self, tin, h, mf=None, p=None):
 
 
-        #tout = tin
         cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8 = tuple(self.cp)
 
         a0 = (h/mf + cp0 * tin + cp1 * tin**2 / 2 + cp2 * tin**3 / 3 +
@@ -3069,10 +2716,6 @@ class FluidTabular(Fluid):
         else:
             tout = tin
 
-        # for r in roots:
-        #     if r.imag == 0 and r.real >= 0:
-        #         tout = r.real
-
         return tout
 
 
@@ -3085,9 +2728,6 @@ class Weather(object):
         self.weatherdata = None
 
         if settings is not None:
-            # self.filename = settings['filename']
-            # self.filepath = settings['filepath']
-            # self.file = self.filepath + self.filename
             self.openWeatherDataFile(settings['filepath'] +
                                      settings['filename'])
             # self.file
@@ -3157,32 +2797,16 @@ class Weather(object):
         self.dataframe.drop(columns = columns_to_drop, inplace = True)
 
     def site_to_dict(self):
-        '''
+        """
         pvlib.iotools realiza modificaciones en los nombres de las columnas.
-
-        Source,Location ID,City,State,Country,Latitude,Longitude,Time Zone,Elevation,Local Time Zone,Dew Point Units,DHI Units,DNI Units,GHI Units,Temperature Units,Pressure Units,Wind Direction Units,Wind Speed,Surface Albedo Units,Version'''
+        """
 
         return {"name": 'nombre_site',
                 "latitude": self.site['latitude'],
                 "longitude": self.site['longitude'],
                 "altitude": self.site['altitude']}
-        # return {"name": self.site['City'],
-        #         "latitude": self.site['latitude'],
-        #         "longitude": self.site['longitude'],
-        #         "altitude": self.site['altitude']}
 
 class FieldData(object):
-            # if self.datatype == 1:  # Because tmy format include TZ info
-            #     naive_datetime = datetime.strptime(
-            #     row[0].strftime('%Y/%m/%d %H:%M'), "%Y/%m/%d %H:%M")
-            # else:
-            #     naive_datetime = row[0]
-
-            # if (naive_datetime < self.first_date or
-            #     naive_datetime > self.last_date):
-            #     self.datasource.dataframe.drop(row[0], axis=0)
-
-
 
     def __init__(self, settings, tags = None):
         self.filename = settings['filename']
@@ -3225,8 +2849,6 @@ class FieldData(object):
                     df = pd.read_csv(
                         path, sep=';',
                         decimal= ',',
-                        #dayfirst=True,
-                        #index_col=0,
                         usecols=[0])
 
                     df = pd.to_datetime(
@@ -3258,64 +2880,6 @@ class FieldData(object):
 
         self.dataframe.index = pd.to_datetime(self.dataframe.index,
                                               format= "%d/%m/%Y %H:%M")
-
-
-
-
-
-        # try:
-        #     if path is None:
-        #         root = Tk()
-        #         root.withdraw()
-        #         path = askopenfilename(initialdir = ".fielddata_files/",
-        #                            title = "choose your file",
-        #                            filetypes = (("csv files","*.csv"),
-        #                                         ("all files","*.*")))
-        #         root.update()
-        #         root.destroy()
-        #         if path is None:
-        #             return
-        #         else:
-        #             strfilename, strext = os.path.splitext(path)
-        #             if  strext == ".csv":
-        #                 self.dataframe = pd.read_csv(
-        #                     path, sep=';',
-        #                     decimal= ',',
-        #                     dayfirst=True,
-        #                     index_col=0)
-
-        #                 self.file = path
-        #             elif strext == ".xls":
-
-        #                 self.dataframe = pd.read_excel(path)
-        #                 self.file = path
-        #             else:
-        #                 print("unknow extension ", strext)
-        #                 return
-        #     else:
-        #         strfilename, strext = os.path.splitext(path)
-
-        #         if  strext == ".csv":
-        #             self.dataframe = pd.read_csv(
-        #                 path, sep=';',
-        #                 decimal= ',',
-        #                 dayfirst=True,
-        #                 index_col=0)
-
-        #             self.file = path
-        #         elif strext == ".xls":
-        #             self.dataframe = pd.read_excel(path)
-        #             self.file = path
-        #         else:
-        #             print("unknow extension ", strext)
-        #             return
-        # except Exception:
-        #     raise
-        #     txMessageBox.showerror('Error loading FieldData File',
-        #                            'Unable to open file: %r', self.file)
-
-        # self.dataframe.index = pd.to_datetime(self.dataframe.index,
-        #                                       format= "%d/%m/%Y %H:%M")
 
     def change_units(self):
 
@@ -3393,18 +2957,6 @@ class TableData(object):
                                    'Unable to open file: %r', self.file)
 
 
-class PowerSystem(object):
-    '''
-    Power Plant as a set composed by a solarfield, a HeatExchanger, a
-    PowerCycle and a BOPSystem
-
-    '''
-
-    def __init__(self, settings):
-
-        pass
-
-
 class Site(object):
     def __init__(self, settings):
 
@@ -3435,235 +2987,14 @@ class Site(object):
 
         return hour_angle
 
+if __name__ == '__main__':
 
-class HCEScatterMask(object):
+    with open("./saved_configurations/TEST_2016_DOWA.json") as simulation_file:
+        SIMULATION_SETTINGS = json.load(simulation_file)
+        SIM = cs.SolarFieldSimulation(SIMULATION_SETTINGS)
 
-# %matplotlib inline
-
-# import matplotlib.pyplot as plt
-# import numpy as np
-# from scipy import stats
-# import seaborn as sns
-
-# np.random.seed(2016) # replicar random
-
-# # parametros esteticos de seaborn
-# sns.set_palette("deep", desat=.6)
-# sns.set_context(rc={"figure.figsize": (8, 4)})
-
-# mu, sigma = 0, 0.2 # media y desvio estandar
-# datos = np.random.normal(mu, sigma, 1000) #creando muestra de datos
-
-# # histograma de distribución normal.
-# cuenta, cajas, ignorar = plt.hist(datos, 20)
-# plt.ylabel('frequencia')
-# plt.xlabel('valores')
-# plt.title('Histograma')
-# plt.show()
-
-
-    def __init__(self, solarfield_settings, hce_mask_settings):
-
-        self.matrix = dict()
-
-        for sb in solarfield_settings['subfields']:
-            self.matrix[sf["name"]]=[]
-            for l in range(sb.get('loops')):
-                self.matrix[sf["name"]].append([])
-                for s in range(solarfield_settings['loop']['scas']):
-                    self.matrix[sf["name"]][-1].append([])
-                    for h in range(solarfield_settings['loop']['hces']):
-                        self.matrix[sf["name"]][-1][-1].append(hce_mask_settings)
-
-    def applyMask(self, solarfield):
-
-        for sb in solarfield.subfields:
-            for l in sb.loops:
-                for s in l.scas:
-                    for h in s.hces:
-                        for k in self.matrix[sb.name][l.loop_order][s.sca_order][h.hce_order].keys():
-                            h.parameters[k] *= float(self.matrix[sb.name][l.loop_order][s.sca_order][h.hce_order][k])
-
-
-class SCAScatterMask(object):
-
-
-    def __init__(self, solarfield_settings, sca_mask_settings):
-
-        self.matrix = dict()
-
-        for sb in solarfield_settings['subfields']:
-            self.matrix[sf["name"]]=[]
-            for l in range(sb.get('loops')):
-                self.matrix[sf["name"]].append([])
-                for s in range(solarfield_settings['loop']['scas']):
-                    self.matrix[sf["name"]][-1].append(sca_mask_settings)
-
-    def applyMask(self, solarfield):
-
-        for sb in solarfield.subfields:
-            for l in sb.loops:
-                for s in l.scas:
-                    for k in self.matrix[sb.name][l.loop_order][sb.sca_order].keys():
-                        s.parameters[k] *= float(self.matrix[sb.name][l.loop_order][s.sca_order][k])
-
-
-class Test(object):
-    '''
-    Definimos la clase simulacion para representar las diferentes
-    pruebas que lancemos, variando el archivo TMY, la configuracion del
-    site, la planta, el modo de operacion o el modelo empleado.
-    '''
-
-    def __init__(self, settings):
-
-        self.ID =  settings['simulation']['ID']
-        self.simulation = settings['simulation']['simulation']
-        self.benchmark = settings['simulation']['benchmark']
-        self.datatype = settings['simulation']['datatype']
-        self.fastmode = settings['simulation']['fastmode']
-        self.tracking = True
-        self.solarfield = None
-        self.powersystem = None
-        self.htf = None
-        self.coldfluid = None
-        self.site = None
-        self.datasource = None
-        self.powercycle = None
-        self.parameters = settings
-        self.first_date = pd.to_datetime(settings['simulation']['first_date'])
-        self.last_date = pd.to_datetime(settings['simulation']['last_date'])
-        self.report_df = pd.DataFrame()
-
-        if settings['model']['name'] == 'Barbero4thOrder':
-            self.model = ModelBarbero4thOrder(settings['model'])
-        elif settings['model']['name'] == 'Barbero1stOrder':
-            self.model = ModelBarbero1stOrder(settings['model'])
-        elif settings['model']['name'] == 'BarberoSimplified':
-            self.model = ModelBarberoSimplified(settings['model'])
-
-        if self.datatype == 1:
-            self.datasource = Weather(settings['simulation'])
-        elif self.datatype == 2:
-            self.datasource = FieldData(settings['simulation'],
-                                        settings['tags'])
-        elif self.datatype ==3:
-            self.datasource = TableData(settings['simulation'])
-
-        if not hasattr(self.datasource, 'site'):
-            self.site = Site(settings['site'])
-        else:
-            self.site = Site(self.datasource.site_to_dict())
-
-
-        if settings['HTF']['source'] == "CoolProp":
-            if settings['HTF']['CoolPropID'] not in Fluid._COOLPROP_FLUIDS:
-                print("Not CoolPropID valid")
-                sys.exit()
-            else:
-                self.htf = FluidCoolProp(settings['HTF'])
-
-        else:
-            self.htf = FluidTabular(settings['HTF'])
-
-        self.solarfield = SolarField(settings['subfields'],
-                                   settings['loop'],
-                                   settings['SCA'],
-                                   settings['HCE'])
-
-        self.base_loop = BaseLoop(settings['loop'],
-                                  settings['SCA'],
-                                  settings['HCE'])
-
-
-    def run_test(self):
-
-        print('running test')
-
-        print(self.datasource)
-
-        for row in self.datasource.dataframe.iterrows():
-
-            self.base_loop.massflow = row[1]['mf']
-            kf = self.htf.get_thermal_conductivity(
-                row[1]['tin'], row[1]['pin'])
-            dri = self.base_loop.parameters_hce['Absorber tube inner diameter']
-
-            #  Prandtl number
-            prf = self.htf.get_prandtl(row[1]['tin'], row[1]['pin'])
-            mu = self.htf.get_dynamic_viscosity(row[1]['tin'], row[1]['pin'])
-
-            #  Reynolds number for absorber tube inner diameter, dri
-            redri = self.htf.get_Reynolds(dri, row[1]['tin'], row[1]['pin'],
-                                          row[1]['mf'])
-            cp = self.htf.get_specific_heat(row[1]['tin'], row[1]['pin'])
-            rho = self.htf.get_density(row[1]['tin'], row[1]['pin'])
-            # We supose inner wall temperature is equal to fluid temperature
-            prri = prf
-            dro = self.base_loop.parameters_hce['Absorber tube outer diameter']
-
-
-            #  HCE wall thermal conductivity
-            krec = self.base_loop.scas[0].hces[0].get_krec(row[1]['tin'])
-            hint = self.base_loop.scas[0].hces[0].get_hint(
-                    row[1]['tin'], row[1]['pin'], self.htf)
-            urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
-            #  Skin friction coefficient
-            cf = np.power(1.58 * np.log(redri) - 3.28, -2)
-
-            #  Gnielinski correlation. Eq. 4.15 Barbero2016
-            nug = ((0.5 * cf * prf * (redri - 1000)) /
-                   (1 + 12.7 * np.sqrt(0.5 * cf) * (np.power(prf, 2/3) - 1))) * \
-                       np.power(prf / prri, 0.11)
-
-            self.datasource.dataframe.at[row[0], 'h_int'] = \
-                self.base_loop.scas[0].hces[0].get_hint(
-                    row[1]['tin'], row[1]['pin'], self.htf)
-            self.datasource.dataframe.at[row[0], 'krec'] = \
-                self.base_loop.scas[0].hces[0].get_krec(
-                    row[1]['tin'])
-            self.datasource.dataframe.at[row[0], 'urec'] = urec
-            self.datasource.dataframe.at[row[0], 'krec'] = krec
-            self.datasource.dataframe.at[row[0], 'qloss'] = \
-                self.base_loop.scas[0].hces[0].get_qlost_brackets(
-                    row[1]['tin'], row[1]['DryBulb'])
-            self.datasource.dataframe.at[row[0], 'mu'] = mu
-            self.datasource.dataframe.at[row[0], 'cp'] = cp
-            self.datasource.dataframe.at[row[0], 'rho'] = rho
-            self.datasource.dataframe.at[row[0], 'nug'] = nug
-            self.datasource.dataframe.at[row[0], 'cf'] = cf
-            self.datasource.dataframe.at[row[0], 'redri'] = redri
-            self.datasource.dataframe.at[row[0], 'prf'] = prf
-            self.datasource.dataframe.at[row[0], 'kf'] = kf
-            self.datasource.dataframe.at[row[0], 'pr_opt_peak'] = \
-                self.base_loop.get_pr_opt_peak()
-            self.datasource.dataframe.at[row[0], 'solar_fraction'] = \
-                self.base_loop.get_solar_fraction()
-
-        try:
-            initialdir = "./simulations_outputs/"
-            prefix = datetime.today().strftime("%Y%m%d %H%M%S ")
-            filename_test = str(self.ID) + "_TEST"
-            sufix = ".csv"
-
-            path_complete = initialdir + prefix + filename_test + sufix
-
-            self.datasource.dataframe.to_csv(
-                path_complete, sep=';', decimal = ',')
-
-        except Exception:
-            raise
-            print('Error saving results, unable to save file: %r', path)
-
-# if __name__=='__main__':
-
-#     cfg = sys.argv[1:]
-
-#     SIM = cs.SolarFieldSimulation(cfg)
-
-#     FLAG_00 = datetime.now()
-#     SIM.runSimulation()
-#     FLAG_01 = datetime.now()
-#     DELTA_01 = FLAG_01 - FLAG_00
-#     print("Total runtime: ", DELTA_01.total_seconds())
-
+        FLAG_00 = datetime.now()
+        SIM.runSimulation()
+        FLAG_01 = datetime.now()
+        DELTA_01 = FLAG_01 - FLAG_00
+        print("Total runtime: ", DELTA_01.total_seconds())

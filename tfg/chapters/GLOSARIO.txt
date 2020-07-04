@@ -32,5 +32,10 @@ F'_{crit}
 U_{crit}
 
 
+$\rho(T)$ densidad $(kg/m^3)$
+$\mu(T)$ Viscosidad dinámica, $(Pa \cdot m)$
+$k_T(T)$: Conductividad térmica, \((W/m \cdot K)\).
+$C_p(T)$: Calor específico a presión constante, $(J/Kg\cdot K)$.
+$(H(T)$: Entalpía específica, $(J/Kg)$
 
 \(\sigma\) es la constante de Stefan-Boltzmann (5.67x10-8 W/m2K4),

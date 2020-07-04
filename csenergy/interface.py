@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-'''
-Created on Wed Feb  5 12:08:03 2020
 
-@author: fmunuera
-'''
+"""
+interface.py: A Tkinter application for creating configuration files to
+run simulation with csenergy.py
+@author: pacomunuera
+2020
+"""
 
 
 import sys
@@ -15,18 +17,14 @@ import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfile
 import tkinter.ttk as ttk
 from tkinter import messagebox
-# import inspect
 # recipe-580746-1.py from
 # http://code.activestate.com/recipes/
 # 580746-t kinter-treeview-like-a-table-or-multicolumn-listb/
 import recipe5807461 as table
 import json
 from decimal import Decimal
-# from json import encoder
-# import copy
 from datetime import datetime
 import pandas as pd
-
 
 
 class Interface(object):
@@ -231,12 +229,6 @@ class Interface(object):
             cfg['simulation']['first_date']))
         self.varlastdate.set(pd.to_datetime(
             cfg['simulation']['last_date']))
-        # self.varfirstdate.set(pd.to_datetime(
-        #     cfg['simulation']['first_date']).strftime(
-        #         '%Y/%m/%d %H:%M'))
-        # self.varlastdate.set(pd.to_datetime(
-        #     cfg['simulation']['last_date']).strftime(
-        #         '%Y/%m/%d %H:%M'))
 
         self.cmbmodelname.set(cfg['model']['name'])
         self.varmodelmaxerrt.set(cfg['model']['max_err_t'])
@@ -485,7 +477,6 @@ class Interface(object):
     def save_as_JSON(self, cfg, filename=None):
 
         if filename is None:
-            #  encoder.FLOAT_REPR = lambda o: format(o, '.2f')
             f = asksaveasfile(initialdir=self._DIR['saved_configurations'],
                               title='choose your file name',
                               filetypes=[('JSON files', '*.json')],
@@ -520,8 +511,6 @@ class Interface(object):
         try:
             cfg = self.generate_json()
 
-            # subprocess.Popen(["rm","-r","./csenergy.py "+str(cfg)])
-
             SIM = cs.SolarFieldSimulation(cfg)
             FLAG_00 = datetime.now()
             hilo =  threading.Thread(target=SIM.runSimulation())
@@ -532,14 +521,6 @@ class Interface(object):
         except Exception as e:
             print("serialization failed", e)
 
-
-
-
-
-
-
-
-
     def help_help():
         pass
 
@@ -549,7 +530,6 @@ class Interface(object):
     def simulation_exit(self):
 
         self.root.destroy()
-
 
     def to_number(self, s):
 
@@ -578,7 +558,6 @@ class Interface(object):
         self.nb.pack()
 
     #  Simulaton Configuration tab
-
     def simulationLoadDialog(self, title, labeltext=''):
 
         path = askopenfilename(initialdir = self._DIR['saved_configurations'],
@@ -616,7 +595,6 @@ class Interface(object):
             # self.tags_table.state(('active'))
         else:
             pass
-
 
     def checkfastmode(self):
 
@@ -738,7 +716,7 @@ class Interface(object):
         self.btselectdatasource.grid(
                 row=4, column=0, sticky='W', padx=2, pady=5)
 
-                #  Data source path
+        #  Data source path
         self.vardatafileurl.set('Data source file path...')
         self.lbdatasourcepath = ttk.Label(
             self.fr_simulation, textvariable=self.vardatafileurl).grid(
@@ -824,9 +802,6 @@ class Interface(object):
         self.fr_solarfield.update()
 
 
-
-
-
     def solarfield_save_dialog(self, title, labeltext = '' ):
 
         #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -848,7 +823,6 @@ class Interface(object):
         cfg['solarfield'].update(dict({'loop': dict({'scas': self.enscas.get(),
                                                      'hces': self.enhces.get()})}))
 
-
         datarow=list(self.solarfield_table.table_data)
         dictkeys =['name', 'loops']
 
@@ -868,9 +842,7 @@ class Interface(object):
         f.write(json.dumps(cfg))
         f.close()
 
-
     def showTagsTable(self):
-
 
         self.msg = tk.Tk()
         #self.fr_tags = tk.Frame(self.msg, )
@@ -885,14 +857,12 @@ class Interface(object):
 
         self.msg.mainloop()
 
-
     def openTagsWizard(self):
 
         tags_table = []
 
         for tag in self.tagslist:
             tags_table.append(['', tag])
-
 
         columns_names = []
 
@@ -929,7 +899,6 @@ class Interface(object):
                 self.columns_table.update_row(
                     index,new_row)
             index += 1
-
 
     def buildSolarFieldFrame(self):
 
@@ -976,21 +945,28 @@ class Interface(object):
         self.entmax.grid(row=3, column=3, sticky='W', padx=5, pady=5)
 
         self.varratedmassflow = tk.DoubleVar(self.fr_solarfield)
-        self.lbratedmassflow = ttk.Label(self.fr_solarfield, text='Loop Rated massflow [Kg/s]')
+        self.lbratedmassflow = ttk.Label(
+            self.fr_solarfield, text='Loop Rated massflow [Kg/s]')
         self.lbratedmassflow.grid(row=4, column=0, sticky='W', padx=5, pady=5)
-        self.enratedmassflow = ttk.Entry(self.fr_solarfield, textvariable=self.varratedmassflow)
+        self.enratedmassflow = ttk.Entry(
+            self.fr_solarfield, textvariable=self.varratedmassflow)
         self.enratedmassflow.grid(row=4, column=1, sticky='W', padx=5, pady=5)
 
         self.varrecirculation = tk.DoubleVar(self.fr_solarfield)
-        self.lbrecirculationmassflow = ttk.Label(self.fr_solarfield, text='Loop minimum massflow [Kg/s]')
-        self.lbrecirculationmassflow.grid(row=4, column=2, sticky='W', padx=5, pady=5)
+        self.lbrecirculationmassflow = ttk.Label(
+            self.fr_solarfield, text='Loop minimum massflow [Kg/s]')
+        self.lbrecirculationmassflow.grid(
+            row=4, column=2, sticky='W', padx=5, pady=5)
         self.enrecirculationmassflow = ttk.Entry(self.fr_solarfield, textvariable=self.varrecirculation)
-        self.enrecirculationmassflow.grid(row=4, column=3, sticky='W', padx=5, pady=5)
+        self.enrecirculationmassflow.grid(
+            row=4, column=3, sticky='W', padx=5, pady=5)
 
         self.varrowspacing = tk.DoubleVar(self.fr_solarfield)
-        self.lbrowspacing = ttk.Label(self.fr_solarfield, text='Row Spacing [m]')
+        self.lbrowspacing = ttk.Label(
+            self.fr_solarfield, text='Row Spacing [m]')
         self.lbrowspacing.grid(row=5, column=0, sticky='W', padx=5, pady=5)
-        self.enrowspacing = ttk.Entry(self.fr_solarfield, textvariable=self.varrowspacing)
+        self.enrowspacing = ttk.Entry(
+            self.fr_solarfield, textvariable=self.varrowspacing)
         self.enrowspacing.grid(row=5, column=1, sticky='W', padx=5, pady=5)
 
         self.varscatrackingtype = tk.IntVar(self.fr_solarfield)
@@ -1108,15 +1084,7 @@ class Interface(object):
             self.vardatafilename.set(os.path.basename(path))
             self.vardatafileurl.set(os.path.dirname(path)+'/' +
                                     os.path.basename(path))
-            # strfilename, strext = os.path.splitext(path)
-            # df = pd.read_csv(path, sep=';',
-            #                                  decimal= ',',
-            #                                  dayfirst=True,
-            #                                  index_col=0)
-            # count = 0
-            # for r in list(df):
-            #     count += 1
-            #     self.tagslist.append([count, r])
+
         else:
             tk.messagebox.showwarning(
                 title='Warning',
@@ -1142,7 +1110,6 @@ class Interface(object):
             self.varsitelong.set(weatherdata[1]['longitude'])
             self.varsitealt.set(weatherdata[1]['altitude'])
 
-
     def select_fluid_from_csv(self):
 
         # abre una ventana de seleccón de csv.
@@ -1165,18 +1132,9 @@ class Interface(object):
 
         self.loadWindow.config(menu=self.loadWindow.menubar)
 
-        # carga el csv en una nueva ventana, en formato tabla
-        # el usuario selección un registro (un fluido)
-        # los datos del registo se pasan en json al programa principal
-
-
-        pass
-
-
     def open_csv(self, path=None):
 
         df = pd.DataFrame()
-
 
         try:
             if path is None:
@@ -1217,8 +1175,6 @@ class Interface(object):
 
         except Exception:
             raise
-            # txMessageBox.showerror('Error loading  File',
-            #                        'Unable to open file: %r', self.file)
 
     def load_fluid_library(self):
 
@@ -1342,7 +1298,6 @@ class Interface(object):
             self.varcoolproptmax.set('')
             self.varcoolproptmin.set('')
             self.varfluidname.set('')
-            # self.encoolpropID['state'] ='normal'
             self.cmbcoolpropID['state'] = 'readonly'
             self.enfluidname['state'] = 'disabled'
             self.btloadfluidcfg['state'] = 'disabled'
@@ -1667,7 +1622,6 @@ class Interface(object):
             textvariable=self.varscaavailability).grid(
                 row=12, column=1, sticky='W', padx=2, pady=5)
 
-
     def load_hce_parameters(self):
 
         self.hce_config = {}
@@ -1745,8 +1699,6 @@ class Interface(object):
         self.varhcetransmittance = tk.DoubleVar(self.fr_hce)
         self.varhceemittanceA0 = tk.DoubleVar(self.fr_hce)
         self.varhceemittanceA1 = tk.DoubleVar(self.fr_hce)
-        # self.varcoating = tk.StringVar(self.fr_hce)
-        # self.varannulus = tk.StringVar(self.fr_hce)
         self.varbellowsratio = tk.DoubleVar(self.fr_hce)
         self.varshieldshading = tk.DoubleVar(self.fr_hce)
         self.varhcebrackets = tk.DoubleVar(self.fr_hce)
