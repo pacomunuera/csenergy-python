@@ -3,18 +3,24 @@
 Acrónimos
 
 \begin{tabbing}	
-CCP \quad\= Colector Cilindro-Parabólico  \\
+CCP \quad\quad\quad\quad\quad\quad\= Colector Cilindro-Parabólico  \\
+CSV \> Comma Separated Values \\
 DNI \> Direct Normal Irradiance (Radiación Normal Directa, (($W/m^2$)) \\
 HCE \> Heat Collector Element \\
 HTF \> Heat Transfer Fluid \\
 IAM \> Incidence Angle Modifier (Modificador por angulo de incidencia) \\
+JSON \> JavaScript Object Notation \\
 IPH \> Industrial Process Heat \\
 NREL \> National Renewable Energy Laboratory \\
+OOP \> Object Oriented Programming \\
+POO  \> Programación Orientada a Objetos \\
+PTC \> Parabolic Trough Collector \\
 SAM\> System Advisor Model \\
 SCA \> Solar Collector Assembly\\
 SCE \> Solar Collector Element \\
 SPA \> Solar Position Algorithm \\
 TFG	\>Trabajo de Fin de Grado \\
+TMY \> Typical Meteorological Year \\
 UNED \> Universidad Nacional de Educación a Distancia \\
 \end{tabbing}
 
@@ -22,39 +28,75 @@ UNED \> Universidad Nacional de Educación a Distancia \\
 Símbolos latinos
 
 \begin{tabbing}
-$Cg$ \quad\=  factor de concentración \\
-$C_p$ \> Calor específico a presión constante, $(J/Kg\cdot K)$ \\
-$D_{ri}$  diámetro interior del tubo absorbedor (m) \\
+$A_{c}$ \quad\quad\quad\quad\quad\quad\= superficie de apertura del concentrador, ($m^2$) \\
+$A_{ext}$ \>  área exterior del receptor expuesta a la radiación solar, $(m^2)$ \\
+$A_{p}$ \> distancia de apertura de la superficie parabólica, (m) \\
+$Cg$  \>   factor de concentración \\
+$c_P$ \> calor específico a presión constante, $(J/kg\cdot K)$ \\
+$D_{gi}$  \>  diámetro interior de la envolvente de vidrio del tubo absorbedor (m) \\
+$D_{go}$ \> diámetro exterior de la envolvente de vidrio del tubo absorbedor (m)   \\
+$D_L$ \> distancia de separación entre lazos, (m) \\
+$D_{ri}$  \>  diámetro interior del tubo absorbedor (m) \\
 $D_{ro}$ \> diámetro exterior del tubo absorbedor (m)   \\
 $F'_{crit}$ \> \\
-$H$ \> Entalpía específica, $(J/Kg)$ \\
-$h_{ext}$ \> \textit{coeficiente de transferencia de calor convectivo equivalente} \\
-$h_{int}$ \> coeficiente de transferencia de calor convectivo hacia el interior \\
-$k_T$ \> Conductividad térmica, $(W/m \cdot K)$ \\
+$f_0, f_1, f_2, f_3, f_4$ \> factores adimensionales del modelo definidos en las ecuaciones \eqref{eq:f0}, \eqref{eq:f1}-\eqref{eq:f4} \\
+$f_l$ \> distancia focal, (m) \\
+$g(Z)$ \> función característica del rendimiento térmicos según la ec.\eqref{eq:gdezeta}, (-) \\
+$g', g'', g''', g^{IV}$ \> derivadas de orden 1 a 4 de la función característica $g(Z)$, (-) \\
+$h$ \> entalpía específica, $(J/kg)$ \\
+$\dot H$ \> tasa temporal de variación de la entalpía del HTF en el sistema, $(J/s)$ \\
+$h_{ext}$ \> coeficiente de transferencia de calor convectivo equivalente \\
+$h_{int}$ \> coeficiente de transferencia de calor convectivo hacia el interior, $(W/(m^{2}\cdot K))$ \\
+$k_{rec}$ \> conductividad del material del receptor, $(W/(m\cdot K))$ \\
+$k_T$ \> conductividad térmica, $(W/m \cdot K)$ \\
 $L$  \> longitud del tubo absorbedor (m) \\
-$\dot q''_{abs}$ \> \\
-$\dot q''_{perd}(x)$ \> \\
-$ \dot q"_{u}(x)$ \> \\ 
-$T_{f}$ \> temperatura del fluido \\
-$T_{ro}(x)$ \> temperatura de pared exterior \\
-$U_{crit}$ \> \\
+$L_{bordes}$  \> longitud del tubo absorbedor que no recibe radiación, (m) \\
+$\dot m$ \> caudal másico del HTF, (kg/s) \\
+$NTU_{perd}$ \> número de Unidades de Transmisión, (-) \\
+$NTU_{perd}$ \> número de Unidades de Transmisión definido según la ec.\eqref{eq:ntuperd}, (-) \\
+$\dot q_{abs}$ \> potencia calorífica absorbida a lo largo de todo el HCE, (W) \\
+$\dot q''_{abs}$ \> flujo de radiación absorbido por la superficie exterior del receptor, $(W/m^{2})$ \\
+$\dot q_{perd}$ \> potencia calorífica perdida a lo largo de todo el HCE, (W) \\
+$\dot q''_{perd}(x)$ \> flujo de calor de pérdidas al exterior desde la superficie del receptor, $(W/m^{2})$ \\
+$\dot q"_{u}(x)$ \> flujo de calor útil hacia el interior del receptor,  $(W/m^{2})$ \\ 
+$T_{ext}$ \> temperatura ambiente exterior, (K) \\
+$T_{f}$ \> temperatura del fluido, (K) \\
+$\bar{T}_{f}$ \> temperatura media del fluido, (K) \\
+$T_{in}$ \> temperatura del fluido a la entrada del receptor, (K) \\
+$T_{in}$ \>  temperatura del fluido a la entrada del receptor, (K) \\
+$T_{out}$ \> temperatura del fluido a la salida del receptor, (K) \\
+$T_{ro}(x)$ \> temperatura de pared exterior, (K) \\
+$U_{crit}$ \>  coeficiente de transmisión de calor al interior crítico según la ec.\eqref{eq:ucrit}, $(W/m^{2}\cdot K)$  \\ \\
+$U_{ext}$ \> coeficiente de transmisión de calor al exterior $(W/m^{2}\cdot K)$  \\
 $U_{rec}$  \> coeficiente global de transferencia de calor hacia el interior $(W/m^{2}\cdot K)$  \\
+$W_{spd}$ \> velocidad del viento, (m/s) \\
+$x$ \> coordenada longitudinal, (m) \\
+$x^*$ \> coordenada longitudinal adimiensional en función de la longitud del tubo, (-) \\
+$Z$ \> variable adimiensional del modelo de rendimiento térmico según la ec.\eqref{eq:zeta}, (-) \\
 \end{tabbing}
 
 
 Símbolos griegos
 
 \begin{tabbing}
-$\varepsilon_{ext}$ \quad\= emisividad equivalente de la superficie exterior del tubo \\
-$\eta_{opt}(\theta)$  \> rendimiento óptico \\
-$ \eta_{T}$ \> rendimiento para la totalidad del receptor en el modelo simplificado \\
-$ \eta(x)$ \> rendimiento integral hasta una distancia x de la entrada \\
-$\eta_{sombras}$ \> coeficiente de pérdidas por sombreado \\
-$\eta_{bordes}$ \> coeficiente de pérdidas geométricas \\
-$\gamma_L$ \>  factor de longitud efectiva \\
-$\gamma_g$  \> factor de interceptación geométrico \\
+$\alpha$ \quad\quad\quad\quad\quad\quad\= absortividad del receptor, (-) \\
+$\beta$ \> ángulo de seguimiento, (rad) \\
+$\varepsilon_{ext}$ \> emisividad equivalente de la superficie exterior del tubo, (-) \\
+$\eta_{bordes}$ \> coeficiente de pérdidas geométricas, (-)  \\
+$\eta_{opt}(\theta)$  \> rendimiento óptico, (-)  \\
+$\eta_{opt,pico}(\theta)$  \> rendimiento óptico pico, (-)  \\
+$\eta_{sombras}$ \> coeficiente de pérdidas por sombreado, (-)  \\
+$\eta_{T}$ \> rendimiento para la totalidad del receptor en el modelo simplificado, (-)  \\
+$\eta(x)$ \> rendimiento integral hasta una distancia $x$ de la entrada, (-)  \\
+$\eta_x(x)$ \> rendimiento local en una sección a distancia $x$ de la entrada, (-) \\
+$\gamma$ \> fracción solar, (-) \\
+$\gamma_L$ \>  factor de longitud efectiva, (-)  \\
+$\gamma_g$  \> factor de interceptación geométrico, (-)  \\
+$\rho$ \> reflectividad, (-) \\
 $\rho(T)$ \> densidad $(kg/m^3)$ \\
-$\sigma$ \> constante de Stefan-Boltzmann (5.67x10-8 W/m2K4) \\
+$\sigma$ \> constante de Stefan-Boltzmann $(5,67x10^{-8} W/(m^2 \cdot K^4))$\\
+$tau$ \> transmisividad de la cubierta de vidrio del receptor, (-) \\
+$\theta$ \> ángulo de incidencia, (rad) \\
 $\mu(T)$ \> Viscosidad dinámica, $(Pa \cdot m)$ 
 \end{tabbing}
 

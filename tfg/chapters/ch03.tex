@@ -87,30 +87,30 @@ El cálculo del rendimiento que realizan estas dos clases es idéntico al del Mo
 \subsection{Clase \texttt{HCE} para modelado del Heat Collector Element}
 \label{heat-collector-element-hce}
 
-De cara a modelar el funcionamiento del HCE como elemento responsable de calentar el HTF de forma compatible con el Modelo físico desarrollado, se define la Clase \texttt{HCE}, entre cuyos atributos se encuentran: temperatura de entrada del HTF, $T_{in}$ (internamente el programa trabaja con K como unidades de temperatura, aunque la entrada y salida de datos se realiza con $^\circ C$); potencia calorífica absorbida a lo largo de todo el HCE, $\dot q_{abs}$ (W); potencia calorífica perdida a lo largo del HCE, $\dot q_{lost}$ (W); rendimiento óptico del conjunto HCE+SCA, $\eta_{opt}$; rendimiento térmico, $\eta$ y temperatura de salida, $T_{out}$, (K). 
+De cara a modelar el funcionamiento del HCE como elemento responsable de calentar el HTF de forma compatible con el Modelo físico desarrollado, se define la Clase \texttt{HCE}, entre cuyos atributos se encuentran: temperatura de entrada del HTF, $T_{in}$ (internamente el programa trabaja con K como unidades de temperatura, aunque la entrada y salida de datos se realiza con $^\circ C$); potencia calorífica absorbida a lo largo de todo el HCE, $\dot q_{abs}$ (W); potencia calorífica perdida a lo largo del HCE, $\dot q_{perd}$ (W); rendimiento óptico del conjunto HCE+SCA, $\eta_{opt}$; rendimiento térmico, $\eta$ y temperatura de salida, $T_{out}$, (K). 
 
-El caudal másico de HTF que circula por el HCE, $ \dot m_f $ (kg/s) se obtiene mediante una referencia al SCA y, seguidamente, otra referencia al Loop que contienen al HCE. 
+El caudal másico de HTF que circula por el HCE, $ \dot m $ (kg/s) se obtiene mediante una referencia al SCA y, seguidamente, otra referencia al Loop que contienen al HCE. 
 
 Con estos parámetros el comportamiento del HCE queda totalmente caracterizado en el sistema desde el punto de vista del proceso de generación. Estos atributos (pueden entenderse como variables) están relacionados entre sí según las reglas que aplique cada modelo. La temperatura de salida del HTF, $T_{out}$, aparece implícita en la ec.\ref{eq:deltaH}:
 
 \begin{equation}
-    \Delta H =  \dot m_f  \int^{T_{out}}_{T_{in}}C_p(T) dT 
+    \dot H =  \dot m  \int^{T_{out}}_{T_{in}}c_p(T) dT 
     \label{eq:deltaH}
 \end{equation}
 
-donde \(\Delta H\) es el incremento de entalpía del fluido, pues hemos considerado que se trata de un fluido incompresible y también se ha despreciado la participación de energía cinética. Previamente se debe calcular \(\Delta H\) según la ec.\(\eqref{eq:delta_hvalor}\):
+donde \(\dot H\) representa una tasa temporal de incremento de entalpía, pues hemos considerado que se trata de un fluido incompresible y también se ha despreciado la participación de energía cinética, por lo que la potencia térmica se invierte en incrementar la entalpía del sistema. Previamente se debe calcular \(\dot H\) según la ec.\(\eqref{eq:delta_hvalor}\):
 
 \begin{equation}
-   \Delta H =  \dot q''_{abs} \cdot \eta \cdot \pi \cdot d_{ro} \cdot L \cdot \gamma_L \cdot \gamma_g
+   \dot H =  \dot q''_{abs} \cdot \eta \cdot \pi \cdot D_{ro} \cdot L \cdot \gamma_L \cdot \gamma_g
     \label{eq:delta_hvalor}
 \end{equation}
 
-La ec.\(\eqref{eq:deltaH}\) puede resolverse por métodos numéricos si el calor específico \(Cp\) del fluido se ha obtenido a partir de un polinomio. En el caso de que se disponga de una función que proporcione la temperatura del fluido en función de la entalpía \(T(H)\), como ocurre si se usa \(CoolProp\), se puede calcular su valor directamente a través de las funciones que ofrece esta librería como \(T_{out} = T(H_{out})\).
+La ec.\(\eqref{eq:deltaH}\) puede resolverse por métodos numéricos si el calor específico \(Cp\) del fluido se ha obtenido a partir de un polinomio. En el caso de que se disponga de una función que proporcione la temperatura del fluido en función de la entalpía \(T(h)\), como ocurre si se usa \(CoolProp\), se puede calcular su valor directamente a través de las funciones que ofrece esta librería como \(T_{out} = T(h_{out})\).
 
-En la ec.\ref{eq:delta_hvalor} se introducen el \textit{factor de longitud efectiva}, \(\gamma_L\) y \textit{factor de interceptación geométrico}, \(\gamma_g\) para tener en cuenta la reducción de la longitud \textit{activa} del HCE debido a los fuelles en los extremos del HCE y al sombreado del escudo térmico en las uniones de HCEs. Un valor típico para ambos factores está comprendido entre 0,96 y 0,97 \cite{zarzaApuntesMasterConsultor2006}. En el caso de que el calor absorbido sea nulo, la temperatura de salida será inferior a la de entrada y el valor \(\Delta H < 0\). En este caso, no existe reducción de la longitud efectiva del absorbedor y la energía perdida se calcula según la ec.\(\eqref{eq:delta_hvalornegativo}\) pues a lo largo de toda la superficie del HCE se experimentan pérdidas energéticas:
+En la ec.\ref{eq:delta_hvalor} se introducen el \textit{factor de longitud efectiva}, \(\gamma_L\) y \textit{factor de interceptación geométrico}, \(\gamma_g\) para tener en cuenta la reducción de la longitud \textit{activa} del HCE debido a los fuelles en los extremos del HCE y al sombreado del escudo térmico en las uniones de HCEs. Un valor típico para ambos factores está comprendido entre 0,96 y 0,97 \cite{zarzaApuntesMasterConsultor2006}. En el caso de que el calor absorbido sea nulo, la temperatura de salida será inferior a la de entrada y el valor \(\dot H < 0\). En este caso, no existe reducción de la longitud efectiva del absorbedor y la energía perdida se calcula según la ec.\(\eqref{eq:delta_hvalornegativo}\) pues a lo largo de toda la superficie del HCE se experimentan pérdidas energéticas:
 
 \begin{equation}
-   \Delta H =  \dot q''_{perd} \cdot \pi \cdot d_{ro} \cdot L
+   \dot H =  \dot q''_{perd} \cdot \pi \cdot D_{ro} \cdot L
     \label{eq:delta_hvalornegativo}
 \end{equation}
 
@@ -121,7 +121,7 @@ La radiación que alcanza al fluido caloportador puede obtenerse mediante la ec.
 \notag \dot q''_{abs}= \eta_{opt}(\theta) \cdot Cg \cdot DNI \cdot \eta_{sombras} \cdot \eta_{bordes}  \tag{\ref{eq:qabs}}
 \end{equation}
 
-donde \(DNI\) es la radiación normal directa cuyo valor se lee para cada  fecha de cálculo de la simulación. \(Cg\) es el factor de concentración geométrica, definido genéricamente   para sistemas de concentración como el cociente entre el área de  apertura del concentrador, \(A_c\) y la superficie del receptor,   \(A_r\). Hemos considerado como efectiva toda el área del receptor, no solo aquella donde se concentra la radiación, ya que supondremos que el flujo se reparte uniformemente por toda la superficie de tubo absorbedor. De esta manera, el área de apertura de un concentrador de longitud $L$, con una longitud de apertura de su superficie parabólica $A_p$, viene dado por la ecuación:
+donde \(DNI\) es la radiación normal directa cuyo valor se lee para cada  fecha de cálculo de la simulación. \(Cg\) es el factor de concentración geométrica, definido genéricamente   para sistemas de concentración como el cociente entre el área de  apertura del concentrador, \(A_c\) y la superficie del receptor,   \(A_{ext}\). Hemos considerado como efectiva toda el área del receptor, no solo aquella donde se concentra la radiación, ya que supondremos que el flujo se reparte uniformemente por toda la superficie de tubo absorbedor. De esta manera, el área de apertura de un concentrador de longitud $L$, con una longitud de apertura de su superficie parabólica $A_p$, viene dado por la ecuación:
 
 \begin{equation}
    A_c = A_p \cdot L
@@ -131,7 +131,7 @@ donde \(DNI\) es la radiación normal directa cuyo valor se lee para cada  fecha
 y la superficie del receptor, de igual longitud $L$ y diámetro exterior del tubo absorbedor $D_{ro}$, es:
 
 \begin{equation}
-   A_r = \pi \cdot D_{ro} \cdot L
+   A_{ext} = \pi \cdot D_{ro} \cdot L
     \label{eq:superficiereceptor}
 \end{equation}
 
@@ -177,7 +177,7 @@ En el caso del factor \(\eta_{sombras}\), se trata de un valor que se calcula en
     \label{eq:sombras}
 \end{equation}
 
-donde $beta$ es el ángulo de seguimiento, $D_L$ es la distancia de separación entre lazos y $A_p$ es la apertura del concentrador.
+donde $\beta$ es el ángulo de seguimiento, $D_L$ es la distancia de separación entre lazos y $A_c$ es la apertura del concentrador.
 
 \subsubsection{Pérdidas en el tubo absorbedor, $\dot q''_{perd}$}
 
@@ -563,10 +563,10 @@ Parámetro & Valor \\ \hline
 Logintud & 4,05 (m) \\
 Factor de longitud efectiva, \(\gamma_L\) &  0,96 \\
 Factor de interceptación geométrica, \(\gamma_g\) & 0,96 \\
-Diámetro interior del tubo absorbedor, \(d_{ri}\) & 0,066 (m) \\
-Diámetro exterior del tubo absorbedor, \(d_{ro}\)r &  0,070 (m) \\ 
-Diámetro interior de la envolvente de vídrio, \(d_{gi}\) &  0,115 (m) \\
-Diámetro exterior de la envolvente de vídrio, \(d_{go}\) &  0,121 (m) \\
+Diámetro interior del tubo absorbedor, \(D_{ri}\) & 0,066 (m) \\
+Diámetro exterior del tubo absorbedor, \(D_{ro}\) &  0,070 (m) \\ 
+Diámetro interior de la envolvente de vídrio, \(D_{gi}\) &  0,115 (m) \\
+Diámetro exterior de la envolvente de vídrio, \(D_{go}\) &  0,121 (m) \\
 Rugosidad interior &  0,000045 (m)  \\
 Factor de emisividad, \(A_1\) &  0,000206 \\
 Factor de emisividad, \(A_0\) &  0,0430 \\

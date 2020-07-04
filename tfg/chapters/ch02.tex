@@ -53,10 +53,10 @@ Para el cálculo de las pérdidas de calor se empleará la ec.\(\eqref{eq:qperd}
 
 donde \(\sigma\) es la constante de Stefan-Boltzmann ($5,67x10^{-8} W/m^2K^4$), \(\varepsilon_{ext}\) es la emisividad del tratamiento superficial exterior y \(h_{ext}\) es el coeficiente de convección exterior. Estas dos últimas constantes son características de cada receptor y variables, por ejemplo, en función de las condiciones de degradación del recubrimiento selectivo o del viento exterior. Deben ser halladas experimentalmente en laboratorio.
 
-La última ecuación necesaria es la ec.\(\eqref{eq:deltaT}\), donde se calcula el incremento de temperatura que experimenta el fluido, considerando despreciables los cambios en energía cinética y un calor específico a presión constante, \(c_{p}\) (J/kg·K). Denominando \(T_{f}(x)\) a la tempertura del fluido en la sección a distancia \(x\) de la entrada y \(T_{fe}\) a la temperatura del fluido a la entrada, tenemos:
+La última ecuación necesaria es la ec.\(\eqref{eq:deltaT}\), donde se calcula el incremento de temperatura que experimenta el fluido, considerando despreciables los cambios en energía cinética y un calor específico a presión constante, \(c_{p}\) (J/kg·K). Denominando \(T_{f}(x)\) a la tempertura del fluido en la sección a distancia \(x\) de la entrada y \(T_{in}\) a la temperatura del fluido a la entrada, tenemos:
 
 \begin{equation}
-    \pi \cdot D_{ro} \cdot x \cdot \dot q''_{abs} \cdot \eta(x)= \dot{m} \cdot c_{p} \cdot (T_{f}(x)-T_{fe}) \label{eq:deltaT}
+    \pi \cdot D_{ro} \cdot x \cdot \dot q''_{abs} \cdot \eta(x)= \dot{m} \cdot c_{p} \cdot (T_{f}(x)-T_{in}) \label{eq:deltaT}
 \end{equation}
 
 Con esta última ecuación se calcula el rendimiento integral hasta una sección a una distancia \(x\) de la entrada, \(\eta(x)\). Finalmente, a partir del rendimiento local, dado por la ec.\(\eqref{eq:rendimientolocal}\) podemos calcular el rendimiento integral mediante la ec.\(\eqref{eq:rendimientointegral}\).
@@ -99,7 +99,7 @@ La resolución de esta ecuación requiere un largo desarrollo, en el que se intr
 \end{equation}
 
 \begin{equation}
-    f_0 = \frac{\dot{q}''_{abs}}{U_{rec} \cdot (T_{fe}-T{ext})}
+    f_0 = \frac{\dot{q}''_{abs}}{U_{rec} \cdot (T_{in}-T_{ext})}
     \label{eq:f0}
 \end{equation}
 
@@ -180,10 +180,17 @@ La ec.\(\eqref{eq:primerorden}\) presenta el Modelo de Primer Orden. Para llegar
     \label{eq:fcrit}
 \end{equation}
 
+Y $NTU_{perd}$ se obtiene mediante la ec.\eqref{eq:ntuperd}:
+
+ \begin{equation}
+    NTU_{perd} = \frac{\left(4 \cdot \sigma \cdot \varepsilon_{ext} \cdot T^3_{fe}+h_{ext}\right) \cdot A_{ext}}{\dot m \cdot c_P} = \frac{U_{crit} \cdot A_{ext}}{\dot m \cdot c_P}
+    \label{eq:ntuperd}
+\end{equation}
+
 Además, en $\eqref{eq:rendimiento0aproximado}$ y \eqref{eq:fcrit} se han reagrupado variables en diferentes términos que cuentan con sentido físico. De este modo, se definen:
 
 \begin{equation}
-    \dot q''_{crit} = \sigma \cdot \varepsilon_{ext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)+h_{ext} \cdot \left(T_{fe}- T_{ext}\right)
+    \dot q''_{crit} = \sigma \cdot \varepsilon_{ext} \cdot \left(T^{4}_{fe}- T^{4}_{ext}\right)+h_{ext} \cdot \left(T_{in}- T_{ext}\right)
     \label{eq:qcrit}
 \end{equation}
 y
@@ -232,6 +239,6 @@ Se ha considerado que los parámetros característicos \(U_{rec}\), \(\varepsilo
 
 Según lo visto, el modelo resulta aplicable a la simulación de un campo solar de concentradores cilindroparabólicos bajo las condiciones normales de operación. Por otro lado, la simulación se realizará también para el cálculo con intervalos horarios en los que se supondrá condiciones estacionarias de planta y se descartarán aquellos periodos de arranque y parada o cambios abruptos en los que las inercias propias del sistema y la intervención de los operadores de planta producirían que el comportamiento instantáneo no se correspondiese con el simulado.
 
-El Modelo de Primer Orden presenta mayores restricciones, especialmente en los rangos de operación aceptables (no deben ser próximos a los valores críticos definidos en la ec.\(\eqref{eq:ucrit}\) y \(\eqref{eq:qcrit}\)), siendo sus resultados algo menos precisos en general.
+El Modelo de Primer Orden presenta resultados algo menos precisos que el Modelo de $4^o$ Orden, en general.
 
-El Modelo Simplificado solo es válido además para longitudes de receptor más reducidas.
+El Modelo Simplificado solo es válido además para longitudes de integración más reducidas.
