@@ -201,7 +201,7 @@ Por otro lado,  \(h_{ext}\), es el \textit{coeficiente de transferencia de calor
 Se incluye en el modelado el cálculo de las pérdidas a través de los soportes que sujetan al HCE, \(\dot q_{perd,soportes}\). Su peso relativo en el total de pérdidas del campo no es muy elevado, por lo que, a falta de más datos, se hace uso de la ec.\(\eqref{eq:qperdidassoportes}\)  propuesta en \cite{forristallHeatTransferAnalysis2003}:
 
 \begin{equation}
-   \dot q_{perd,soportes} =  n \cdot \frac{\sqrt{P_b \cdot k_b \cdot A_{cs,b} \cdot \bar h_b} \cdot (T_{base} - T{ext})}{L}
+   \dot q_{perd,soportes} =  n \cdot \frac{\sqrt{P_b \cdot k_b \cdot A_{cs,b} \cdot \bar h_b} \cdot (T_{base} - T_{ext})}{L}
     \label{eq:qperdidassoportes}
 \end{equation}
 
@@ -269,11 +269,11 @@ Algunos fabricantes incluyen un factor \(cos(\theta)\) en la expresión del \(IA
 Otro valor que debe ofrecernos la clase que modela al SCA es la \textit{fracción solar} o \textit{factor de interceptación}, que permite estimar la tasa entre la radiación solar que alcanza al reflector y la que posteriormente indice realmente sobre el tubo absorbedor. Su valor se obtiene según la ec.\(\eqref{eq:fraccionsolar}\) como producto de una serie de factores: 
 
 \begin{equation}
-   \gamma = \eta_{geometrico} \cdot \eta_{seguidor} \cdot \eta_{suciedad} \cdot \eta_{disponibilidad}
+   \gamma = \eta_{geométrico} \cdot \eta_{seguidor} \cdot \eta_{suciedad} \cdot \eta_{disponibilidad}
     \label{eq:fraccionsolar}
 \end{equation}
 
-El factor geométrico \(\eta_{geometrico}\) depende de las imperfecciones geométricas de conjunto reflector-absorbedor como pequeñas desviaciones en la curvatura de los espejos o la deformación de la estructura. El factor de precisión del seguidor \(\eta_{seguidor}\) permite considerar los errores de seguimiento del mecanismo de movimiento del reflector. El factor de suciedad \(\eta_{suciedad}\) se refiere a la pérdida de reflectividad debida a acumulación de polvo en los espejos. Se ha considerado que esta acumulación de polvo afecta también a la transmisividad de la cubierta de vidrio del HCE, por lo que este factor se computa dos veces. Finalmente, el factor de disponibilidad \(\eta_{disponibilidad}\) considera las pérdidas que ocasionalmente se puedan producir por averías del sistema de concentración.
+El factor geométrico \(\eta_{geométrico}\) depende de las imperfecciones geométricas de conjunto reflector-absorbedor como pequeñas desviaciones en la curvatura de los espejos o la deformación de la estructura. El factor de precisión del seguidor \(\eta_{seguidor}\) permite considerar los errores de seguimiento del mecanismo de movimiento del reflector. El factor de suciedad \(\eta_{suciedad}\) se refiere a la pérdida de reflectividad debida a acumulación de polvo en los espejos. Se ha considerado que esta acumulación de polvo afecta también a la transmisividad de la cubierta de vidrio del HCE, por lo que este factor se computa dos veces. Finalmente, el factor de disponibilidad \(\eta_{disponibilidad}\) considera las pérdidas que ocasionalmente se puedan producir por averías del sistema de concentración.
 
 El SCA, como sistema responsable del seguimiento solar, también cuenta con un método para ofrecernos información sobre el ángulo de incidencia \(\beta\) en el plano de apertura del reflector. Las expresiones generales pueden encontrarse en \cite{duffieSolarEngineeringThermal2006} pero, en nuestro caso, hemos recurrido a la librería \emph{pvlib-python}  \cite{holmgrenPvlibPythonPython2018}, desarrollada en \emph{Sandia National Laboratories} con el objetivo de impulsar el desarrollo de herramientas de código abierto para la simulación de sistemas fotovoltaicos. Concretamente, nos valemos de este código para obtener los valores del ángulo de incidencia y la posición solar para cada fecha del año según las coordenadas geográficas del lugar donde se realiza la simulación.
 
@@ -331,9 +331,9 @@ Para el modelado sería necesario conocer la dependencia de los parámetros cita
 \item
   $k_T(T)$: Conductividad térmica, $(W/m \cdot K)$
 \item
-  $C_p(T)$: Calor específico a presión constante, $(J/kg\cdot K)$
+  $c_p(T)$: Calor específico a presión constante, $(J/kg\cdot K)$
 \item
-$H(T)$: Entalpía específica, $(J/kg)$, considerando H=0 a $T_{ref}= 285,86 K$
+$h(T)$: Entalpía específica, $(J/kg)$, considerando h=0 a $T_{ref}= 285,86 K$
 \item
 $T(H)$: Temperatura en función de la entalpía, (K)
 \end{itemize}
@@ -368,10 +368,10 @@ En las figuras \ref{f:parametros_dowa} puede verse el comportamiento estos pará
   \\
    \subfloat[Temperatura]{
    \label{f:temperatura}
-    \includegraphics[width=0.5\textwidth]{images/entalpia_dowa.png}}
+    \includegraphics[width=0.5\textwidth]{images/temperatura_dowa.png}}
    \subfloat[Entalpía]{
    \label{f:entalpia}
-    \includegraphics[width=0.5\textwidth]{images/temperatura_dowa.png}}
+    \includegraphics[width=0.5\textwidth]{images/entalpia_dowa.png}}
  \caption[Parámetros fisicos del \emph{Dowtherm-A} en estado de líquido saturado]{Parámetros fisicos del \emph{Dowtherm-A} en estado de líquido saturado. Algunos puntos se han extrapolado más alla de la temperatura máxima de trabajo con el fin de evitar errores durante los procesos de convergencia.}
 \label{f:parametros_dowa}
 \end{figure}
@@ -399,7 +399,7 @@ $a_8$ 		& 0,00E+00  & 1,73E-22  	& 0,00E+00  & 0,00E+00  & 0,00E+00 	& 0,00E+00
 \end{table}
 
 El mismo procedimiento se ha empleado para obtener los polinomios característicos del fluido \emph{Therminol VP-1}, aunque en este caso los polinomios se han ajustado a partir de una lista de valores sacada de la librería \emph{CoolProp}. Pese a que el programa de simulación permite que durante el tiempo de ejecución se obtengan los parámetros citados a través de esta librería, existe una limitación debido al rígido margen de temperaturas con el que esta librería trabaja para cada fluido y esto
-provoca que, para valores de temperatura ligeramente superiores al rango de operación ofrecido por fabricante, no se devuelva ningún valor. Esto resulta en problemas en tiempo de ejecución si algún lazo alcanza una temperatura superior a los 397°C (398°C en el caso de Syltherm 800) . Aunque superar esta temperatura no es recomendable, es algo que puntualmente ocurre durante la operación de la planta. Además, una forma calcular la energía desaprovechada por desenfoque sería a partir de la temperatura que hubiera alcanzado el lazo de no haberse producido el desenfoque y calculando posteriormente su entalpía. Esta aproximación, que sería imposible en la vida real debido a la degradación del HTF e incluso al daño del propio sistema por las sobrepresiones que se producirían, facilita el cálculo de la energía desaprovechada en cada  momento. Se ha supuesto que las curvas de los parámetros se mantienen bien ajustadas siempre y cuando la sobretemperatura alcanzada no sea excesiva (en las simulaciones realizadas no se ha superado más del 10\% de la temperatura máxima de operación recomendada por el fabricante). Por estos motivos, para este trabajo se han empleado siempre los valores de los parámetros obtenidos a partir de los polinomios y no de \emph{CoolProp}.
+provoca que, para valores de temperatura ligeramente superiores al rango de operación ofrecido por fabricante, no se devuelva ningún valor. Esto resulta en problemas en tiempo de ejecución si algún lazo alcanza una temperatura superior a los 397°C (398°C en el caso de Syltherm 800). Aunque superar esta temperatura no es recomendable, es algo que puntualmente ocurre durante la operación de la planta. Además, una forma calcular la energía desaprovechada por desenfoque sería a partir de la temperatura que hubiera alcanzado el lazo de no haberse producido el desenfoque y calculando posteriormente su entalpía. Esta aproximación, que sería imposible en la vida real debido a la degradación del HTF e incluso al daño del propio sistema por las sobrepresiones que se producirían, facilita el cálculo de la energía desaprovechada en cada  momento. Se ha supuesto que las curvas de los parámetros se mantienen bien ajustadas siempre y cuando la sobretemperatura alcanzada no sea excesiva (en las simulaciones realizadas no se ha superado más del 10\% de la temperatura máxima de operación recomendada por el fabricante). Por estos motivos, para este trabajo se han empleado siempre los valores de los parámetros obtenidos a partir de los polinomios y no de \emph{CoolProp}.
 
 Para el caso del \emph{Therminol VP-1} los coeficientes calculados son los que se muestran en la tabla \ref{tab:coeficientes_vp1}:
 
@@ -579,7 +579,8 @@ Distancia de separación entre brazos de soportación &  4,05 (m)
 
 Se ha considerado que todos los HCE  del campo se encuentran en buen estado de vacío.
 
-Para la configuración de la simulación con nuestro código se debe crear un archivo en formato JSON con el que se le pasa toda la información necesaria. Con el fin de facilitar la creación de este archivo de configuración se ha desarrollado una sencilla interfaz que sirve de guía durante el proceso. En la Fig.\ref{fig:interface01} se muestra la primera pantalla de la interfaz de configuración. El archivo de origen de datos incluye los mismos datos meteorológicos que se han empleado para SAM y, además, los datos de temperatura de entrada del HTF al campo solar que ha generado SAM en la simulación IPH. También emplearemos el caudal calculado por SAM para compararlo con el que calcula nuestro simulador.
+\subsection{Guía para la configuración de la simulación en Python}
+Para la configuración de la simulación con nuestro código se debe crear un archivo en formato JSON con el que se le pasa toda la información necesaria. Con el fin de facilitar la creación de este archivo de configuración se ha desarrollado una sencilla interfaz, \texttt{interface.py}, que sirve de guía durante el proceso. En la Fig.\ref{fig:interface01} se muestra la primera pantalla de la interfaz de configuración. El archivo de origen de datos incluye los mismos datos meteorológicos que se han empleado para SAM y, además, los datos de temperatura de entrada del HTF al campo solar que ha generado SAM en la simulación IPH. También emplearemos el caudal calculado por SAM para compararlo con el que calcula nuestro simulador.
 
 \begin{figure}[H]
 \includegraphics[width=0.9\linewidth]{images/interface01.png}
@@ -587,13 +588,57 @@ Para la configuración de la simulación con nuestro código se debe crear un ar
 \label{fig:interface01}
 \end{figure}
 
-La configuración del campo solar es similar a la de SAM. Con el fin acelerar el proceso de simulación, consideraremos que hay 2 HCEs en cada SCA. Es decir, cada HCE tiene una longitud de 72,9 m, que está por debajo del límite de 100 m que nos hemos impuesto como criterio de validez del tamaño de malla para el modelo unidimensional.  El caudal mínimo de recirculación en cada lazo es de 1,7 kg/s. La temperatura de salida deseada es de $393 ^\circ C$ (666,15 K).
+En esta primera pestaña de la interfaz, el usuario puede dar un nombre identificador a la simulación. El campo \emph{Model name} es desplegable y permite seleccionar qué modelo se empleará para el cálculo del rendimiento térmico. Seguidamente, hay cuatro campos que permiten definir el máximo error permitido para la finalización del proceso iterativo:
+
+\begin{itemize}
+\item
+\emph{Max. Err Tro} es el error absoluto en la temperatura de pared exterior, $T_{ro}$
+\item
+\emph{Max. Err Tout} es el error absoluto en la temperatura de salida del lazo, $T_{out}$
+\item
+\emph{Max. Err PR} es el error absoluto en el rendimiento térmico, $\eta$
+\end{itemize}
+
+De esta forma, el proceso iterativo continúa mientras los valores calculados entre dos iteraciones sucesivas presenten una diferencia superior a estos valores. Internamente se ha fijado un máximo de 1000 iteraciones, de tal forma que si no se alcanza convergencia tras ese número de ciclos el proceso muestra un mensaje y salta al siguiente punto.
+
+Según se seleccione un origen de datos que incluya también datos de caudal y temperaturas de entrada y salida o, por el contrario, puramente meteorológico (\emph{Field Data File} o \emph{Weather File}), el programa nos permitirá, o no, realizar una simulación tipo \emph{benchmark}. 
+
+La casilla de selección \emph{Fastmode} permite indicar que se realice la simulación considerando todos los lazos iguales o no. Esta opción es la única empleada en este trabajo pues, aunque es posible modificar a mano la estructura del campo solar para configurar cada lazo independientemente, en realidad está pensada para la inclusión en un futuro de un módulo que permita leer el estado de cada lazo en cada momento.
+
+Si se selecciona la casilla \emph{Load site data from weather file}, la interfaz carga los datos del emplazamiento del fichero tipo \emph{Weather File} durante el proceso de carga. En caso contrario, los debe introducir el usuario.
+
+En la Fig.\ref{fig:interface02} vemos cómo se configura el campo solar. El proceso es similar al de SAM. Para esta simulación, con el fin acelerar el proceso de simulación, consideraremos que hay 2 HCEs en cada SCA. Es decir, cada HCE tiene una longitud de 72,9 m, que está por debajo del límite de 100 m que nos hemos impuesto como criterio de validez del tamaño de malla para el modelo unidimensional.  El caudal mínimo de recirculación en cada lazo es de 1,7 kg/s. La temperatura de salida deseada es de $393 ^\circ C$ (666,15 K).
 
 \begin{figure}[H]
 \includegraphics[width=0.9\linewidth]{images/interface02.png}
 \caption[Configuración de la simulación del campo solar]{Configuración de la simulación. Configuración del campo solar, número de subcampos, lazos, configuración de los lazos, valores nominales y asistente para relacionar los identificadores de las columnas del archivo de origen de datos con los que maneja el programa.} 
 \label{fig:interface02}
 \end{figure}
+
+Además de los valores nominales, que son empleados como punto de partida en las simulaciones, vemos que podemos configurar la orientación del eje del seguidor y el espaciado entre lazos para el cálculo de sombras. En la configuración de esta simulación hemos supuesto que existe un único subcampo con 120 lazos. La aplicación permitiría añadir varios subcampos mediante una lista de pares \emph{nombre de subcampo - número de lazos}. El nombre que se dé a los subcampos es relevante en el sentido de que, posteriormente, los archivos \emph{CSV} que se generarán  utilizarán una nomenclatura basada en esos nombres para mostrar las variables de temperatura, caudal, potencia, rendimiento\ldots de cada subcampo. 
+
+En la Fig.\ref{fig:carga1} se muestra el proceso que permite establecer una relación entre los \emph{tags} o nombres que reciben los valores en el archivo de datos de campo y los valores que empleará el programa para el informe. El asistente muestra una lista (Fig.\ref{fig:listatags}) con los \emph{tags} disponibles junto a un número. El usuario debe indicar qué número corresponde a cada variable. Por ejemplo, el caudal másico del subcampo NO viene dado por el identificador número 10, \emph{1310-FX-1809}. Cuando ha terminado de asignar los números, debe pulsar \emph{Load TAGs} para que se cargue la lista, tal y como se ve en la Fig.\ref{fig:carga2}. Al quedar asociados de este modo, cuando el simulador cargue los datos del campo, sabe que debe emplear los datos de la columna con encabezado \emph{1310-FX-1809} como datos de caudal de ese subcampo.
+
+
+
+\begin{figure}[H]
+\includegraphics[width=0.9\textwidth, height=0.7\textwidth]{images/carga_tags.png}
+\caption{Proceso de asignación de \emph{tags} a variables den entrada/salida}
+\label{fig:carga1}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=0.3\textwidth, height=0.5\textwidth]{images/tagslist.png}
+\caption{Ventana con la lista de \emph{tags} disponibles}
+\label{fig:listatags}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=0.9\textwidth, height=0.7\textwidth]{images/tagscargados.png}
+\caption{Lista de asignaciones \emph{tag-variable} completa}
+\label{fig:carga2}
+\end{figure}
+
 
 El fluido caloportador \emph{Therminol VP-1} se configura tal y como puede verse en la Fig.\ref{fig:interface03}. Los coeficientes se cargan desde una librería donde los hemos guardado previamente tras su obtención según se indicó en el apartado \ref{subclases-fluid}.
 

@@ -28,9 +28,11 @@ UNED \> Universidad Nacional de Educación a Distancia \\
 Símbolos latinos
 
 \begin{tabbing}
-$A_{c}$ \quad\quad\quad\quad\quad\quad\= superficie de apertura del concentrador, ($m^2$) \\
+$A_0, A_1$ \quad\quad\quad\quad\quad\quad\= constantes del modelo de emisividad equivalente para receptores, (-) \\
+$A_{c}$ \> superficie de apertura del concentrador, ($m^2$) \\
+$A_{cs,b}$ \> sección transversal de la unión entre el soporte y el tubo absorbedor, ($m^2$) \\
 $A_{ext}$ \>  área exterior del receptor expuesta a la radiación solar, $(m^2)$ \\
-$A_{p}$ \> distancia de apertura de la superficie parabólica, (m) \\
+$A_{p}$ \> Apertura de la superficie parabólica, (m) \\
 $Cg$  \>   factor de concentración \\
 $c_P$ \> calor específico a presión constante, $(J/kg\cdot K)$ \\
 $D_{gi}$  \>  diámetro interior de la envolvente de vidrio del tubo absorbedor (m) \\
@@ -40,13 +42,17 @@ $D_{ri}$  \>  diámetro interior del tubo absorbedor (m) \\
 $D_{ro}$ \> diámetro exterior del tubo absorbedor (m)   \\
 $F'_{crit}$ \> \\
 $f_0, f_1, f_2, f_3, f_4$ \> factores adimensionales del modelo definidos en las ecuaciones \eqref{eq:f0}, \eqref{eq:f1}-\eqref{eq:f4} \\
+$F_0, F_1$ \> constantes para el cálculo del IAM según la ec.(\eqref{eq:iam}), (-) \\
 $f_l$ \> distancia focal, (m) \\
 $g(Z)$ \> función característica del rendimiento térmicos según la ec.\eqref{eq:gdezeta}, (-) \\
 $g', g'', g''', g^{IV}$ \> derivadas de orden 1 a 4 de la función característica $g(Z)$, (-) \\
-$h$ \> entalpía específica, $(J/kg)$ \\
+$h(T)$ \> entalpía específica, $(J/kg)$ \\
 $\dot H$ \> tasa temporal de variación de la entalpía del HTF en el sistema, $(J/s)$ \\
+$\bar h_b$ \>coeficiente de transmisión de calor por convección medio hacia el exterior en el soporte, ($W/(m^2 \cdot K)$) \\
 $h_{ext}$ \> coeficiente de transferencia de calor convectivo equivalente \\
 $h_{int}$ \> coeficiente de transferencia de calor convectivo hacia el interior, $(W/(m^{2}\cdot K))$ \\
+$k_b$ \> conductividad térmica del acero empleado en el brazo soporte del receptor,  $(W/(m\cdot K))$ \\
+$k_f$ \> conductividad térmica a la temperatura del fluido, $(W/(m\cdot K))$ \\
 $k_{rec}$ \> conductividad del material del receptor, $(W/(m\cdot K))$ \\
 $k_T$ \> conductividad térmica, $(W/m \cdot K)$ \\
 $L$  \> longitud del tubo absorbedor (m) \\
@@ -54,14 +60,21 @@ $L_{bordes}$  \> longitud del tubo absorbedor que no recibe radiación, (m) \\
 $\dot m$ \> caudal másico del HTF, (kg/s) \\
 $NTU_{perd}$ \> número de Unidades de Transmisión, (-) \\
 $NTU_{perd}$ \> número de Unidades de Transmisión definido según la ec.\eqref{eq:ntuperd}, (-) \\
+$Nu_{G}$ \> número de Nusselt calculado con la correlación de Gnielinski dada en la ec.($\eqref{eq:nug}$), (-) \\
+$P_b$ \> perímetro del soporte del receptor, (m) \\
+$Pr_f$ \> número de Prandtl a la temperatura del fluido, (-) \\
+$Pr_{ri}$ \> número de Prandtl a la temperatura de la pared interior del receptor, (-) \\
 $\dot q_{abs}$ \> potencia calorífica absorbida a lo largo de todo el HCE, (W) \\
 $\dot q''_{abs}$ \> flujo de radiación absorbido por la superficie exterior del receptor, $(W/m^{2})$ \\
 $\dot q_{perd}$ \> potencia calorífica perdida a lo largo de todo el HCE, (W) \\
+$\dot q_{perd,soportes}$ \> potencia calorífica perdida a través de los soportes del HCE, (W) \\
 $\dot q''_{perd}(x)$ \> flujo de calor de pérdidas al exterior desde la superficie del receptor, $(W/m^{2})$ \\
 $\dot q"_{u}(x)$ \> flujo de calor útil hacia el interior del receptor,  $(W/m^{2})$ \\ 
+$T_{base}$ \> temperatura de la zona de conexión entre los brazos y el tubo absorbedor, (K) \\
 $T_{ext}$ \> temperatura ambiente exterior, (K) \\
 $T_{f}$ \> temperatura del fluido, (K) \\
 $\bar{T}_{f}$ \> temperatura media del fluido, (K) \\
+$T(h)$ \> temperatura en función de la entalpía, (K) \\
 $T_{in}$ \> temperatura del fluido a la entrada del receptor, (K) \\
 $T_{in}$ \>  temperatura del fluido a la entrada del receptor, (K) \\
 $T_{out}$ \> temperatura del fluido a la salida del receptor, (K) \\
@@ -83,9 +96,13 @@ $\alpha$ \quad\quad\quad\quad\quad\quad\= absortividad del receptor, (-) \\
 $\beta$ \> ángulo de seguimiento, (rad) \\
 $\varepsilon_{ext}$ \> emisividad equivalente de la superficie exterior del tubo, (-) \\
 $\eta_{bordes}$ \> coeficiente de pérdidas geométricas, (-)  \\
+$\eta_{disponibilidad}$ \> factor de disponibilidad, (-) \\
+$\eta_{geométrico}$ \> factor geométrico, (-) \\
 $\eta_{opt}(\theta)$  \> rendimiento óptico, (-)  \\
 $\eta_{opt,pico}(\theta)$  \> rendimiento óptico pico, (-)  \\
+$\eta_{seguidor}$ \> factor de precisión del seguidor, (-) \\
 $\eta_{sombras}$ \> coeficiente de pérdidas por sombreado, (-)  \\
+$\eta_{suciedad}$ \> factor de suciedad, (-) \\
 $\eta_{T}$ \> rendimiento para la totalidad del receptor en el modelo simplificado, (-)  \\
 $\eta(x)$ \> rendimiento integral hasta una distancia $x$ de la entrada, (-)  \\
 $\eta_x(x)$ \> rendimiento local en una sección a distancia $x$ de la entrada, (-) \\
@@ -97,6 +114,6 @@ $\rho(T)$ \> densidad $(kg/m^3)$ \\
 $\sigma$ \> constante de Stefan-Boltzmann $(5,67x10^{-8} W/(m^2 \cdot K^4))$\\
 $tau$ \> transmisividad de la cubierta de vidrio del receptor, (-) \\
 $\theta$ \> ángulo de incidencia, (rad) \\
-$\mu(T)$ \> Viscosidad dinámica, $(Pa \cdot m)$ 
+$\mu(T)$ \> viscosidad dinámica, $(Pa \cdot m)$ 
 \end{tabbing}
 

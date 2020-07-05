@@ -779,19 +779,19 @@ class Interface(object):
             row=8, column=2, sticky='W', padx=2, pady=5)
 
         self.lbsitelat = ttk.Label(
-              self.fr_simulation, text='Latitude').grid(
+              self.fr_simulation, text='Latitude [°]').grid(
                   row=10, column=0, sticky='W', padx=2, pady=5)
         self.ensitelat = ttk.Entry(
               self.fr_simulation, textvariable=self.varsitelat).grid(
                   row=10, column=1, sticky='W', padx=2, pady=5)
         self.lbsitelong = ttk.Label(
-              self.fr_simulation, text='Longitude').grid(
+              self.fr_simulation, text='Longitude [°]').grid(
                   row=11, column=0, sticky='W', padx=2, pady=5)
         self.ensitelong = ttk.Entry(
               self.fr_simulation, textvariable=self.varsitelong).grid(
                   row=11, column=1, sticky='W', padx=2, pady=5)
         self.lbsitealt = ttk.Label(
-              self.fr_simulation, text='Altitude').grid(
+              self.fr_simulation, text='Altitude [m]').grid(
                   row=12, column=0, sticky='W', padx=2, pady=5)
         self.ensitealt = ttk.Entry(
               self.fr_simulation, textvariable=self.varsitealt).grid(
@@ -853,7 +853,8 @@ class Interface(object):
                              str(row[0]) + ' ---> ' +
                              str(row[1]) + ' \n')
 
-        self.lbtagslist = ttk.Label(self.msg, textvariable =self.strtags).pack()
+        self.lbtagslist = ttk.Label(self.msg,
+                                    textvariable =self.strtags).pack()
 
         self.msg.mainloop()
 
@@ -946,7 +947,7 @@ class Interface(object):
 
         self.varratedmassflow = tk.DoubleVar(self.fr_solarfield)
         self.lbratedmassflow = ttk.Label(
-            self.fr_solarfield, text='Loop Rated massflow [Kg/s]')
+            self.fr_solarfield, text='Loop Rated massflow [kg/s]')
         self.lbratedmassflow.grid(row=4, column=0, sticky='W', padx=5, pady=5)
         self.enratedmassflow = ttk.Entry(
             self.fr_solarfield, textvariable=self.varratedmassflow)
@@ -954,7 +955,7 @@ class Interface(object):
 
         self.varrecirculation = tk.DoubleVar(self.fr_solarfield)
         self.lbrecirculationmassflow = ttk.Label(
-            self.fr_solarfield, text='Loop minimum massflow [Kg/s]')
+            self.fr_solarfield, text='Loop minimum massflow [kg/s]')
         self.lbrecirculationmassflow.grid(
             row=4, column=2, sticky='W', padx=5, pady=5)
         self.enrecirculationmassflow = ttk.Entry(self.fr_solarfield, textvariable=self.varrecirculation)
@@ -1084,7 +1085,14 @@ class Interface(object):
             self.vardatafilename.set(os.path.basename(path))
             self.vardatafileurl.set(os.path.dirname(path)+'/' +
                                     os.path.basename(path))
-
+            df = pd.read_csv(path, sep=';',
+                                             decimal= ',',
+                                             dayfirst=True,
+                                             index_col=0)
+            count = 0
+            for r in list(df):
+                count += 1
+                self.tagslist.append([count, r])
         else:
             tk.messagebox.showwarning(
                 title='Warning',
