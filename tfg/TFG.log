@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 2.9.7440 64-bit) (preloaded format=pdflatex 2020.5.31)  23 JUN 2020 10:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 2.9.7440 64-bit) (preloaded format=pdflatex 2020.5.31)  5 JUL 2020 17:58
 entering extended mode
 **C:/Users/paco/0_TFG/tfg/TFG.tex
 (C:/Users/paco/0_TFG/tfg/TFG.tex
@@ -295,7 +295,7 @@ Using XMP template file: pdfa.xmp
 \openout3 = `pdfa.xmpi'.
 
 <<pdfa.xmpi>>)
-Package hyperref Info: Option `colorlinks' set `true' on input line 35.
+Package hyperref Info: Option `colorlinks' set `true' on input line 36.
  ("C:\Program Files\MiKTeX 2.9\tex/latex/amsmath\amsmath.sty"
 Package: amsmath 2020/01/20 v2.17e AMS math features
 \@mathmargin=\skip54
@@ -564,12 +564,63 @@ Package: titlesec 2019/10/16 v2.13 Sectioning titles
 Package: titletoc 2019/10/16 v2.13 TOC entries
 \ttl@leftsep=\dimen165
 )
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\bera.sty"
+Package: bera 2004/01/31 (WaS)
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/base\fontenc.sty"
+Package: fontenc 2020/02/11 v2.0o Standard LaTeX package
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/base\textcomp.sty"
+Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\beraserif.sty"
+Package: beraserif 2004/01/30 (WaS)
+LaTeX Font Info:    Trying to load font information for T1+fve on input line 30
+.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\t1fve.fd"
+File: t1fve.fd 2004/09/07 scalable font definitions for T1/fve.
+)
+LaTeX Font Info:    Font shape `T1/fve/m/n' will be
+(Font)              scaled to size 10.79993pt on input line 30.
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\berasans.sty"
+Package: berasans 2004/01/30 (WaS)
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\beramono.sty"
+Package: beramono 2004/01/31 (WaS)
+))
+("C:\Program Files\MiKTeX 2.9\tex/latex/listings\listings.sty"
+\lst@mode=\count281
+\lst@gtempboxa=\box51
+\lst@token=\toks38
+\lst@length=\count282
+\lst@currlwidth=\dimen166
+\lst@column=\count283
+\lst@pos=\count284
+\lst@lostspace=\dimen167
+\lst@width=\dimen168
+\lst@newlines=\count285
+\lst@lineno=\count286
+\lst@maxwidth=\dimen169
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/listings\lstmisc.sty"
+File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
+\c@lstnumber=\count287
+\lst@skipnumbers=\count288
+\lst@framebox=\box52
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/listings\listings.cfg"
+File: listings.cfg 2020/03/24 1.8d listings configuration
+))
+Package: listings 2020/03/24 1.8d (Carsten Heinz)
+
 ("C:\Program Files\MiKTeX 2.9\tex/latex/multirow\multirow.sty"
 Package: multirow 2019/05/31 v2.5 Span multiple rows of a table
 \multirow@colwidth=\skip71
-\multirow@cntb=\count281
+\multirow@cntb=\count289
 \multirow@dima=\skip72
-\bigstrutjot=\dimen166
+\bigstrutjot=\dimen170
 )
 ("C:\Program Files\MiKTeX 2.9\tex/latex/caption\caption.sty"
 Package: caption 2020/05/10 v3.4j Customizing captions (AR)
@@ -577,56 +628,57 @@ Package: caption 2020/05/10 v3.4j Customizing captions (AR)
 ("C:\Program Files\MiKTeX 2.9\tex/latex/caption\caption3.sty"
 Package: caption3 2020/05/10 v1.11 caption3 kernel (AR)
 Package caption3 Info: TeX engine: e-TeX on input line 61.
-\captionmargin=\dimen167
-\captionmargin@=\dimen168
-\captionwidth=\dimen169
-\caption@tempdima=\dimen170
-\caption@indent=\dimen171
-\caption@parindent=\dimen172
-\caption@hangindent=\dimen173
+\captionmargin=\dimen171
+\captionmargin@=\dimen172
+\captionwidth=\dimen173
+\caption@tempdima=\dimen174
+\caption@indent=\dimen175
+\caption@parindent=\dimen176
+\caption@hangindent=\dimen177
 Package caption Info: Standard document class detected.
 )
-\c@caption@flags=\count282
-\c@continuedfloat=\count283
+\c@caption@flags=\count290
+\c@continuedfloat=\count291
 Package caption Info: hyperref package is loaded.
+Package caption Info: listings package is loaded.
 )
 ("C:\Program Files\MiKTeX 2.9\tex/latex/floatrow\floatrow.sty"
 Package: floatrow 2008/08/02 v0.3b floatrow: float package extension
-\c@float@type=\count284
-\float@exts=\toks38
-\float@box=\box51
-\@floatcapt=\box52
+\c@float@type=\count292
+\float@exts=\toks39
+\float@box=\box53
+\@floatcapt=\box54
 Package floatrow Info: Modified float package code loaded on input line 455.
 Package floatrow Info: Modified rotfloat package code loaded on input line 473.
 
-\FR@everyfloat=\toks39
+\FR@everyfloat=\toks40
 \flrow@foot=\insert252
-\FB@wd=\dimen174
-\FBo@wd=\dimen175
-\FBc@wd=\dimen176
+\FB@wd=\dimen178
+\FBo@wd=\dimen179
+\FBc@wd=\dimen180
 \FBo@ht=\skip73
 \FBc@ht=\skip74
 \FBf@ht=\skip75
 \FBo@max=\skip76
 \FBc@max=\skip77
 \FBf@max=\skip78
-\c@FBl@b=\count285
-\floatbox@depth=\count286
-\c@FRobj=\count287
-\c@FRsobj=\count288
+\c@FBl@b=\count293
+\floatbox@depth=\count294
+\c@FRobj=\count295
+\c@FRsobj=\count296
 \Xhsize=\skip79
 \sXhsize=\skip80
 \Zhsize=\skip81
 \sZhsize=\skip82
-\flrow@rowbox=\box53
-\FR@Zunitlength=\dimen177
-\c@FBcnt=\count289
-\FPOScnt=\count290
+\flrow@rowbox=\box55
+\FR@Zunitlength=\dimen181
+\c@FBcnt=\count297
+\FPOScnt=\count298
 \LTleft=\skip83
 \LTright=\skip84
 \LTleft=\skip85
 \LTright=\skip86
-\flrow@types=\toks40
+\flrow@types=\toks41
 )
 ("C:\Program Files\MiKTeX 2.9\tex/latex/tools\longtable.sty"
 Package: longtable 2020/01/07 v4.13 Multi-page Table package (DPC)
@@ -634,31 +686,31 @@ Package: longtable 2020/01/07 v4.13 Multi-page Table package (DPC)
 \LTright=\skip88
 \LTpre=\skip89
 \LTpost=\skip90
-\LTchunksize=\count291
-\LTcapwidth=\dimen178
-\LT@head=\box54
-\LT@firsthead=\box55
-\LT@foot=\box56
-\LT@lastfoot=\box57
-\LT@cols=\count292
-\LT@rows=\count293
-\c@LT@tables=\count294
-\c@LT@chunks=\count295
-\LT@p@ftn=\toks41
+\LTchunksize=\count299
+\LTcapwidth=\dimen182
+\LT@head=\box56
+\LT@firsthead=\box57
+\LT@foot=\box58
+\LT@lastfoot=\box59
+\LT@cols=\count300
+\LT@rows=\count301
+\c@LT@tables=\count302
+\c@LT@chunks=\count303
+\LT@p@ftn=\toks42
 )
 ("C:\Program Files\MiKTeX 2.9\tex/latex/subfig\subfig.sty"
 Package: subfig 2005/06/28 ver: 1.3 subfig package
-\c@KVtest=\count296
+\c@KVtest=\count304
 \sf@farskip=\skip91
-\sf@captopadj=\dimen179
+\sf@captopadj=\dimen183
 \sf@capskip=\skip92
 \sf@nearskip=\skip93
-\c@subfigure=\count297
-\c@subfigure@save=\count298
-\c@lofdepth=\count299
-\c@subtable=\count300
-\c@subtable@save=\count301
-\c@lotdepth=\count302
+\c@subfigure=\count305
+\c@subfigure@save=\count306
+\c@lofdepth=\count307
+\c@subtable=\count308
+\c@subtable@save=\count309
+\c@lotdepth=\count310
 \sf@top=\skip94
 \sf@bottom=\skip95
 )
@@ -676,39 +728,14 @@ File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 105.
 )
-\Gin@req@height=\dimen180
-\Gin@req@width=\dimen181
+\Gin@req@height=\dimen184
+\Gin@req@width=\dimen185
 )
 ("C:\Program Files\MiKTeX 2.9\tex/latex/chngcntr\chngcntr.sty"
 Package: chngcntr 2018/04/09 v1.1a change counter resetting
 Package chngcntr Info: \counterwithout already defined.
 (chngcntr)             Quitting chngcntr on input line 21.
 )
-("C:\Program Files\MiKTeX 2.9\tex/latex/listings\listings.sty"
-\lst@mode=\count303
-\lst@gtempboxa=\box58
-\lst@token=\toks42
-\lst@length=\count304
-\lst@currlwidth=\dimen182
-\lst@column=\count305
-\lst@pos=\count306
-\lst@lostspace=\dimen183
-\lst@width=\dimen184
-\lst@newlines=\count307
-\lst@lineno=\count308
-\lst@maxwidth=\dimen185
-
-("C:\Program Files\MiKTeX 2.9\tex/latex/listings\lstmisc.sty"
-File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
-\c@lstnumber=\count309
-\lst@skipnumbers=\count310
-\lst@framebox=\box59
-)
-("C:\Program Files\MiKTeX 2.9\tex/latex/listings\listings.cfg"
-File: listings.cfg 2020/03/24 1.8d listings configuration
-))
-Package: listings 2020/03/24 1.8d (Carsten Heinz)
-
 ("C:\Program Files\MiKTeX 2.9\tex/latex/biblatex\biblatex.sty"
 Package: biblatex 2019/12/01 v3.14 programmable bibliographies (PK/MW)
 
@@ -957,58 +984,90 @@ Package biblatex Info: ... file 'biblatex.cfg' found.
 ("C:\Program Files\MiKTeX 2.9\tex/latex/biblatex\biblatex.cfg"
 File: biblatex.cfg 
 ))
+("C:\Program Files\MiKTeX 2.9\tex/latex/pdfpages\pdfpages.sty"
+Package: pdfpages 2020/01/28 v0.5q Insert pages of external PDF documents (AM)
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/tools\calc.sty"
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count437
+\calc@Bcount=\count438
+\calc@Adimen=\dimen186
+\calc@Bdimen=\dimen187
+\calc@Askip=\skip118
+\calc@Bskip=\skip119
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count439
+\calc@Cskip=\skip120
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/eso-pic\eso-pic.sty"
+Package: eso-pic 2018/04/12 v2.0h eso-pic (RN)
+)
+\AM@pagewidth=\dimen188
+\AM@pageheight=\dimen189
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/pdfpages\pppdftex.def"
+File: pppdftex.def 2020/01/28 v0.5q Pdfpages driver for pdfTeX (AM)
+)
+\AM@pagebox=\box60
+\AM@global@opts=\toks43
+\AM@pagecnt=\count440
+\AM@toc@title=\toks44
+\c@AM@survey=\count441
+\AM@templatesizebox=\box61
+)
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/l3backend\l3backend-pdfmode.def"
 File: l3backend-pdfmode.def 2020-05-05 L3 backend support: PDF mode
-\l__kernel_color_stack_int=\count437
-\l__pdf_internal_box=\box60
+\l__kernel_color_stack_int=\count442
+\l__pdf_internal_box=\box62
 )
 No file TFG.aux.
 \openout1 = `TFG.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 194.
+LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 239.
 LaTeX Font Info:    Trying to load font information for OML+txmi on input line 
-194.
+239.
 ("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\omltxmi.fd"
 File: omltxmi.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 194.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 239.
 LaTeX Font Info:    Trying to load font information for OMS+txsy on input line 
-194.
+239.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\omstxsy.fd"
 File: omstxsy.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 194.
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 194.
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 194.
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 194.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 239.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 239.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 239.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 239.
 LaTeX Font Info:    Trying to load font information for OMX+txex on input line 
-194.
+239.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\omxtxex.fd"
 File: omxtxex.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 194.
-LaTeX Font Info:    Trying to load font information for U+txexa on input line 1
-94.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 239.
+LaTeX Font Info:    Trying to load font information for U+txexa on input line 2
+39.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxexa.fd"
 File: utxexa.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 194.
-LaTeX Font Info:    ... okay on input line 194.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 194.
-LaTeX Font Info:    ... okay on input line 194.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 239.
+LaTeX Font Info:    ... okay on input line 239.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 239.
+LaTeX Font Info:    ... okay on input line 239.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1046,33 +1105,25 @@ LaTeX Font Info:    ... okay on input line 194.
 
 ("C:\Program Files\MiKTeX 2.9\tex/context/base/mkii\supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count438
-\scratchdimen=\dimen186
-\scratchbox=\box61
-\nofMPsegments=\count439
-\nofMParguments=\count440
-\everyMPshowfont=\toks43
-\MPscratchCnt=\count441
-\MPscratchDim=\dimen187
-\MPnumerator=\count442
-\makeMPintoPDFobject=\count443
-\everyMPtoPDFconversion=\toks44
+\scratchcounter=\count443
+\scratchdimen=\dimen190
+\scratchbox=\box63
+\nofMPsegments=\count444
+\nofMParguments=\count445
+\everyMPshowfont=\toks45
+\MPscratchCnt=\count446
+\MPscratchDim=\dimen191
+\MPnumerator=\count447
+\makeMPintoPDFobject=\count448
+\everyMPtoPDFconversion=\toks46
 ) ("C:\Program Files\MiKTeX 2.9\tex/latex/epstopdf-pkg\epstopdf-base.sty"
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
-
-("C:\Program Files\MiKTeX 2.9\tex/latex/grfext\grfext.sty"
-Package: grfext 2019/12/03 v1.3 Manage graphics extensions (HO)
-)
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
-Package grfext Info: Graphics extension search list:
-(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPE
-G,.JBIG2,.JB2,.eps]
-(grfext)             \AppendGraphicsExtensions on input line 504.
 )
 ABD: EveryShipout initializing macros
-\AtBeginShipoutBox=\box62
-Package hyperref Info: Link coloring ON on input line 194.
+\AtBeginShipoutBox=\box64
+Package hyperref Info: Link coloring ON on input line 239.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/hyperref\nameref.sty"
 Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
@@ -1083,21 +1134,21 @@ Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 ("C:\Program Files\MiKTeX 2.9\tex/generic/gettitlestring\gettitlestring.sty"
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
-\c@section@level=\count444
+\c@section@level=\count449
 )
-LaTeX Info: Redefining \ref on input line 194.
-LaTeX Info: Redefining \pageref on input line 194.
-LaTeX Info: Redefining \nameref on input line 194.
+LaTeX Info: Redefining \ref on input line 239.
+LaTeX Info: Redefining \pageref on input line 239.
+LaTeX Info: Redefining \nameref on input line 239.
 \@outlinefile=\write5
 \openout5 = `TFG.out'.
 
-LaTeX Info: Redefining \. on input line 194.
-LaTeX Info: Redefining \% on input line 194.
+LaTeX Info: Redefining \. on input line 239.
+LaTeX Info: Redefining \% on input line 239.
+\c@lstlisting=\count450
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: subfig package v1.3 is loaded.
 Package caption Info: float package is loaded.
 Package caption Info: floatrow package is loaded.
-Package caption Info: listings package is loaded.
 Package caption Info: longtable package is loaded.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/caption\ltcaption.sty"
@@ -1108,17 +1159,16 @@ Package caption Info: End \AtBeginDocument code.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/floatrow\fr-subfig.sty"
 Package: fr-subfig 2007/12/24 v0.1g (beta) floatrow: additions for subfig
-\FBsc@max=\skip118
-\FBso@max=\skip119
+\FBsc@max=\skip121
+\FBso@max=\skip122
 )
 ("C:\Program Files\MiKTeX 2.9\tex/latex/floatrow\fr-longtable.sty"
 Package: fr-longtable 2007/11/28 v0.1b (beta) floatrow: additions for longtable
 
-\flrow@LT@lasthead=\box63
-\flrow@LT@prelastfoot=\box64
-\c@FBLTpage=\count445
+\flrow@LT@lasthead=\box65
+\flrow@LT@prelastfoot=\box66
+\c@FBLTpage=\count451
 )
-\c@lstlisting=\count446
 Package biblatex Info: Trying to load language 'spanish'...
 Package biblatex Info: ... file 'spanish.lbx' found.
 
@@ -1137,217 +1187,363 @@ Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'TFG.bbl' not found.
 
 No file TFG.bbl.
-Package biblatex Info: Reference section=0 on input line 194.
-Package biblatex Info: Reference segment=0 on input line 194.
-LaTeX Font Info:    Trying to load font information for T1+txss on input line 2
-01.
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\t1txss.fd"
-File: t1txss.fd 2000/12/15 v3.1
+Package biblatex Info: Reference section=0 on input line 239.
+Package biblatex Info: Reference segment=0 on input line 239.
+("C:\Program Files\MiKTeX 2.9\tex/latex/pdflscape\pdflscape.sty"
+Package: pdflscape 2019/12/05 v0.12 Display of landscape pages in PDF (HO)
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics\lscape.sty"
+Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
 )
-LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 11.39996pt on input line 201.
-<images/logo_ingenieros.png, id=6, 560.0925pt x 266.49562pt>
-File: images/logo_ingenieros.png Graphic file (type png)
-<use images/logo_ingenieros.png>
-Package pdftex.def Info: images/logo_ingenieros.png  used on input line 205.
-(pdftex.def)             Requested size: 227.62204pt x 108.30423pt.
-LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 16.41594pt on input line 208.
-LaTeX Font Info:    Font shape `T1/txss/m/sl' will be
-(Font)              scaled to size 16.41594pt on input line 212.
-LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 23.63593pt on input line 216.
-LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 19.70294pt on input line 220.
-<images/creativecommons.png, id=8, 338.76563pt x 118.19156pt>
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+)
+
+pdfTeX warning: pdflatex (file C:/Users/paco/0_TFG/tfg/caratula_tfg.pdf): PDF i
+nclusion: found PDF version <1.7>, but at most version <1.5> allowed
+<caratula_tfg.pdf, id=6, 597.55246pt x 845.07718pt>
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf>
+Package pdftex.def Info: caratula_tfg.pdf  used on input line 244.
+(pdftex.def)             Requested size: 597.551pt x 845.07512pt.
+
+
+pdfTeX warning: pdflatex (file C:/Users/paco/0_TFG/tfg/caratula_tfg.pdf): PDF i
+nclusion: found PDF version <1.7>, but at most version <1.5> allowed
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf>
+Package pdftex.def Info: caratula_tfg.pdf  used on input line 244.
+(pdftex.def)             Requested size: 597.551pt x 845.07512pt.
+
+
+pdfTeX warning: pdflatex (file C:/Users/paco/0_TFG/tfg/caratula_tfg.pdf): PDF i
+nclusion: found PDF version <1.7>, but at most version <1.5> allowed
+
+
+pdfTeX warning: pdflatex (file C:/Users/paco/0_TFG/tfg/caratula_tfg.pdf): PDF i
+nclusion: found PDF version <1.7>, but at most version <1.5> allowed
+<caratula_tfg.pdf, id=9, page=1, 597.55246pt x 845.07718pt>
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf, page 1>
+Package pdftex.def Info: caratula_tfg.pdf , page1 used on input line 244.
+(pdftex.def)             Requested size: 597.551pt x 845.07512pt.
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf, page 1>
+Package pdftex.def Info: caratula_tfg.pdf , page1 used on input line 244.
+(pdftex.def)             Requested size: 597.57834pt x 845.1138pt.
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf, page 1>
+Package pdftex.def Info: caratula_tfg.pdf , page1 used on input line 244.
+(pdftex.def)             Requested size: 597.57834pt x 845.1138pt.
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf, page 1>
+Package pdftex.def Info: caratula_tfg.pdf , page1 used on input line 244.
+(pdftex.def)             Requested size: 597.57834pt x 845.1138pt.
+File: caratula_tfg.pdf Graphic file (type pdf)
+<use caratula_tfg.pdf, page 1>
+Package pdftex.def Info: caratula_tfg.pdf , page1 used on input line 244.
+(pdftex.def)             Requested size: 597.57834pt x 845.1138pt.
+[1
+
+ <C:/Users/paco/0_TFG/tfg/caratula_tfg.pdf>] [2]
+LaTeX Font Info:    Font shape `T1/fve/b/n' will be
+(Font)              scaled to size 10.79993pt on input line 255.
+LaTeX Font Info:    Font shape `T1/fve/b/n' will be
+(Font)              scaled to size 12.9599pt on input line 255.
+LaTeX Font Info:    Trying to load font information for TS1+fve on input line 2
+64.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\ts1fve.fd"
+File: ts1fve.fd 2004/09/07 scalable font definitions for TS1/fve.
+)
+LaTeX Font Info:    Font shape `TS1/fve/m/n' will be
+(Font)              scaled to size 10.79993pt on input line 264.
+
+
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 2 un
+defined on input line 264.
+
+
+Overfull \hbox (74.51921pt too wide) in paragraph at lines 264--265
+\T1/fve/m/n/12 lar es el Mo-de-lo de 4\TS1/fve/m/n/12 º \T1/fve/m/n/12 Or-den p
+ro-pues-to en []. 
+ []
+
+LaTeX Font Info:    Trying to load font information for OT1+txr on input line 2
+73.
+("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\ot1txr.fd"
+File: ot1txr.fd 2000/12/15 v3.1
+)
+LaTeX Font Info:    Trying to load font information for U+txsya on input line 2
+73.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxsya.fd"
+File: utxsya.fd 2000/12/15 v3.1
+)
+LaTeX Font Info:    Trying to load font information for U+txsyb on input line 2
+73.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxsyb.fd"
+File: utxsyb.fd 2000/12/15 v3.1
+)
+LaTeX Font Info:    Trying to load font information for U+txmia on input line 2
+73.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxmia.fd"
+File: utxmia.fd 2000/12/15 v3.1
+)
+LaTeX Font Info:    Trying to load font information for U+txsyc on input line 2
+73.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxsyc.fd"
+File: utxsyc.fd 2000/12/15 v3.1
+)
+
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 2 un
+defined on input line 273.
+
+
+LaTeX Font Warning: Font shape `T1/fve/m/sc' undefined
+(Font)              using `T1/fve/m/n' instead on input line 278.
+
+LaTeX Font Info:    Font shape `T1/fve/m/sc' will be
+(Font)              scaled to size 10.79993pt on input line 278.
+LaTeX Font Info:    Font shape `T1/fve/m/sc' will be
+(Font)              scaled to size 7.19995pt on input line 278.
+
+Package spanish Warning: Replacing `T1/fve/m/sc' by 
+(spanish)                faked small caps on input line 278.
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.II}) has
+ been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.278 \end{abstract}
+                     [2]
+LaTeX Font Info:    Font shape `T1/fve/m/n' will be
+(Font)              scaled to size 12.9599pt on input line 292.
+
+Overfull \hbox (5.25868pt too wide) in paragraph at lines 296--297
+[]\T1/fve/m/sc/12 También qui-sie-ra mos-trar mi agra-de-ci-mien-to y ad-mi-ra-
+ción ha-cia to-das aque-
+ []
+
+<images/creativecommons.png, id=49, 338.76563pt x 118.19156pt>
 File: images/creativecommons.png Graphic file (type png)
 <use images/creativecommons.png>
-Package pdftex.def Info: images/creativecommons.png  used on input line 231.
+Package pdftex.def Info: images/creativecommons.png  used on input line 301.
 (pdftex.def)             Requested size: 119.50148pt x 41.69228pt.
-LaTeX Font Info:    Font shape `T1/txss/b/n' in size <12> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 232.
-LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 11.39996pt on input line 232.
- [1
+LaTeX Font Info:    Font shape `T1/fve/m/n' will be
+(Font)              scaled to size 9.85492pt on input line 303.
+LaTeX Font Info:    Font shape `T1/fve/b/n' will be
+(Font)              scaled to size 9.85492pt on input line 303.
 
- <C:/Users/paco/0_TFG/tfg/images/logo_ingenieros.png>] [2 <C:/Users/paco/0_TFG/
-tfg/images/creativecommons.png>]pdfTeX warning (ext4): destination with the sam
-e identifier (name{page.I}) has been already used, duplicate ignored
-<to be read again> 
-                   \relax 
-l.244 \begin{abstract}
-                       [1]
-LaTeX Font Info:    Font shape `T1/txr/b/n' in size <12> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 244.
-LaTeX Font Info:    Font shape `T1/txr/b/n' in size <14.4> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 244.
- [3]pdfTeX warning (ext4): destination with the same identifier (name{page.I}) 
-has been already used, duplicate ignored
-<to be read again> 
-                   \relax 
-l.262 \chapter
-              *{Dedicatoria} [1] [5
+Package spanish Warning: Replacing `T1/fve/m/sc' by 
+(spanish)                faked small caps on input line 310.
 
-] [6]
+[4
+
+ <C:/Users/paco/0_TFG/tfg/images/creativecommons.png>] [5]
 \tf@toc=\write6
 \openout6 = `TFG.toc'.
 
- [7
 
-] [8]
+
+Package spanish Warning: Replacing `T1/fve/m/sc' by 
+(spanish)                faked small caps on input line 325.
+
+[6
+
+] [7]
 \tf@lof=\write7
 \openout7 = `TFG.lof'.
 
- [9
 
-] [10]
+
+Package spanish Warning: Replacing `T1/fve/m/sc' by 
+(spanish)                faked small caps on input line 335.
+
+[8
+
+] [9]
 \tf@lot=\write8
 \openout8 = `TFG.lot'.
 
- [11
 
-] [12]
-(C:/Users/paco/0_TFG/tfg\chapters/ch01.tex
+
+Package spanish Warning: Replacing `T1/fve/m/sc' by 
+(spanish)                faked small caps on input line 345.
+
+[10
+
+] [11] (C:/Users/paco/0_TFG/tfg\chapters/ch01.tex
 Cap\'{\i }tulo 1.
+
+LaTeX Warning: Citation 'WelcomePythonOrg' on page 1 undefined on input line 5.
+
+
+LaTeX Font Info:    Font shape `T1/fve/m/it' in size <12> not available
+(Font)              Font shape `T1/fve/m/sl' tried instead on input line 5.
+LaTeX Font Info:    Font shape `T1/fve/m/sl' will be
+(Font)              scaled to size 10.79993pt on input line 5.
+
+LaTeX Warning: Citation 'NumPy' on page 1 undefined on input line 5.
+
+
+LaTeX Warning: Citation 'PandasPythonData' on page 1 undefined on input line 5.
+
+
+
+LaTeX Warning: Citation 'bellPurePseudopureFluid2014' on page 1 undefined on in
+put line 7.
+
+
+LaTeX Warning: Citation 'holmgrenPvlibPythonPython2018' on page 1 undefined on 
+input line 7.
+
+
+LaTeX Warning: Citation 'TkInterPythonWiki' on page 1 undefined on input line 1
+1.
+
 [1
 
 
 ]
 
+LaTeX Warning: Citation 'freemanSystemAdvisorModel2018' on page 2 undefined on 
+input line 13.
+
+
+Overfull \hbox (33.55516pt too wide) in paragraph at lines 13--14
+\T1/fve/m/sc/12 ni-dos me-dian-te Sys-tem Ad-vi-sor Mo-del (SAM, []).
+ []
+
+
 LaTeX Warning: Citation 'islamComprehensiveReviewStateoftheart2018' on page 2 u
-ndefined on input line 21.
+ndefined on input line 31.
 
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 21.
+LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 31.
 
-
-Overfull \hbox (30.39665pt too wide) in paragraph at lines 21--22
-\T1/txr/m/n/12 ope-ra-ción y en cons-truc-ción en to-do el mun-do [].
- []
-
-
-Overfull \hbox (4.95598pt too wide) in paragraph at lines 21--22
-\T1/txr/m/n/12 En Es-pa-ña ac-tual-men-te hay me-dio cen-te-nar de cen-tra-les 
-CCP en ope-ra-ción [],
- []
-
-<images/torre.png, id=82, 426.84468pt x 252.945pt>
+[2]
+<images/torre.png, id=106, 426.84468pt x 252.945pt>
 File: images/torre.png Graphic file (type png)
 <use images/torre.png>
-Package pdftex.def Info: images/torre.png  used on input line 27.
-(pdftex.def)             Requested size: 213.39568pt x 126.4606pt.
+Package pdftex.def Info: images/torre.png  used on input line 37.
+(pdftex.def)             Requested size: 204.86357pt x 170.71506pt.
+LaTeX Font Info:    Font shape `T1/fve/m/n' will be
+(Font)              scaled to size 8.99994pt on input line 37.
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 27.
 
-LaTeX Font Info:    Font shape `T1/txr/b/n' in size <10> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 27.
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 37.
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 27.
+LaTeX Font Info:    Font shape `T1/fve/b/n' will be
+(Font)              scaled to size 8.99994pt on input line 37.
 
-<images/disco.png, id=83, 426.84468pt x 229.60782pt>
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 37.
+
+
+Overfull \hbox (86.18864pt too wide) in paragraph at lines 37--37
+[] [] 
+ []
+
+
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 37.
+
+
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 37.
+
+
+Overfull \hbox (86.18864pt too wide) in paragraph at lines 37--37
+[] [] 
+ []
+
+<images/disco.png, id=107, 426.84468pt x 229.60782pt>
 File: images/disco.png Graphic file (type png)
 <use images/disco.png>
-Package pdftex.def Info: images/disco.png  used on input line 30.
-(pdftex.def)             Requested size: 213.39568pt x 114.7931pt.
+Package pdftex.def Info: images/disco.png  used on input line 40.
+(pdftex.def)             Requested size: 204.86357pt x 170.72343pt.
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 30.
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 40.
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 30--30
-[][]|\T1/txr/m/n/10 Con-cen-tra-do-res de Dis-co Pa-ra-bó-li-co. Fuen-te
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 40.
+
+
+Overfull \hbox (87.90584pt too wide) in paragraph at lines 40--40
+[] [] 
  []
 
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 30.
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 40.
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 30--30
-[][]|\T1/txr/m/n/10 Con-cen-tra-do-res de Dis-co Pa-ra-bó-li-co. Fuen-te
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 40.
+
+
+Overfull \hbox (87.90584pt too wide) in paragraph at lines 40--40
+[] [] 
  []
 
-
-Overfull \hbox (9.0pt too wide) in paragraph at lines 27--31
- [][][][] 
- []
-
-<images/ccp.png, id=84, 324.2295pt x 319.302pt>
+<images/ccp.png, id=108, 324.2295pt x 319.302pt>
 File: images/ccp.png Graphic file (type png)
 <use images/ccp.png>
-Package pdftex.def Info: images/ccp.png  used on input line 34.
-(pdftex.def)             Requested size: 213.39568pt x 210.1553pt.
-<images/fresnel.png, id=85, 426.09187pt x 319.1925pt>
+Package pdftex.def Info: images/ccp.png  used on input line 44.
+(pdftex.def)             Requested size: 204.86429pt x 170.71526pt.
+
+Overfull \hbox (87.90547pt too wide) in paragraph at lines 44--44
+[] [] 
+ []
+
+
+Overfull \hbox (87.90547pt too wide) in paragraph at lines 44--44
+[] [] 
+ []
+
+<images/fresnel.png, id=109, 426.09187pt x 319.1925pt>
 File: images/fresnel.png Graphic file (type png)
 <use images/fresnel.png>
-Package pdftex.def Info: images/fresnel.png  used on input line 37.
-(pdftex.def)             Requested size: 213.39568pt x 159.85886pt.
+Package pdftex.def Info: images/fresnel.png  used on input line 47.
+(pdftex.def)             Requested size: 204.85985pt x 170.71515pt.
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 37.
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 47.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 37--37
-[][]|\T1/txr/m/n/10 Con-cen-tra-dor de ti-po Fres-nel. Fuen-te
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 47.
+
+
+Overfull \hbox (87.9077pt too wide) in paragraph at lines 47--47
+[] [] 
  []
 
 
-LaTeX Warning: Citation 'Protermosolar' on page 2 undefined on input line 37.
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 47.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 37--37
-[][]|\T1/txr/m/n/10 Con-cen-tra-dor de ti-po Fres-nel. Fuen-te
+LaTeX Warning: Citation 'Protermosolar' on page 3 undefined on input line 47.
+
+
+Overfull \hbox (87.9077pt too wide) in paragraph at lines 47--47
+[] [] 
  []
 
-
-Overfull \hbox (6.0pt too wide) in paragraph at lines 34--38
- [][][][] 
- []
-
-[2] [3 <C:/Users/paco/0_TFG/tfg/images/torre.png> <C:/Users/paco/0_TFG/tfg/imag
-es/disco.png> <C:/Users/paco/0_TFG/tfg/images/ccp.png> <C:/Users/paco/0_TFG/tfg
-/images/fresnel.png>]
-<images/entrada_salida_lazo2_texto.png, id=101, 3131.7pt x 2348.775pt>
+[3 <C:/Users/paco/0_TFG/tfg/images/torre.png> <C:/Users/paco/0_TFG/tfg/images/d
+isco.png> <C:/Users/paco/0_TFG/tfg/images/ccp.png> <C:/Users/paco/0_TFG/tfg/ima
+ges/fresnel.png>]
+<images/entrada_salida_lazo2_texto.png, id=121, 3131.7pt x 2348.775pt>
 File: images/entrada_salida_lazo2_texto.png Graphic file (type png)
 <use images/entrada_salida_lazo2_texto.png>
 Package pdftex.def Info: images/entrada_salida_lazo2_texto.png  used on input l
-ine 50.
+ine 60.
 (pdftex.def)             Requested size: 384.1096pt x 288.07689pt.
-<images/perfil_sca_2_texto.png, id=102, 3131.7pt x 4174.797pt>
+<images/perfil_sca_2_texto.png, id=122, 3131.7pt x 4174.797pt>
 File: images/perfil_sca_2_texto.png Graphic file (type png)
 <use images/perfil_sca_2_texto.png>
-Package pdftex.def Info: images/perfil_sca_2_texto.png  used on input line 57.
-(pdftex.def)             Requested size: 384.1096pt x 512.03821pt.
+Package pdftex.def Info: images/perfil_sca_2_texto.png  used on input line 67.
+(pdftex.def)             Requested size: 298.70924pt x 384.06052pt.
  [4 <C:/Users/paco/0_TFG/tfg/images/entrada_salida_lazo2_texto.png>] [5 <C:/Use
-rs/paco/0_TFG/tfg/images/perfil_sca_2_texto.png>] [6])
-(C:/Users/paco/0_TFG/tfg\chapters/ch02.tex [7]
+rs/paco/0_TFG/tfg/images/perfil_sca_2_texto.png>])
+(C:/Users/paco/0_TFG/tfg\chapters/ch02.tex [6] [7]
 Cap\'{\i }tulo 2.
-LaTeX Font Info:    Trying to load font information for OT1+txr on input line 4
-.
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\ot1txr.fd"
-File: ot1txr.fd 2000/12/15 v3.1
-)
-LaTeX Font Info:    Trying to load font information for U+txsya on input line 4
-.
-
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxsya.fd"
-File: utxsya.fd 2000/12/15 v3.1
-)
-LaTeX Font Info:    Trying to load font information for U+txsyb on input line 4
-.
-
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxsyb.fd"
-File: utxsyb.fd 2000/12/15 v3.1
-)
-LaTeX Font Info:    Trying to load font information for U+txmia on input line 4
-.
-
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxmia.fd"
-File: utxmia.fd 2000/12/15 v3.1
-)
-LaTeX Font Info:    Trying to load font information for U+txsyc on input line 4
-.
-
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\utxsyc.fd"
-File: utxsyc.fd 2000/12/15 v3.1
-)
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 4.
@@ -1361,8 +1557,71 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 4.
 
 
+LaTeX Warning: Citation 'patnodeSimulationPerformanceEvaluation2006' on page 8 
+undefined on input line 6.
+
+
+LaTeX Warning: Citation 'dudleyTestResultsSEGS1994' on page 8 undefined on inpu
+t line 6.
+
+
+LaTeX Warning: Citation 'burkholderHeatLossTesting2009' on page 8 undefined on 
+input line 6.
+
+
+LaTeX Warning: Citation 'burkholderHeatLossTestingSolel2008' on page 8 undefine
+d on input line 6.
+
+
+LaTeX Warning: Citation 'hottelEvaluationFlatplateSolar1955' on page 8 undefine
+d on input line 6.
+
+
+LaTeX Warning: Citation 'fraidenraichImprovedSolutionsTemperature1997a' on page
+ 8 undefined on input line 6.
+
+
+LaTeX Warning: Citation 'kalogirouDetailedThermalModel2012' on page 8 undefined
+ on input line 6.
+
+
+LaTeX Warning: Citation 'duffieSolarEngineeringThermal2006' on page 8 undefined
+ on input line 6.
+
+
+Overfull \hbox (43.45032pt too wide) in paragraph at lines 6--7
+[]\T1/fve/m/sc/12 , [],
+ []
+
+
+Overfull \hbox (15.56252pt too wide) in paragraph at lines 6--7
+[] \T1/fve/m/sc/12 o [])
+ []
+
+
+Overfull \hbox (121.50053pt too wide) in paragraph at lines 6--7
+\T1/fve/m/sc/12 y, por otro la-do, mo-de-los teó-ri-cos más ge-ne-ra-les co-mo 
+los de [],
+ []
+
+
+Overfull \hbox (120.5269pt too wide) in paragraph at lines 6--7
+[] \T1/fve/m/sc/12 o [].
+ []
+
+
+Overfull \hbox (58.8162pt too wide) in paragraph at lines 6--7
+\T1/fve/m/sc/12 zar-se en tér-mi-nos de un co-efi-cien-te de pér-di-das [].
+ []
+
+
 LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 8 un
 defined on input line 8.
+
+
+Overfull \hbox (61.63426pt too wide) in paragraph at lines 8--9
+[]\T1/fve/m/sc/12 El mo-de-lo de par-ti-da de-sa-rro-lla-do en []
+ []
 
 [8
 
@@ -1371,74 +1630,78 @@ defined on input line 8.
 LaTeX Warning: Reference `eq:balance_receptor' on page 9 undefined on input lin
 e 12.
 
+LaTeX Font Info:    Font shape `T1/fve/m/n' will be
+(Font)              scaled to size 7.19995pt on input line 12.
+LaTeX Font Info:    Font shape `T1/fve/m/n' will be
+(Font)              scaled to size 5.39996pt on input line 12.
 
 LaTeX Warning: Reference `fig:receptormodelo' on page 9 undefined on input line
- 18.
+ 19.
 
 
 LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 9 un
-defined on input line 21.
+defined on input line 22.
 
-LaTeX Font Info:    Font shape `T1/txr/b/n' in size <10.95> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 21.
 
-Underfull \hbox (badness 10000) in paragraph at lines 21--21
-[][]|\T1/txr/m/n/10.95 Es-que-ma del re-cep-tor em-plea-do pa-ra el mo-de-lo.
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 9 un
+defined on input line 22.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 22--22
+[][]|\T1/fve/m/n/10.95 Es-que-ma del re-cep-tor em-plea-do pa-ra el mo-de-lo.
  []
 
-<images/receptor_para_modelo.png, id=137, 371.13657pt x 242.40562pt>
+<images/receptor_para_modelo.png, id=156, 371.13657pt x 242.40562pt>
 File: images/receptor_para_modelo.png Graphic file (type png)
 <use images/receptor_para_modelo.png>
-Package pdftex.def Info: images/receptor_para_modelo.png  used on input line 22
+Package pdftex.def Info: images/receptor_para_modelo.png  used on input line 23
 .
 (pdftex.def)             Requested size: 296.90965pt x 193.92474pt.
 
-LaTeX Warning: Reference `eq:qabs' on page 9 undefined on input line 27.
+LaTeX Warning: Reference `eq:qabs' on page 9 undefined on input line 28.
 
 
-LaTeX Warning: Reference `eq:qu' on page 9 undefined on input line 33.
+LaTeX Warning: Reference `eq:qu' on page 9 undefined on input line 34.
 
 [9 <C:/Users/paco/0_TFG/tfg/images/receptor_para_modelo.png>]
 
-LaTeX Warning: Reference `eq:urec' on page 10 undefined on input line 39.
+LaTeX Warning: Reference `eq:urec' on page 10 undefined on input line 40.
 
 
-LaTeX Warning: Reference `eq:qperd' on page 10 undefined on input line 47.
+LaTeX Warning: Reference `eq:qperd' on page 10 undefined on input line 48.
 
 
-LaTeX Warning: Reference `eq:deltaT' on page 10 undefined on input line 55.
+LaTeX Warning: Reference `eq:deltaT' on page 10 undefined on input line 56.
 
-LaTeX Font Info:    Trying to load font information for TS1+txr on input line 5
-5.
-("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\ts1txr.fd"
-File: ts1txr.fd 2000/12/15 v3.1
-)
-Underfull \hbox (badness 10000) in paragraph at lines 59--60
 
+Overfull \hbox (9.53223pt too wide) in paragraph at lines 56--57
+\T1/fve/m/sc/12 cam-bios en ener-gía ci-né-ti-ca y un ca-lor es-pe-cí-fi-co a p
+re-sión cons-tan-te, $\OML/txmi/m/it/12 c[]$ \T1/fve/m/sc/12 (J/kg\TS1/fve/m/n/
+12 ·\T1/fve/m/sc/12 K).
  []
+
+
+LaTeX Warning: Reference `eq:rendimientolocal' on page 10 undefined on input li
+ne 62.
+
+
+LaTeX Warning: Reference `eq:rendimientointegral' on page 10 undefined on input
+ line 62.
 
 [10]
 
-LaTeX Warning: Reference `eq:rendimientolocal' on page 11 undefined on input li
-ne 61.
-
-
-LaTeX Warning: Reference `eq:rendimientointegral' on page 11 undefined on input
- line 61.
-
-
-LaTeX Warning: Reference `eq:etax' on page 11 undefined on input line 71.
+LaTeX Warning: Reference `eq:etax' on page 11 undefined on input line 72.
 
 
 LaTeX Warning: Reference `eq:rendimientonormalizado' on page 11 undefined on in
-put line 77.
+put line 78.
 
 
 LaTeX Warning: Reference `eq:modelocompleto' on page 11 undefined on input line
- 83.
+ 84.
 
 
-Overfull \hbox (8.60263pt too wide) detected at line 88
+Overfull \hbox (8.60263pt too wide) detected at line 89
 \OML/txmi/m/it/12 \OT1/txr/m/n/12 (\OML/txmi/m/it/12 x[]\OT1/txr/m/n/12 ) = []
  \OMS/txsy/m/n/12  []  []   []  []  \OML/txmi/m/it/12 NTU[] \OMS/txsy/m/n/1
 2  \OML/txmi/m/it/12 x[] \OMS/txsy/m/n/12   []  []  \OML/txmi/m/it/12 NTU[] 
@@ -1447,535 +1710,711 @@ Overfull \hbox (8.60263pt too wide) detected at line 88
 
 [11]
 
-LaTeX Warning: Reference `eq:uext' on page 12 undefined on input line 150.
-
-[12]
-
-LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 13 u
-ndefined on input line 157.
+LaTeX Warning: Reference `eq:uext' on page 12 undefined on input line 151.
 
 
-LaTeX Warning: Citation 'burkholderHeatLossTestingSolel2008' on page 13 undefin
-ed on input line 157.
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 12 u
+ndefined on input line 158.
 
 
-LaTeX Warning: Citation 'burkholderHeatLossTesting2009' on page 13 undefined on
- input line 157.
+LaTeX Warning: Citation 'burkholderHeatLossTesting2009' on page 12 undefined on
+ input line 158.
 
 
-LaTeX Warning: Citation 'kutscherGenerationParabolicTrough2012' on page 13 unde
-fined on input line 157.
+LaTeX Warning: Citation 'burkholderHeatLossTestingSolel2008' on page 12 undefin
+ed on input line 158.
 
 
-Overfull \hbox (47.53264pt too wide) in paragraph at lines 157--158
-[] \T1/txr/m/n/12 a par-tir de [],
+LaTeX Warning: Citation 'kutscherGenerationParabolicTrough2012' on page 12 unde
+fined on input line 158.
+
+
+Overfull \hbox (6.97647pt too wide) in paragraph at lines 158--159
+\T1/fve/m/sc/12 plean los va-lo-res ob-te-ni-dos en []
  []
 
 
-LaTeX Warning: Reference `eq:primerorden' on page 13 undefined on input line 16
-3.
+Overfull \hbox (64.7262pt too wide) in paragraph at lines 158--159
+\T1/fve/m/sc/12 a par-tir de [], []
+ []
 
 
-LaTeX Warning: Reference `eq:rendimiento0' on page 13 undefined on input line 1
-63.
+LaTeX Warning: Reference `eq:primerorden' on page 12 undefined on input line 16
+4.
+
+
+LaTeX Warning: Reference `eq:rendimiento0' on page 12 undefined on input line 1
+64.
+
+
+LaTeX Warning: Reference `eq:rendimiento0aproximado' on page 12 undefined on in
+put line 164.
+
+[12]
+
+LaTeX Warning: Citation 'hottelEvaluationFlatplateSolar1955' on page 13 undefin
+ed on input line 176.
+
+
+LaTeX Warning: Reference `eq:ntuperd' on page 13 undefined on input line 183.
 
 
 LaTeX Warning: Reference `eq:rendimiento0aproximado' on page 13 undefined on in
-put line 163.
+put line 190.
+
+
+LaTeX Warning: Reference `eq:fcrit' on page 13 undefined on input line 190.
+
+
+LaTeX Warning: Reference `eq:fcrit' on page 13 undefined on input line 202.
+
+
+LaTeX Warning: Reference `eq:rendimiento0aproximado' on page 13 undefined on in
+put line 202.
+
+
+LaTeX Warning: Reference `eq:rendimiento0aproximado2' on page 13 undefined on i
+nput line 202.
+
+
+LaTeX Warning: Reference `eq:modelosimplificado' on page 13 undefined on input 
+line 212.
 
 [13]
 
 LaTeX Warning: Citation 'hottelEvaluationFlatplateSolar1955' on page 14 undefin
-ed on input line 187.
-
-
-LaTeX Warning: Reference `eq:modelosimplificado' on page 14 undefined on input 
-line 197.
-
-
-LaTeX Warning: Citation 'hottelEvaluationFlatplateSolar1955' on page 14 undefin
-ed on input line 208.
+ed on input line 223.
 
 
 LaTeX Warning: Citation 'fraidenraichImprovedSolutionsTemperature1997a' on page
- 14 undefined on input line 208.
+ 14 undefined on input line 223.
 
-
-Overfull \hbox (129.3126pt too wide) in paragraph at lines 208--209
-\T1/txr/m/n/12 co-mo por ejem-plo en [] o [],
- []
-
-[14]
-
-LaTeX Warning: Reference `eq:ucrit' on page 15 undefined on input line 221.
-
-
-LaTeX Warning: Reference `eq:qcrit' on page 15 undefined on input line 221.
-
-) (C:/Users/paco/0_TFG/tfg\chapters/ch03.tex [15]
+[14]) (C:/Users/paco/0_TFG/tfg\chapters/ch03.tex [15]
 Cap\'{\i }tulo 3.
 [16
 
 ]
-LaTeX Font Info:    Trying to load font information for T1+txtt on input line 2
-0.
- ("C:\Program Files\MiKTeX 2.9\tex/latex/txfonts\t1txtt.fd"
-File: t1txtt.fd 2000/12/15 v3.1
+
+LaTeX Warning: Reference `fig:clasescsenergy1' on page 17 undefined on input li
+ne 24.
+
+<images/clasescsenergy1.png, id=231, 847.165pt x 333.245pt>
+File: images/clasescsenergy1.png Graphic file (type png)
+<use images/clasescsenergy1.png>
+Package pdftex.def Info: images/clasescsenergy1.png  used on input line 27.
+(pdftex.def)             Requested size: 384.1096pt x 151.09279pt.
+
+LaTeX Warning: Reference `fig:clasescsenergy2' on page 17 undefined on input li
+ne 34.
+
+[17 <C:/Users/paco/0_TFG/tfg/images/clasescsenergy1.png>]
+<images/clasescsenergy2.png, id=237, 928.46875pt x 327.2225pt>
+File: images/clasescsenergy2.png Graphic file (type png)
+<use images/clasescsenergy2.png>
+Package pdftex.def Info: images/clasescsenergy2.png  used on input line 37.
+(pdftex.def)             Requested size: 384.1096pt x 135.37538pt.
+LaTeX Font Info:    Trying to load font information for T1+fvm on input line 44
+.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/bera\t1fvm.fd"
+File: t1fvm.fd 2004/09/07 scalable font definitions for T1/fvm.
 )
-Overfull \hbox (27.85153pt too wide) in paragraph at lines 30--30
-|[]\T1/txr/bx/n/12 Clases de-ri-va-das de Mo-del: Cla-se Mo-del-Bar-be-ro4thGra
-de, Mo-del-Bar-be-ro1stGrade
- []
-
-[17]
-
-LaTeX Warning: Reference `eq:tro' on page 18 undefined on input line 41.
+LaTeX Font Info:    Font shape `T1/fvm/b/n' will be
+(Font)              scaled to size 10.79993pt on input line 44.
 
 
-LaTeX Warning: Reference `eq:qperd' on page 18 undefined on input line 49.
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\\' on input line 44.
+
+LaTeX Font Info:    Font shape `T1/fvm/m/n' will be
+(Font)              scaled to size 10.79993pt on input line 46.
+[18 <C:/Users/paco/0_TFG/tfg/images/clasescsenergy2.png>]
+
+LaTeX Warning: Reference `eq:tro' on page 19 undefined on input line 55.
 
 
-LaTeX Warning: Reference `eq:qperdidassoportes' on page 18 undefined on input l
-ine 49.
+LaTeX Warning: Reference `eq:qperd' on page 19 undefined on input line 63.
 
 
-LaTeX Warning: Reference `eq:qcrit' on page 18 undefined on input line 51.
+LaTeX Warning: Reference `eq:qperdidassoportes' on page 19 undefined on input l
+ine 63.
 
 
-LaTeX Warning: Reference `eq:ucrit' on page 18 undefined on input line 51.
+LaTeX Warning: Reference `eq:qcrit' on page 19 undefined on input line 65.
 
 
-LaTeX Warning: Reference `eq:f1' on page 18 undefined on input line 53.
+LaTeX Warning: Reference `eq:ucrit' on page 19 undefined on input line 65.
 
 
-LaTeX Warning: Reference `eq:f4' on page 18 undefined on input line 53.
+LaTeX Warning: Reference `eq:f1' on page 19 undefined on input line 67.
 
 
-LaTeX Warning: Reference `eq:f0' on page 18 undefined on input line 53.
+LaTeX Warning: Reference `eq:f4' on page 19 undefined on input line 67.
 
 
-LaTeX Warning: Reference `eq:rendimiento0' on page 18 undefined on input line 5
-5.
+LaTeX Warning: Reference `eq:f0' on page 19 undefined on input line 67.
 
 
-LaTeX Warning: Reference `eq:rendimiento0aproximado' on page 18 undefined on in
-put line 55.
+LaTeX Warning: Reference `eq:rendimiento0' on page 19 undefined on input line 6
+9.
 
-[18]
 
-LaTeX Warning: Reference `eq:zeta' on page 19 undefined on input line 57.
+LaTeX Warning: Reference `eq:rendimiento0aproximado' on page 19 undefined on in
+put line 69.
+
+
+LaTeX Warning: Reference `eq:zeta' on page 19 undefined on input line 71.
 
 
 LaTeX Warning: Reference `eq:g3primadezeta' on page 19 undefined on input line 
-57.
+71.
 
 
 LaTeX Warning: Reference `eq:modelocompleto' on page 19 undefined on input line
- 59.
+ 73.
+
+[19]
+
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 20 u
+ndefined on input line 80.
 
 
-LaTeX Warning: Citation '1022085/7TD8VTGL' on page 19 undefined on input line 6
-7.
+LaTeX Warning: Citation 'forristallHeatTransferAnalysis2003' on page 20 undefin
+ed on input line 80.
 
 
-LaTeX Warning: Citation '1022085/CYH3NJEG' on page 19 undefined on input line 6
-7.
-
-
-LaTeX Warning: Reference `eq:primerorden' on page 19 undefined on input line 71
+LaTeX Warning: Reference `eq:primerorden' on page 20 undefined on input line 84
 .
 
 
-LaTeX Warning: Reference `eq:modelosimplificado' on page 19 undefined on input 
-line 71.
+LaTeX Warning: Reference `eq:modelosimplificado' on page 20 undefined on input 
+line 84.
 
-[19]
-Overfull \hbox (2.2426pt too wide) in paragraph at lines 90--93
-[]\T1/txr/m/n/12 qlost_brackets = Po-ten-cia ca-lo-rí-fi-ca per-di-da a tra-vés
- de los so-por-tes del HCE $\OT1/txr/m/n/12 (\OML/txmi/m/it/12 W=m[]\OT1/txr/m/
-n/12 )$ 
- []
+
+LaTeX Warning: Reference `eq:deltaH' on page 20 undefined on input line 94.
+
+
+LaTeX Warning: Reference `eq:delta_hvalor' on page 20 undefined on input line 1
+01.
 
 [20]
 
-LaTeX Warning: Reference `eq:krec' on page 21 undefined on input line 111.
+LaTeX Warning: Reference `eq:deltaH' on page 21 undefined on input line 108.
 
 
-LaTeX Warning: Reference `eq:hint' on page 21 undefined on input line 122.
+LaTeX Warning: Reference `eq:delta_hvalor' on page 21 undefined on input line 1
+10.
 
 
-LaTeX Warning: Reference `eq:nug' on page 21 undefined on input line 122.
+LaTeX Warning: Citation 'zarzaApuntesMasterConsultor2006' on page 21 undefined 
+on input line 110.
 
 
-LaTeX Warning: Reference `eq:urec' on page 21 undefined on input line 137.
+LaTeX Warning: Reference `eq:delta_hvalornegativo' on page 21 undefined on inpu
+t line 110.
 
-[21]
 
-LaTeX Warning: Reference `eq:cg' on page 22 undefined on input line 153.
+LaTeX Warning: Reference `eq:qabs' on page 21 undefined on input line 119.
+
+
+LaTeX Warning: Reference `eq:qabs' on page 21 undefined on input line 122.
+
+[21pdfTeX warning (ext4): destination with the same identifier (name{equation.3
+.2.5}) has been already used, duplicate ignored
+
+\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
+                                                  
+l.136 \end{equation}
+                    ]
+
+LaTeX Warning: Reference `eq:cg' on page 22 undefined on input line 138.
 
 
 LaTeX Warning: Reference `eq:rendimientooptico' on page 22 undefined on input l
-ine 165.
+ine 146.
+
+
+LaTeX Warning: Reference `eq:rendimientooptico' on page 22 undefined on input l
+ine 154.
 
 
 LaTeX Warning: Reference `eq:rendimientoopticopico' on page 22 undefined on inp
-ut line 173.
+ut line 155.
 
 
 LaTeX Warning: Reference `eq:rendimientoopticopico' on page 22 undefined on inp
-ut line 182.
+ut line 162.
+
+
+LaTeX Warning: Reference `eq:bordes' on page 22 undefined on input line 164.
 
 [22]
 
-LaTeX Warning: Reference `eq:bordes' on page 23 undefined on input line 186.
+LaTeX Warning: Citation 'sharmaShadingAvailableEnergy2013' on page 23 undefined
+ on input line 173.
 
 
-LaTeX Warning: Reference `eq:sombras' on page 23 undefined on input line 196.
+LaTeX Warning: Reference `eq:sombras' on page 23 undefined on input line 173.
 
 
-LaTeX Warning: Reference `eq:delta_h' on page 23 undefined on input line 203.
+LaTeX Warning: Citation 'gilmanSolarAdvisorModel2008' on page 23 undefined on i
+nput line 173.
 
 
-LaTeX Warning: Reference `eq:delta_hvalor' on page 23 undefined on input line 2
-10.
-
-[23]
-
-LaTeX Warning: Reference `eq:delta_h' on page 24 undefined on input line 217.
+LaTeX Warning: Reference `eq:qperd' on page 23 undefined on input line 184.
 
 
-LaTeX Warning: Citation '1022085/XAQ9AM5E' on page 24 undefined on input line 2
-19.
+LaTeX Warning: Reference `eq:qperd' on page 23 undefined on input line 188.
 
 
-LaTeX Warning: Reference `eq:delta_hvalornegativo' on page 24 undefined on inpu
-t line 219.
+LaTeX Warning: Reference `eq:eext' on page 23 undefined on input line 190.
 
 
-LaTeX Warning: Reference `eq:eext' on page 24 undefined on input line 228.
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 23 u
+ndefined on input line 197.
 
 
-LaTeX Warning: Citation '1022085/7TD8VTGL' on page 24 undefined on input line 2
-36.
+Overfull \hbox (110.32825pt too wide) in paragraph at lines 197--198
+\T1/fve/m/sc/12 Los co-efi-cien-tes $\OML/txmi/m/it/12 A[]$ \T1/fve/m/sc/12 y $
+\OML/txmi/m/it/12 A[]$ \T1/fve/m/sc/12 son los que se ofre-cen en []. 
+ []
 
 
-LaTeX Warning: Citation '1022085/7TD8VTGL' on page 24 undefined on input line 2
-40.
-
-[24]
-
-LaTeX Warning: Reference `eq:qperdidassoportes' on page 25 undefined on input l
-ine 242.
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 23 u
+ndefined on input line 199.
 
 
-LaTeX Warning: Citation '1022085/CYH3NJEG' on page 25 undefined on input line 2
-42.
-
-[25] [26]
-
-LaTeX Warning: Reference `eq:iam' on page 27 undefined on input line 278.
+Overfull \hbox (130.16525pt too wide) in paragraph at lines 199--200
+\T1/fve/m/sc/12 HCE con va-cío en su es-pa-cio anu-lar. Nue-va-men-te, en []
+ []
 
 
-LaTeX Warning: Reference `eq:fraccionsolar' on page 27 undefined on input line 
-288.
+LaTeX Warning: Reference `eq:qperdidassoportes' on page 23 undefined on input l
+ine 201.
 
 
-LaTeX Warning: Citation '1022085/95AM6AQN' on page 27 undefined on input line 2
-97.
+LaTeX Warning: Citation 'forristallHeatTransferAnalysis2003' on page 23 undefin
+ed on input line 201.
+
+[23pdfTeX warning (ext4): destination with the same identifier (name{equation.3
+.2.12}) has been already used, duplicate ignored
+
+\@EveryShipout@Output ...@Org@Shipout \box \@cclv 
+                                                  
+l.202 
+      ]
+
+LaTeX Warning: Reference `eq:krec' on page 24 undefined on input line 216.
 
 
-LaTeX Warning: Citation '1022085/GUC54R5I' on page 27 undefined on input line 2
-97.
-
-[27] [28] [29] [30]
-
-LaTeX Warning: Reference `eq:polinomiohtf' on page 31 undefined on input line 3
-54.
+LaTeX Warning: Reference `eq:hint' on page 24 undefined on input line 227.
 
 
-LaTeX Warning: Command \' invalid in math mode on input line 357.
+LaTeX Warning: Reference `eq:nug' on page 24 undefined on input line 227.
+
+
+LaTeX Warning: Reference `eq:urec' on page 24 undefined on input line 239.
+
+[24] [25]
+
+LaTeX Warning: Reference `eq:iam' on page 26 undefined on input line 259.
+
+
+LaTeX Warning: Reference `eq:fraccionsolar' on page 26 undefined on input line 
+269.
+
+
+LaTeX Warning: Command \' invalid in math mode on input line 272.
+
+Missing character: There is no é in font txr!
+
+LaTeX Warning: Command \' invalid in math mode on input line 276.
+
+Missing character: There is no é in font txr!
+
+LaTeX Warning: Citation 'duffieSolarEngineeringThermal2006' on page 26 undefine
+d on input line 278.
+
+
+LaTeX Warning: Citation 'holmgrenPvlibPythonPython2018' on page 26 undefined on
+ input line 278.
+
+[26] [27] [28] [29]
+
+LaTeX Warning: Reference `eq:polinomiohtf' on page 30 undefined on input line 3
+41.
+
+
+LaTeX Warning: Command \' invalid in math mode on input line 344.
 
 Missing character: There is no á in font txr!
-[31]
-<images/curva_densidad.png, id=298, 368.1253pt x 224.33812pt>
-File: images/curva_densidad.png Graphic file (type png)
-<use images/curva_densidad.png>
-Package pdftex.def Info: images/curva_densidad.png  used on input line 364.
-(pdftex.def)             Requested size: 294.50064pt x 179.47073pt.
-<images/curva_viscosidad.png, id=299, 398.99063pt x 241.65282pt>
-File: images/curva_viscosidad.png Graphic file (type png)
-<use images/curva_viscosidad.png>
-Package pdftex.def Info: images/curva_viscosidad.png  used on input line 370.
-(pdftex.def)             Requested size: 319.19293pt x 193.32251pt.
-<images/curva_conductividad_termica.png, id=300, 399.74344pt x 241.65282pt>
-File: images/curva_conductividad_termica.png Graphic file (type png)
-<use images/curva_conductividad_termica.png>
-Package pdftex.def Info: images/curva_conductividad_termica.png  used on input 
-line 376.
-(pdftex.def)             Requested size: 319.79517pt x 193.32251pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/curva_entalpia.png, id=301, 398.99063pt x 241.65282pt>
-File: images/curva_entalpia.png Graphic file (type png)
-<use images/curva_entalpia.png>
-Package pdftex.def Info: images/curva_entalpia.png  used on input line 382.
-(pdftex.def)             Requested size: 319.19293pt x 193.32251pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/curva_temperatura_entalpia.png, id=302, 398.99063pt x 241.65282pt>
-File: images/curva_temperatura_entalpia.png Graphic file (type png)
-<use images/curva_temperatura_entalpia.png>
-Package pdftex.def Info: images/curva_temperatura_entalpia.png  used on input l
-ine 388.
-(pdftex.def)             Requested size: 319.19293pt x 193.32251pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
 
 LaTeX Warning: Citation 'richardl.mooreImplementationDOWTHERMProperties2010' on
- page 32 undefined on input line 393.
+ page 30 undefined on input line 350.
 
 
-LaTeX Warning: Citation 'machadoProductTechnicalData' on page 32 undefined on i
-nput line 393.
+LaTeX Warning: Citation 'machadoProductTechnicalData' on page 30 undefined on i
+nput line 350.
 
 
-Overfull \hbox (69.3967pt too wide) in paragraph at lines 393--394
-\T1/txr/m/n/12 ca-rac-te-ri-zan ca-da pa-rá-me-tro a par-tir de []
+Overfull \hbox (202.85472pt too wide) in paragraph at lines 350--351
+\T1/fve/m/sc/12 mios que ca-rac-te-ri-zan ca-da pa-rá-me-tro a par-tir de []
  []
 
 
-Overfull \hbox (8.26866pt too wide) in paragraph at lines 393--394
-\T1/txr/m/n/12 y se han con-tras-ta-do las cur-vas con los da-tos ofre-ci-dos e
-n [].
+Overfull \hbox (77.88873pt too wide) in paragraph at lines 350--351
+\T1/fve/m/sc/12 y se han con-tras-ta-do las cur-vas con los da-tos ofre-ci-dos 
+en [].
  []
 
-[32 <C:/Users/paco/0_TFG/tfg/images/curva_densidad.png> <C:/Users/paco/0_TFG/tf
-g/images/curva_viscosidad.png>] [33 <C:/Users/paco/0_TFG/tfg/images/curva_condu
-ctividad_termica.png> <C:/Users/paco/0_TFG/tfg/images/curva_entalpia.png>]
-[34 <C:/Users/paco/0_TFG/tfg/images/curva_temperatura_entalpia.png>]
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 3.1 on input line 423.
+LaTeX Warning: Reference `f:parametros_dowa' on page 30 undefined on input line
+ 352.
+
+<images/densidad_dowa.png, id=316, 341.77687pt x 256.70906pt>
+File: images/densidad_dowa.png Graphic file (type png)
+<use images/densidad_dowa.png>
+Package pdftex.def Info: images/densidad_dowa.png  used on input line 357.
+(pdftex.def)             Requested size: 213.39568pt x 160.28607pt.
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 357--357
+[] [] 
+ []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 3.2 on input line 454.
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 357--357
+[] [] 
+ []
 
-[35] [36] [37] [38] [39]
+<images/viscosidaddinamica_dowa.png, id=317, 342.5297pt x 256.70906pt>
+File: images/viscosidaddinamica_dowa.png Graphic file (type png)
+<use images/viscosidaddinamica_dowa.png>
+Package pdftex.def Info: images/viscosidaddinamica_dowa.png  used on input line
+ 360.
+(pdftex.def)             Requested size: 213.39568pt x 159.93353pt.
 
-LaTeX Warning: Citation 'freemanSystemAdvisorModel2018' on page 40 undefined on
- input line 537.
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 360--360
+[] [] 
+ []
 
-[40]
 
-LaTeX Warning: Reference `fig:captura01' on page 41 undefined on input line 548
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 360--360
+[] [] 
+ []
+
+
+Overfull \hbox (6.86874pt too wide) in paragraph at lines 357--361
+ [][][][] 
+ []
+
+<images/conductividad_dowa.png, id=318, 342.5297pt x 256.70906pt>
+File: images/conductividad_dowa.png Graphic file (type png)
+<use images/conductividad_dowa.png>
+Package pdftex.def Info: images/conductividad_dowa.png  used on input line 364.
+
+(pdftex.def)             Requested size: 213.39568pt x 159.93353pt.
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 364--364
+[] [] 
+ []
+
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 364--364
+[] [] 
+ []
+
+<images/calorespecifico_dowa.png, id=319, 341.77687pt x 256.70906pt>
+File: images/calorespecifico_dowa.png Graphic file (type png)
+<use images/calorespecifico_dowa.png>
+Package pdftex.def Info: images/calorespecifico_dowa.png  used on input line 36
+7.
+(pdftex.def)             Requested size: 213.39568pt x 160.28607pt.
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 367--367
+[] [] 
+ []
+
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 367--367
+[] [] 
+ []
+
+
+Overfull \hbox (6.86874pt too wide) in paragraph at lines 364--368
+ [][][][] 
+ []
+
+<images/temperatura_dowa.png, id=320, 341.77687pt x 255.95625pt>
+File: images/temperatura_dowa.png Graphic file (type png)
+<use images/temperatura_dowa.png>
+Package pdftex.def Info: images/temperatura_dowa.png  used on input line 371.
+(pdftex.def)             Requested size: 213.39568pt x 159.81602pt.
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 371--371
+[] [] 
+ []
+
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 371--371
+[] [] 
+ []
+
+<images/entalpia_dowa.png, id=321, 341.77687pt x 256.70906pt>
+File: images/entalpia_dowa.png Graphic file (type png)
+<use images/entalpia_dowa.png>
+Package pdftex.def Info: images/entalpia_dowa.png  used on input line 374.
+(pdftex.def)             Requested size: 213.39568pt x 160.28607pt.
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 374--374
+[] [] 
+ []
+
+
+Overfull \hbox (83.63979pt too wide) in paragraph at lines 374--374
+[] [] 
+ []
+
+
+Overfull \hbox (6.86874pt too wide) in paragraph at lines 371--375
+ [][][][] 
+ []
+
+LaTeX Font Info:    Font shape `T1/fve/m/it' in size <10.95> not available
+(Font)              Font shape `T1/fve/m/sl' tried instead on input line 375.
+LaTeX Font Info:    Font shape `T1/fve/m/sl' will be
+(Font)              scaled to size 9.85492pt on input line 375.
+
+LaTeX Warning: Reference `tab:coeficientes_dowa' on page 30 undefined on input 
+line 379.
+
+[30] [31 <C:/Users/paco/0_TFG/tfg/images/densidad_dowa.png> <C:/Users/paco/0_TF
+G/tfg/images/viscosidaddinamica_dowa.png> <C:/Users/paco/0_TFG/tfg/images/condu
+ctividad_dowa.png> <C:/Users/paco/0_TFG/tfg/images/calorespecifico_dowa.png> <C
+:/Users/paco/0_TFG/tfg/images/temperatura_dowa.png> <C:/Users/paco/0_TFG/tfg/im
+ages/entalpia_dowa.png>]
+
+LaTeX Warning: Reference `tab:coeficientes_vp1' on page 32 undefined on input l
+ine 404.
+
+[32]
+
+LaTeX Warning: Citation 'redaSolarPositionAlgorithm2008' on page 33 undefined o
+n input line 443.
+
+[33]
+Overfull \hbox (33.67403pt too wide) in paragraph at lines 467--468
+\T1/fve/m/sc/12 ne-ce-sa-rio pa-ra rea-li-zar la si-mu-la-ción del cam-po me-di
+an-te su mé-to-do \T1/fvm/m/n/12 runSimulation\T1/fve/m/sc/12 . 
+ []
+
+[34]
+
+LaTeX Warning: Citation 'freemanSystemAdvisorModel2018' on page 35 undefined on
+ input line 491.
+
+[35] [36]
+
+LaTeX Warning: Reference `fig:captura01' on page 37 undefined on input line 502
 .
 
-<images/captura_sam_iph01.png, id=357, 828.09375pt x 738.50906pt>
+<images/captura_sam_iph01.png, id=367, 828.09375pt x 738.50906pt>
 File: images/captura_sam_iph01.png Graphic file (type png)
 <use images/captura_sam_iph01.png>
-Package pdftex.def Info: images/captura_sam_iph01.png  used on input line 551.
+Package pdftex.def Info: images/captura_sam_iph01.png  used on input line 505.
 (pdftex.def)             Requested size: 384.1096pt x 342.55801pt.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: Reference `fig:captura02' on page 41 undefined on input line 557
+LaTeX Warning: Reference `fig:captura02' on page 37 undefined on input line 510
 .
 
-<images/captura_sam_iph02.png, id=358, 816.04875pt x 251.43938pt>
+<images/captura_sam_iph02.png, id=368, 816.04875pt x 251.43938pt>
 File: images/captura_sam_iph02.png Graphic file (type png)
 <use images/captura_sam_iph02.png>
-Package pdftex.def Info: images/captura_sam_iph02.png  used on input line 560.
+Package pdftex.def Info: images/captura_sam_iph02.png  used on input line 513.
 (pdftex.def)             Requested size: 384.1096pt x 118.353pt.
+[37 <C:/Users/paco/0_TFG/tfg/images/captura_sam_iph01.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: Reference `fig:captura03' on page 41 undefined on input line 588
+LaTeX Warning: Reference `fig:captura03' on page 38 undefined on input line 541
 .
 
 
-LaTeX Warning: Reference `fig:capture04' on page 41 undefined on input line 588
+LaTeX Warning: Reference `fig:captura04' on page 38 undefined on input line 541
 .
 
 
-LaTeX Warning: Reference `tab:configuracionHCE' on page 41 undefined on input l
-ine 588.
+LaTeX Warning: Reference `tab:configuracionHCE' on page 38 undefined on input l
+ine 541.
 
 File: images/captura_sam_iph02.png Graphic file (type png)
 <use images/captura_sam_iph02.png>
-Package pdftex.def Info: images/captura_sam_iph02.png  used on input line 592.
+Package pdftex.def Info: images/captura_sam_iph02.png  used on input line 545.
 (pdftex.def)             Requested size: 384.1096pt x 118.353pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/captura_sam_iph03.png, id=359, 807.015pt x 738.50906pt>
+<images/captura_sam_iph03.png, id=375, 807.015pt x 738.50906pt>
 File: images/captura_sam_iph03.png Graphic file (type png)
 <use images/captura_sam_iph03.png>
-Package pdftex.def Info: images/captura_sam_iph03.png  used on input line 598.
+Package pdftex.def Info: images/captura_sam_iph03.png  used on input line 551.
 (pdftex.def)             Requested size: 384.1096pt x 351.50539pt.
+[38 <C:/Users/paco/0_TFG/tfg/images/captura_sam_iph02.png>] [39 <C:/Users/paco/
+0_TFG/tfg/images/captura_sam_iph03.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:interface01' on page 40 undefined on input line 5
+87.
 
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: Reference `fig:interface01' on page 41 undefined on input line 6
-29.
-
-[41]
-<images/interface01.png, id=364, 599.99156pt x 490.08093pt>
+<images/interface01.png, id=393, 598.48593pt x 465.23813pt>
 File: images/interface01.png Graphic file (type png)
 <use images/interface01.png>
-Package pdftex.def Info: images/interface01.png  used on input line 632.
-(pdftex.def)             Requested size: 384.1096pt x 313.75542pt.
- [42 <C:/Users/paco/0_TFG/tfg/images/captura_sam_iph01.png> <C:/Users/paco/0_TF
-G/tfg/images/captura_sam_iph02.png>]
+Package pdftex.def Info: images/interface01.png  used on input line 590.
+(pdftex.def)             Requested size: 384.1096pt x 298.59616pt.
+[40 <C:/Users/paco/0_TFG/tfg/images/interface01.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:interface02' on page 41 undefined on input line 6
+17.
 
-<images/interface02.png, id=374, 599.99156pt x 490.08093pt>
+<images/interface02.png, id=400, 601.4972pt x 483.30562pt>
 File: images/interface02.png Graphic file (type png)
 <use images/interface02.png>
-Package pdftex.def Info: images/interface02.png  used on input line 640.
-(pdftex.def)             Requested size: 384.1096pt x 313.75542pt.
+Package pdftex.def Info: images/interface02.png  used on input line 620.
+(pdftex.def)             Requested size: 384.1096pt x 308.64345pt.
+[41]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: Reference `fig:interface03' on page 43 undefined on input line 6
-45.
+LaTeX Warning: Reference `fig:carga1' on page 42 undefined on input line 627.
 
 
-LaTeX Warning: Reference `subclases-fluid' on page 43 undefined on input line 6
-45.
+LaTeX Warning: Reference `fig:listatags' on page 42 undefined on input line 627
+.
 
-<images/interface03.png, id=375, 599.99156pt x 488.57532pt>
+
+LaTeX Warning: Reference `fig:carga2' on page 42 undefined on input line 627.
+
+<images/carga_tags.png, id=405, 597.73312pt x 482.55281pt>
+File: images/carga_tags.png Graphic file (type png)
+<use images/carga_tags.png>
+Package pdftex.def Info: images/carga_tags.png  used on input line 630.
+(pdftex.def)             Requested size: 384.11664pt x 298.75995pt.
+[42 <C:/Users/paco/0_TFG/tfg/images/interface02.png>]
+<images/tagslist.png, id=412, 191.9672pt x 458.46281pt>
+File: images/tagslist.png Graphic file (type png)
+<use images/tagslist.png>
+Package pdftex.def Info: images/tagslist.png  used on input line 636.
+(pdftex.def)             Requested size: 128.04616pt x 213.39287pt.
+<images/tagscargados.png, id=413, 615.80063pt x 480.29437pt>
+File: images/tagscargados.png Graphic file (type png)
+<use images/tagscargados.png>
+Package pdftex.def Info: images/tagscargados.png  used on input line 642.
+(pdftex.def)             Requested size: 384.11334pt x 298.75414pt.
+ [43 <C:/Users/paco/0_TFG/tfg/images/carga_tags.png> <C:/Users/paco/0_TFG/tfg/i
+mages/tagslist.png>]
+
+LaTeX Warning: Reference `fig:interface03' on page 44 undefined on input line 6
+49.
+
+<images/interface03.png, id=422, 599.99156pt x 488.57532pt>
 File: images/interface03.png Graphic file (type png)
 <use images/interface03.png>
-Package pdftex.def Info: images/interface03.png  used on input line 648.
+Package pdftex.def Info: images/interface03.png  used on input line 652.
 (pdftex.def)             Requested size: 384.1096pt x 312.7915pt.
-[43]
+[44 <C:/Users/paco/0_TFG/tfg/images/tagscargados.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:interface04' on page 45 undefined on input line 6
+61.
 
-
-LaTeX Warning: Reference `fig:interface04' on page 44 undefined on input line 6
-53.
-
-
-LaTeX Warning: Reference `fig:interface05' on page 44 undefined on input line 6
-53.
-
-<images/interface04.png, id=382, 599.23875pt x 490.08093pt>
+<images/interface04.png, id=430, 595.47469pt x 459.21562pt>
 File: images/interface04.png Graphic file (type png)
 <use images/interface04.png>
-Package pdftex.def Info: images/interface04.png  used on input line 656.
-(pdftex.def)             Requested size: 384.1096pt x 314.14427pt.
+Package pdftex.def Info: images/interface04.png  used on input line 664.
+(pdftex.def)             Requested size: 384.1096pt x 296.21632pt.
+[45 <C:/Users/paco/0_TFG/tfg/images/interface03.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:interface05' on page 46 undefined on input line 6
+72.
 
-<images/interface05.png, id=383, 596.2275pt x 461.47406pt>
+<images/interface05.png, id=437, 596.2275pt x 461.47406pt>
 File: images/interface05.png Graphic file (type png)
 <use images/interface05.png>
-Package pdftex.def Info: images/interface05.png  used on input line 662.
+Package pdftex.def Info: images/interface05.png  used on input line 675.
 (pdftex.def)             Requested size: 384.1096pt x 297.29991pt.
+[46 <C:/Users/paco/0_TFG/tfg/images/interface04.png>]
+LaTeX Font Info:    Font shape `T1/fvm/m/n' will be
+(Font)              scaled to size 8.99994pt on input line 688.
+ [47 <C:/Users/paco/0_TFG/tfg/images/interface05.png>] [48]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+Package caption Warning: \captionsetup{type*=...} or \captionof
+(caption)                outside box or environment on input line 781.
+See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `tab:energia_anual' on page 44 undefined on input line
- 674.
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 781.
+See the caption package documentation for explanation.
 
-[44 <C:/Users/paco/0_TFG/tfg/images/captura_sam_iph03.png>] [45]
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 781.
 
-LaTeX Warning: Reference `fig:177caudal' on page 46 undefined on input line 693
+LaTeX Warning: Reference `tab:generacion_anual' on page 49 undefined on input l
+ine 787.
+
+[49]
+
+LaTeX Warning: Reference `fig:177caudal' on page 50 undefined on input line 806
 .
 
 
-LaTeX Warning: Reference `fig:177temperatura' on page 46 undefined on input lin
-e 693.
+LaTeX Warning: Reference `fig:177potencia' on page 50 undefined on input line 8
+06.
 
 
-LaTeX Warning: Reference `fig:176caudal' on page 46 undefined on input line 693
+LaTeX Warning: Reference `fig:176caudal' on page 50 undefined on input line 806
 .
 
 
-LaTeX Warning: Reference `fig:176temperatura' on page 46 undefined on input lin
-e 693.
+LaTeX Warning: Reference `fig:176potencia' on page 50 undefined on input line 8
+06.
 
-<images/177caudal.png, id=397, 613.54219pt x 374.14781pt>
+<images/177caudal.png, id=555, 613.54219pt x 374.14781pt>
 File: images/177caudal.png Graphic file (type png)
 <use images/177caudal.png>
-Package pdftex.def Info: images/177caudal.png  used on input line 696.
+Package pdftex.def Info: images/177caudal.png  used on input line 809.
 (pdftex.def)             Requested size: 384.1096pt x 234.23572pt.
-[46 <C:/Users/paco/0_TFG/tfg/images/interface01.png>]
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/177temperatura.png, id=404, 613.54219pt x 374.14781pt>
+<images/177temperatura.png, id=556, 613.54219pt x 374.14781pt>
 File: images/177temperatura.png Graphic file (type png)
 <use images/177temperatura.png>
-Package pdftex.def Info: images/177temperatura.png  used on input line 702.
+Package pdftex.def Info: images/177temperatura.png  used on input line 815.
 (pdftex.def)             Requested size: 384.1096pt x 234.23572pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/177potencia.png, id=405, 613.54219pt x 374.14781pt>
+[50 <C:/Users/paco/0_TFG/tfg/images/177caudal.png>]
+<images/177potencia.png, id=564, 613.54219pt x 374.14781pt>
 File: images/177potencia.png Graphic file (type png)
 <use images/177potencia.png>
-Package pdftex.def Info: images/177potencia.png  used on input line 708.
+Package pdftex.def Info: images/177potencia.png  used on input line 821.
 (pdftex.def)             Requested size: 384.1096pt x 234.23572pt.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
 
+LaTeX Warning: Reference `tab:datos_17_julio' on page 51 undefined on input lin
+e 826.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/176caudal.png, id=406, 613.54219pt x 374.14781pt>
+[51 <C:/Users/paco/0_TFG/tfg/images/177temperatura.png> <C:/Users/paco/0_TFG/tf
+g/images/177potencia.png>]
+<images/176caudal.png, id=572, 613.54219pt x 374.14781pt>
 File: images/176caudal.png Graphic file (type png)
 <use images/176caudal.png>
-Package pdftex.def Info: images/176caudal.png  used on input line 757.
+Package pdftex.def Info: images/176caudal.png  used on input line 872.
 (pdftex.def)             Requested size: 384.1096pt x 234.23572pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/176temperatura.png, id=407, 613.54219pt x 374.14781pt>
+<images/176temperatura.png, id=573, 613.54219pt x 374.14781pt>
 File: images/176temperatura.png Graphic file (type png)
 <use images/176temperatura.png>
-Package pdftex.def Info: images/176temperatura.png  used on input line 763.
+Package pdftex.def Info: images/176temperatura.png  used on input line 878.
 (pdftex.def)             Requested size: 384.1096pt x 234.23572pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/176potencia.png, id=408, 613.54219pt x 374.14781pt>
+ [52 <C:/Users/paco/0_TFG/tfg/images/176caudal.png>]
+<images/176potencia.png, id=580, 613.54219pt x 374.14781pt>
 File: images/176potencia.png Graphic file (type png)
 <use images/176potencia.png>
-Package pdftex.def Info: images/176potencia.png  used on input line 769.
+Package pdftex.def Info: images/176potencia.png  used on input line 884.
 (pdftex.def)             Requested size: 384.1096pt x 234.23572pt.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
 
+LaTeX Warning: Reference `tab:datos_17_junio' on page 53 undefined on input lin
+e 889.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-) (C:/Users/paco/0_TFG/tfg\chapters/ch04.tex [47 <C:/Users/paco/0_TFG/tfg/image
-s/interface02.png>] [48 <C:/Users/paco/0_TFG/tfg/images/interface03.png> <C:/Us
-ers/paco/0_TFG/tfg/images/interface04.png>] [49 <C:/Users/paco/0_TFG/tfg/images
-/interface05.png> <C:/Users/paco/0_TFG/tfg/images/177caudal.png>] [50 <C:/Users
-/paco/0_TFG/tfg/images/177temperatura.png> <C:/Users/paco/0_TFG/tfg/images/177p
-otencia.png>] [51] [52 <C:/Users/paco/0_TFG/tfg/images/176caudal.png> <C:/Users
-/paco/0_TFG/tfg/images/176temperatura.png>] [53 <C:/Users/paco/0_TFG/tfg/images
-/176potencia.png>] [54]
+[53 <C:/Users/paco/0_TFG/tfg/images/176temperatura.png> <C:/Users/paco/0_TFG/tf
+g/images/176potencia.png>]) (C:/Users/paco/0_TFG/tfg\chapters/ch04.tex [54]
 Cap\'{\i }tulo 4.
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
@@ -1996,320 +2435,487 @@ LaTeX Warning: Reference `eq:eext' on page 55 undefined on input line 11.
 LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 55 u
 ndefined on input line 11.
 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.31 }
-      
-? 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.31 }
-      
-? 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.31 }
-      
-? 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.31 }
-      
-? 
 
-Overfull \hbox (2.364pt too wide) in paragraph at lines 31--31
- []\T1/txr/m/n/12 Absortividad 
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 55 u
+ndefined on input line 15.
+
+
+LaTeX Warning: Citation 'barberofresnoDesarrolloModeloTeorico2018' on page 55 u
+ndefined on input line 15.
+
+
+Underfull \hbox (badness 1910) in paragraph at lines 15--15
+[]\T1/fve/m/n/10.95 TABLA 4.1. |Cons-tan-tes del mo-de-lo de emi-si-vi-dad equi
+-va-
+ []
+
+
+Underfull \hbox (badness 1490) in paragraph at lines 15--15
+\T1/fve/m/n/10.95 len-te pa-ra ca-da uno de los re-cep-to-res se-lec-cio-na-dos
+. *Al
+ []
+
+
+Underfull \hbox (badness 2478) in paragraph at lines 15--15
+\T1/fve/m/n/10.95 no dis-po-ner-se de es-te da-to, se ha em-plea-do es-te va-lo
+r
+ []
+
+
+Underfull \hbox (badness 1281) in paragraph at lines 15--15
+\T1/fve/m/n/10.95 con el fin de po-der in-cluir el mo-de-lo en el test. Fuen-te
+
  []
 
 
 LaTeX Warning: Reference `tab:rendimiento_hce_dni' on page 55 undefined on inpu
-t line 38.
+t line 36.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+Overfull \hbox (4.65631pt too wide) in paragraph at lines 62--62
+ []$\OML/txmi/m/it/12 DNI\OT1/txr/m/n/12 (\OML/txmi/m/it/12 W=m[]\OT1/txr/m/n/1
+2 )$ 
+ []
 
 
-LaTeX Warning: Reference `fig:test1a' on page 55 undefined on input line 67.
+Overfull \hbox (5.7347pt too wide) in paragraph at lines 62--62
+ []\T1/fve/m/sc/12 SkyTrough 
+ []
 
-<images/resultados_test1a.png, id=461, 385.44pt x 334.24875pt>
-File: images/resultados_test1a.png Graphic file (type png)
-<use images/resultados_test1a.png>
-Package pdftex.def Info: images/resultados_test1a.png  used on input line 70.
-(pdftex.def)             Requested size: 384.1096pt x 333.09526pt.
 [55
 
-] [56 <C:/Users/paco/0_TFG/tfg/images/resultados_test1a.png>]
-<images/resultados_test2a.png, id=478, 385.44pt x 334.24875pt>
-File: images/resultados_test2a.png Graphic file (type png)
-<use images/resultados_test2a.png>
-Package pdftex.def Info: images/resultados_test2a.png  used on input line 118.
-(pdftex.def)             Requested size: 384.1096pt x 333.09526pt.
+]
+
+LaTeX Warning: Reference `fig:test1a' on page 56 undefined on input line 65.
+
+<images/rendimiento_dni.png, id=600, 467.49657pt x 356.83313pt>
+File: images/rendimiento_dni.png Graphic file (type png)
+<use images/rendimiento_dni.png>
+Package pdftex.def Info: images/rendimiento_dni.png  used on input line 68.
+(pdftex.def)             Requested size: 384.1096pt x 293.19853pt.
+LaTeX Font Info:    Font shape `TS1/fve/m/n' will be
+(Font)              scaled to size 9.85492pt on input line 69.
+[56 <C:/Users/paco/0_TFG/tfg/images/rendimiento_dni.png>]
+
+LaTeX Warning: Reference `tab:rendimiento_hce_tin' on page 57 undefined on inpu
+t line 78.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+Overfull \hbox (5.7347pt too wide) in paragraph at lines 117--117
+ []\T1/fve/m/sc/12 SkyTrough 
+ []
+
+<images/rendimiento_temperatura.png, id=609, 467.49657pt x 356.83313pt>
+File: images/rendimiento_temperatura.png Graphic file (type png)
+<use images/rendimiento_temperatura.png>
+Package pdftex.def Info: images/rendimiento_temperatura.png  used on input line
+ 123.
+(pdftex.def)             Requested size: 384.1096pt x 293.19853pt.
+[57]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\mathsurround' on input line 129.
 
-<images/temperaturas_modelos.png, id=479, 546.54187pt x 342.5297pt>
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\z@' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\everymath' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\mathchoice' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\setbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\z@' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\hbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\displaystyle' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\setbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\z@' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\hbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\textstyle' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\setbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\z@' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\hbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\scriptstyle' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\setbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\z@' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\hbox' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\scriptscriptstyle' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `subscript' on input line 129.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 129.
+
+
+LaTeX Warning: Reference `fig:rendimiento_qabs' on page 58 undefined on input l
+ine 131.
+
+<images/rendimiento_qabs.png, id=615, 456.95718pt x 310.91156pt>
+File: images/rendimiento_qabs.png Graphic file (type png)
+<use images/rendimiento_qabs.png>
+Package pdftex.def Info: images/rendimiento_qabs.png  used on input line 134.
+(pdftex.def)             Requested size: 384.1096pt x 261.35367pt.
+[58 <C:/Users/paco/0_TFG/tfg/images/rendimiento_temperatura.png>]
+
+LaTeX Warning: Reference `tab:rendimiento_qabs' on page 59 undefined on input l
+ine 139.
+
+[59 <C:/Users/paco/0_TFG/tfg/images/rendimiento_qabs.png>]
+
+LaTeX Warning: Reference `configuracion-simulaciones' on page 60 undefined on i
+nput line 176.
+
+[60]
+
+LaTeX Warning: Reference `fig:temperaturas_modelos' on page 61 undefined on inp
+ut line 219.
+
+<images/temperaturas_modelos.png, id=633, 546.54187pt x 342.5297pt>
 File: images/temperaturas_modelos.png Graphic file (type png)
 <use images/temperaturas_modelos.png>
-Package pdftex.def Info: images/temperaturas_modelos.png  used on input line 17
-1.
+Package pdftex.def Info: images/temperaturas_modelos.png  used on input line 22
+2.
 (pdftex.def)             Requested size: 384.1096pt x 240.73083pt.
+[61]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:caudales_modelos' on page 62 undefined on input l
+ine 227.
 
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:potencias_modelos' on page 62 undefined on input 
+line 227.
 
-<images/caudales_modelos.png, id=480, 548.80031pt x 341.77687pt>
+
+LaTeX Warning: Reference `tab:caudales_modelos' on page 62 undefined on input l
+ine 227.
+
+
+LaTeX Warning: Reference `tab:potencias_modelos' on page 62 undefined on input 
+line 227.
+
+<images/caudales_modelos.png, id=639, 548.80031pt x 341.77687pt>
 File: images/caudales_modelos.png Graphic file (type png)
 <use images/caudales_modelos.png>
-Package pdftex.def Info: images/caudales_modelos.png  used on input line 219.
+Package pdftex.def Info: images/caudales_modelos.png  used on input line 231.
 (pdftex.def)             Requested size: 384.1096pt x 239.2161pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/potencias_modelos.png, id=481, 548.80031pt x 341.77687pt>
+<images/potencias_modelos.png, id=640, 548.80031pt x 341.77687pt>
 File: images/potencias_modelos.png Graphic file (type png)
 <use images/potencias_modelos.png>
-Package pdftex.def Info: images/potencias_modelos.png  used on input line 267.
+Package pdftex.def Info: images/potencias_modelos.png  used on input line 236.
 (pdftex.def)             Requested size: 384.1096pt x 239.2161pt.
+[62 <C:/Users/paco/0_TFG/tfg/images/temperaturas_modelos.png> <C:/Users/paco/0_
+TFG/tfg/images/caudales_modelos.png>] [63 <C:/Users/paco/0_TFG/tfg/images/poten
+cias_modelos.png>] [64]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:malla0405' on page 65 undefined on input line 327
+.
 
 
-LaTeX Warning: Float too large for page by 70.8861pt on input line 310.
+LaTeX Warning: Reference `fig:malla14580' on page 65 undefined on input line 32
+7.
 
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/rendimientos_modelos.png, id=482, 548.80031pt x 342.5297pt>
-File: images/rendimientos_modelos.png Graphic file (type png)
-<use images/rendimientos_modelos.png>
-Package pdftex.def Info: images/rendimientos_modelos.png  used on input line 31
-3.
-(pdftex.def)             Requested size: 384.1096pt x 239.74301pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/malla0405.png, id=483, 455.45157pt x 350.81062pt>
+<images/malla0405.png, id=658, 455.45157pt x 350.81062pt>
 File: images/malla0405.png Graphic file (type png)
 <use images/malla0405.png>
-Package pdftex.def Info: images/malla0405.png  used on input line 323.
+Package pdftex.def Info: images/malla0405.png  used on input line 330.
 (pdftex.def)             Requested size: 384.1096pt x 295.86725pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/malla4860.png, id=484, 456.20438pt x 350.81062pt>
+[65]
+<images/malla4860.png, id=665, 456.20438pt x 350.81062pt>
 File: images/malla4860.png Graphic file (type png)
 <use images/malla4860.png>
-Package pdftex.def Info: images/malla4860.png  used on input line 329.
+Package pdftex.def Info: images/malla4860.png  used on input line 336.
 (pdftex.def)             Requested size: 384.1096pt x 295.38014pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/malla7290.png, id=485, 456.20438pt x 350.81062pt>
+<images/malla7290.png, id=666, 456.20438pt x 350.81062pt>
 File: images/malla7290.png Graphic file (type png)
 <use images/malla7290.png>
-Package pdftex.def Info: images/malla7290.png  used on input line 335.
+Package pdftex.def Info: images/malla7290.png  used on input line 342.
 (pdftex.def)             Requested size: 384.1096pt x 295.38014pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/malla14580.png, id=486, 456.20438pt x 350.81062pt>
+<images/malla14580.png, id=667, 456.20438pt x 350.81062pt>
 File: images/malla14580.png Graphic file (type png)
 <use images/malla14580.png>
-Package pdftex.def Info: images/malla14580.png  used on input line 341.
+Package pdftex.def Info: images/malla14580.png  used on input line 348.
 (pdftex.def)             Requested size: 384.1096pt x 295.38014pt.
+ [66 <C:/Users/paco/0_TFG/tfg/images/malla0405.png> <C:/Users/paco/0_TFG/tfg/im
+ages/malla4860.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `fig:malla_variable_DNI_800' on page 67 undefined on i
+nput line 353.
 
-<images/malla_variable_DNI_800.png, id=487, 515.67656pt x 356.0803pt>
+[67 <C:/Users/paco/0_TFG/tfg/images/malla7290.png> <C:/Users/paco/0_TFG/tfg/ima
+ges/malla14580.png>]
+<images/malla_variable_DNI_800.png, id=680, 515.67656pt x 356.0803pt>
 File: images/malla_variable_DNI_800.png Graphic file (type png)
 <use images/malla_variable_DNI_800.png>
 Package pdftex.def Info: images/malla_variable_DNI_800.png  used on input line 
-348.
+356.
 (pdftex.def)             Requested size: 384.1096pt x 265.2394pt.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<images/desviacionmodel4malla.png, id=488, 474.27188pt x 324.46219pt>
+LaTeX Warning: Reference `fig:desviacionmodel4' on page 68 undefined on input l
+ine 361.
+
+
+LaTeX Warning: Reference `fig:desviacionmodelsimplificado' on page 68 undefined
+ on input line 361.
+
+<images/desviacionmodel4malla.png, id=681, 474.27188pt x 324.46219pt>
 File: images/desviacionmodel4malla.png Graphic file (type png)
 <use images/desviacionmodel4malla.png>
 Package pdftex.def Info: images/desviacionmodel4malla.png  used on input line 3
-55.
+64.
 (pdftex.def)             Requested size: 384.1096pt x 262.78816pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/desviacionmodel1malla.png, id=489, 474.27188pt x 324.46219pt>
+[68 <C:/Users/paco/0_TFG/tfg/images/malla_variable_DNI_800.png>]
+<images/desviacionmodel1malla.png, id=688, 474.27188pt x 324.46219pt>
 File: images/desviacionmodel1malla.png Graphic file (type png)
 <use images/desviacionmodel1malla.png>
 Package pdftex.def Info: images/desviacionmodel1malla.png  used on input line 3
-61.
+70.
 (pdftex.def)             Requested size: 384.1096pt x 262.78816pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<images/desviacionmodelsimplificadomalla.png, id=490, 474.27188pt x 324.46219pt
+<images/desviacionmodelsimplificadomalla.png, id=689, 474.27188pt x 324.46219pt
 >
 File: images/desviacionmodelsimplificadomalla.png Graphic file (type png)
 <use images/desviacionmodelsimplificadomalla.png>
 Package pdftex.def Info: images/desviacionmodelsimplificadomalla.png  used on i
-nput line 367.
+nput line 376.
 (pdftex.def)             Requested size: 384.1096pt x 262.78816pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[57]
-
-LaTeX Warning: Text page 58 contains only floats.
-
-[58 <C:/Users/paco/0_TFG/tfg/images/resultados_test2a.png> <C:/Users/paco/0_TFG
-/tfg/images/temperaturas_modelos.png>] [59]
-
-LaTeX Warning: Text page 60 contains only floats.
-
-[60] [61 <C:/Users/paco/0_TFG/tfg/images/caudales_modelos.png> <C:/Users/paco/0
-_TFG/tfg/images/potencias_modelos.png>]
-
-LaTeX Warning: Text page 62 contains only floats.
-
-[62] [63 <C:/Users/paco/0_TFG/tfg/images/rendimientos_modelos.png> <C:/Users/pa
-co/0_TFG/tfg/images/malla0405.png>]
-<images/fotoAstes.png, id=534, 837.88031pt x 634.62094pt>
+ [69 <C:/Users/paco/0_TFG/tfg/images/desviacionmodel4malla.png> <C:/Users/paco/
+0_TFG/tfg/images/desviacionmodel1malla.png>]
+<images/fotoAstes.png, id=696, 837.88031pt x 634.62094pt>
 File: images/fotoAstes.png Graphic file (type png)
 <use images/fotoAstes.png>
-Package pdftex.def Info: images/fotoAstes.png  used on input line 382.
+Package pdftex.def Info: images/fotoAstes.png  used on input line 390.
 (pdftex.def)             Requested size: 384.1096pt x 290.92209pt.
+ [70 <C:/Users/paco/0_TFG/tfg/images/desviacionmodelsimplificadomalla.png>]
 
+LaTeX Warning: Reference `fig:reflectividad' on page 71 undefined on input line
+ 412.
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[64 <C:/Users/paco/0_TFG/tfg/images/malla4860.png>]
-
-LaTeX Warning: Reference `fig:refelectividad' on page 65 undefined on input lin
-e 404.
-
-<images/reflectividad.png, id=540, 463.7325pt x 357.58594pt>
+<images/reflectividad.png, id=703, 463.7325pt x 357.58594pt>
 File: images/reflectividad.png Graphic file (type png)
 <use images/reflectividad.png>
-Package pdftex.def Info: images/reflectividad.png  used on input line 408.
+Package pdftex.def Info: images/reflectividad.png  used on input line 415.
 (pdftex.def)             Requested size: 384.1096pt x 296.19604pt.
+[71 <C:/Users/paco/0_TFG/tfg/images/fotoAstes.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+LaTeX Warning: Reference `subclases-fluid' on page 72 undefined on input line 4
+24.
 
-[65 <C:/Users/paco/0_TFG/tfg/images/malla7290.png>]
+[72 <C:/Users/paco/0_TFG/tfg/images/reflectividad.png>]
 
-LaTeX Warning: Text page 66 contains only floats.
-
-[66 <C:/Users/paco/0_TFG/tfg/images/malla14580.png> <C:/Users/paco/0_TFG/tfg/im
-ages/malla_variable_DNI_800.png>]
-
-LaTeX Warning: Text page 67 contains only floats.
+LaTeX Warning: Reference `fig:temperatura_1b' on page 73 undefined on input lin
+e 428.
 
 
-Overfull \vbox (1.19327pt too high) has occurred while \output is active []
+LaTeX Warning: Reference `fig:caudal_1b' on page 73 undefined on input line 428
+.
 
 
-[67 <C:/Users/paco/0_TFG/tfg/images/desviacionmodel4malla.png> <C:/Users/paco/0
-_TFG/tfg/images/desviacionmodel1malla.png>]
+LaTeX Warning: Reference `fig:temperatura_1b' on page 73 undefined on input lin
+e 430.
 
-LaTeX Warning: Text page 68 contains only floats.
-
-[68 <C:/Users/paco/0_TFG/tfg/images/desviacionmodelsimplificadomalla.png> <C:/U
-sers/paco/0_TFG/tfg/images/fotoAstes.png>]
-
-LaTeX Warning: Reference `fig:potencia_1b' on page 69 undefined on input line 4
-17.
-
-
-LaTeX Warning: Reference `fig:temperatura_1b' on page 69 undefined on input lin
-e 417.
-
-[69 <C:/Users/paco/0_TFG/tfg/images/reflectividad.png>]
-<images/potencia_aste1b_01052016.png, id=570, 496.10344pt x 298.86656pt>
-File: images/potencia_aste1b_01052016.png Graphic file (type png)
-<use images/potencia_aste1b_01052016.png>
-Package pdftex.def Info: images/potencia_aste1b_01052016.png  used on input lin
-e 420.
-(pdftex.def)             Requested size: 384.1096pt x 231.40028pt.
-<images/caudal_aste1b_01052016.png, id=571, 496.10344pt x 298.86656pt>
-File: images/caudal_aste1b_01052016.png Graphic file (type png)
-<use images/caudal_aste1b_01052016.png>
-Package pdftex.def Info: images/caudal_aste1b_01052016.png  used on input line 
-426.
-(pdftex.def)             Requested size: 384.1096pt x 231.40028pt.
-<images/temperatura_aste1b_01052016.png, id=572, 496.10344pt x 298.86656pt>
+<images/temperatura_aste1b_01052016.png, id=714, 496.10344pt x 298.86656pt>
 File: images/temperatura_aste1b_01052016.png Graphic file (type png)
 <use images/temperatura_aste1b_01052016.png>
 Package pdftex.def Info: images/temperatura_aste1b_01052016.png  used on input 
-line 432.
+line 433.
 (pdftex.def)             Requested size: 384.1096pt x 231.40028pt.
 
+Underfull \hbox (badness 2418) in paragraph at lines 434--434
+[][]|\T1/fve/m/n/10.95 Tem-pe-ra-tu-ras de ope-ra-ción reales y si-mu-la-das pa
+-ra el día
+ []
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
 
+LaTeX Warning: Reference `fig:potencia_1b' on page 73 undefined on input line 4
+38.
 
-LaTeX Warning: Command \textordmasculine invalid in math mode on input line 437
+<images/potencia_aste1b_01052016.png, id=715, 496.10344pt x 298.86656pt>
+File: images/potencia_aste1b_01052016.png Graphic file (type png)
+<use images/potencia_aste1b_01052016.png>
+Package pdftex.def Info: images/potencia_aste1b_01052016.png  used on input lin
+e 441.
+(pdftex.def)             Requested size: 384.1096pt x 231.40028pt.
+[73 <C:/Users/paco/0_TFG/tfg/images/temperatura_aste1b_01052016.png>]
+
+LaTeX Warning: Reference `fig:caudal_1b' on page 74 undefined on input line 446
 .
 
-
-LaTeX Warning: Command \textordmasculine invalid in math mode on input line 437
-.
-
-Missing character: There is no º in font txr!
-[70 <C:/Users/paco/0_TFG/tfg/images/potencia_aste1b_01052016.png> <C:/Users/pac
+<images/caudal_aste1b_01052016.png, id=721, 496.10344pt x 298.86656pt>
+File: images/caudal_aste1b_01052016.png Graphic file (type png)
+<use images/caudal_aste1b_01052016.png>
+Package pdftex.def Info: images/caudal_aste1b_01052016.png  used on input line 
+449.
+(pdftex.def)             Requested size: 384.1096pt x 231.40028pt.
+[74 <C:/Users/paco/0_TFG/tfg/images/potencia_aste1b_01052016.png> <C:/Users/pac
 o/0_TFG/tfg/images/caudal_aste1b_01052016.png>]
 
-LaTeX Warning: Reference `subclases-fluid' on page 71 undefined on input line 4
-39.
+LaTeX Warning: Reference `fig:potencia_dni' on page 75 undefined on input line 
+458.
 
-<images/potencia_dni_aste1b.png, id=579, 444.91219pt x 494.59781pt>
+<images/potencia_dni_aste1b.png, id=729, 444.91219pt x 494.59781pt>
 File: images/potencia_dni_aste1b.png Graphic file (type png)
 <use images/potencia_dni_aste1b.png>
-Package pdftex.def Info: images/potencia_dni_aste1b.png  used on input line 444
+Package pdftex.def Info: images/potencia_dni_aste1b.png  used on input line 461
 .
 (pdftex.def)             Requested size: 384.1096pt x 427.00613pt.
-[71 <C:/Users/paco/0_TFG/tfg/images/temperatura_aste1b_01052016.png>]) [72 <C:/
-Users/paco/0_TFG/tfg/images/potencia_dni_aste1b.png>] [73]
-Package csquotes Info: Disabling multilingual quotes on input line 328.
+[75] [76 <C:/Users/paco/0_TFG/tfg/images/potencia_dni_aste1b.png>])
+(C:/Users/paco/0_TFG/tfg\chapters/ch05.tex [77]
+Cap\'{\i }tulo 5.
+[78
+
+]) [79]
+Package csquotes Info: Disabling multilingual quotes on input line 371.
 
 
 Package csquotes Warning: Quote style 'british/english' not defined.
-(csquotes)                Ignoring command on input line 328.
+(csquotes)                Ignoring command on input line 371.
 
 
-LaTeX Warning: Empty bibliography on input line 329.
+LaTeX Warning: Empty bibliography on input line 372.
+
+(C:/Users/paco/0_TFG/tfg\chapters/glosario.tex
+
+LaTeX Warning: Reference `eq:f0' on page 80 undefined on input line 44.
 
 
-Package caption Warning: Unused \captionsetup[lstlisting] on input line 170.
-See the caption package documentation for explanation.
+LaTeX Warning: Reference `eq:f1' on page 80 undefined on input line 44.
 
 
-Package longtable Warning: Table widths have changed. Rerun LaTeX.
+LaTeX Warning: Reference `eq:f4' on page 80 undefined on input line 44.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 354.
-[1
+
+LaTeX Warning: Reference `eq:iam' on page 80 undefined on input line 45.
+
+
+LaTeX Warning: Reference `eq:gdezeta' on page 80 undefined on input line 47.
+
+[80
 
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 354.
+
+LaTeX Warning: Reference `eq:ntuperd' on page 81 undefined on input line 62.
+
+
+LaTeX Warning: Reference `eq:nug' on page 81 undefined on input line 63.
+
+
+LaTeX Warning: Reference `eq:ucrit' on page 81 undefined on input line 82.
+
+
+LaTeX Warning: Reference `eq:zeta' on page 81 undefined on input line 88.
+
+[81]
+
+LaTeX Warning: Command \' invalid in math mode on input line 100.
+
+Missing character: There is no é in font txr!
+) [82] [83
+
+
+]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 399.
+ [84
+
+
+]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 399.
  (TFG.aux
 LaTeX Info: Redefining \. on input line 31.
 LaTeX Info: Redefining \% on input line 31.
 )
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 354.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 354.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 399.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 399.
 
 
 Package rerunfilecheck Warning: File `TFG.out' has changed.
@@ -2318,7 +2924,10 @@ Package rerunfilecheck Warning: File `TFG.out' has changed.
 
 Package rerunfilecheck Info: Checksums for `TFG.out':
 (rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  474524915B33D4C4C1B4CC60EB0CA240;4155.
+(rerunfilecheck)             After:  03BAF83ADB843C1A3122AE9190780DB4;4917.
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
 
 LaTeX Warning: There were undefined references.
 
@@ -2333,33 +2942,16 @@ Package biblatex Warning: Please (re)run BibTeX on the file(s):
 Package logreq Info: Writing requests to 'TFG.run.xml'.
 \openout1 = `TFG.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 354.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 399.
  ) 
 Here is how much of TeX's memory you used:
- 28303 strings out of 480761
- 443104 string characters out of 2904058
- 965245 words of memory out of 3000000
- 43580 multiletter control sequences out of 15000+200000
- 610304 words of font info for 130 fonts, out of 3000000 for 9000
+ 29455 strings out of 480761
+ 459878 string characters out of 2904058
+ 1067371 words of memory out of 3000000
+ 44582 multiletter control sequences out of 15000+200000
+ 603529 words of font info for 117 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 45i,22n,54p,1970b,2341s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Program Files/Mi
-KTeX 2.9/fonts/type1/public/txfonts/rtcxr.pfb><C:/Program Files/MiKTeX 2.9/font
-s/type1/public/txfonts/rtxb.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public
-/txfonts/rtxi.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/txfonts/rtxmi
-.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/txfonts/rtxr.pfb><C:/Progr
-am Files/MiKTeX 2.9/fonts/type1/public/txfonts/rtxsc.pfb><C:/Program Files/MiKT
-eX 2.9/fonts/type1/public/txfonts/t1xtt.pfb><C:/Program Files/MiKTeX 2.9/fonts/
-type1/public/txfonts/txex.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/t
-xfonts/txsy.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvb8a.pf
-b><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program 
-Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2
-.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/ur
-w/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.p
-fb>
-Output written on TFG.pdf (87 pages, 13375717 bytes).
-PDF statistics:
- 718 PDF objects out of 1000 (max. 8388607)
- 240 named destinations out of 1000 (max. 500000)
- 253 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 44i,22n,54p,2010b,3560s stack positions out of 5000i,500n,10000p,200000b,50000s
 
+!pdfTeX error: pdflatex (file fvmr8r): Font fvmr8r at 540 not found
+ ==> Fatal error occurred, no output PDF file produced!

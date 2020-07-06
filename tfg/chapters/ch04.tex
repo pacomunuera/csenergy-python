@@ -31,7 +31,67 @@ NREL \#6 & 1,52E-04 & 1,96E-03 & 96
 }
 \end{table}
 
+
+
 Si simulamos el comportamiento de un único HCE de cada modelo (considerando que todos tienen la misma longitud de 4,05 m),  para  diferentes valores de DNI y bajo las mismas condiciones de caudal y temperatura de entrada del HTF, podemos realizar una comparativa de los rendimientos. Salvo que se diga lo contrario, en adelante emplearemos los mismos datos geográficos ya indicados cuando realizamos la simulación de verificación con SAM. Para la fecha y hora de simulación se empleará el 1 de julio a las 12:00 UTC (14:00 hora local).
+
+A modo de ejemplo, se muestra el código  \ref{lst:script_test1} desarrollado para realizar este tipo de simulación a partir de un archivo de configuración \emph{test\_1.json}.  Este archivo es similar al mostrado en el apartado anterior, con las siguientes salvedades:
+\begin{itemize}
+\item
+Solo es necesasrio indicar la configuración de un solo lazo con un único SCA que contiene un único HCE. De este modo, simulamos solo un HCE de 4,05 m.
+\item 
+El archivo de origen de datos contiene varios registros con los mismos datos de fecha, hora, temperatura ambiente y viento, pero varía la DNI desde 100 hasta 1000 $W/m^2$.
+\end{itemize}
+
+El programa se dispone a hacer una simulación con la configuración indicada para cada registro del archivo de origen de datos, pero también realiza un bucle recorriendo todos los modelos de HCE que existen en el archivo \emph{HCE\_library.json}. De esta forma, al finalizar, tenemos una tabla con el rendimiento de cada modelo para cada uno de los valores de DNI. Se hace uso de la Clase \texttt{LoopSimulation} creada expresamente con el fin de facilitar simulaciones con un solo lazo de configuración variable.
+
+
+\begin{lstlisting}[caption=Programa para el análisis del rendimiento en función de DNI, label={lst:script_test1}]
+import csenergy as cs
+import pandas as pd
+import json
+from datetime import datetime
+
+FLAG_00 = datetime.now()
+with open("./saved_configurations/test_1.json") as simulation_file:
+    simulation_settings = json.load(simulation_file)
+with open("./hce_files/HCE_library.json") as hces_file:
+    hces_configurations = json.load(hces_file)
+dict_resultados = {}
+for hce_conf in hces_configurations:
+    simulation_settings['HCE'].update(hce_conf)
+    dni_index = []
+    simulation = cs.LoopSimulation(simulation_settings)
+    dict_resultados[hce_conf['Name']] = []
+    for row in simulation.datasource.dataframe.iterrows():
+        solarpos = simulation.site.get_solarposition(row)
+        aoi = simulation.base_loop.scas[0].get_aoi(solarpos)
+        values = {'tin': 573,
+                  'pin': 1900000,
+                  'massflow': 6}
+        simulation.base_loop.initialize('values', values)
+        simulation.base_loop.calc_loop_pr_for_massflow(
+            row,
+            solarpos,
+            simulation.htf,
+            simulation.model)
+        tout = simulation.base_loop.scas[-1].hces[-1].tout
+        pout = simulation.base_loop.scas[-1].hces[-1].pout
+        simulation.base_loop.set_loop_values_from_HCEs()
+        pr = simulation.base_loop.pr
+        dict_resultados[hce_conf['Name']].append(pr)
+        dni_index.append(row[1]['DNI'])
+        simulation.datasource.dataframe.at[row[0], 'pr'] = pr
+        simulation.datasource.dataframe.at[row[0], 'tout'] = tout
+        simulation.datasource.dataframe.at[row[0], 'pout'] = pout
+dfsalida = pd.DataFrame(dict_resultados, index=dni_index)
+dfsalida.to_csv('rendimiento_dni.csv', sep=';', decimal=',')
+FLAG_01 = datetime.now()
+DELTA_01 = FLAG_01 - FLAG_00
+print("Total runtime: ", DELTA_01.total_seconds())
+\end{lstlisting}
+
+El tiempo total de ejecución es de 1,375 segundos. El archivo \emph{rendimiento\_dni.csv} contiene los datos volcados a la finalización del programa.
 
 En la tabla \ref{tab:rendimiento_hce_dni} se muestran los resultados de los rendimientos calculados para cada modelo de HCE con una temperatura de entrada de 300 ºC y un caudal de 6 kg/s.
 \begin{table}[H]
@@ -74,6 +134,46 @@ En la Fig.\ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimie
 \subsection{Rendimiento del HCE en función de la temperatura de entrada}
 
 Otra decisión importante que debe tomarse a la hora del diseño de  un campo solar es la temperatura nominal de operación. Intervienen varios criterios, como la temperatura y el caudal de fluido caloportador que demanda el bloque de potencia así como las limitaciones que impone el propio fluido a fin de evitar su degradación.  Un análisis del rendimiento del HCE en función de la temperatura de operación puede ayudar en la toma de decisiones y  en la selección del modelo más adecuado.
+
+El procedimiento es muy parecido al caso anterior tal y como se muestra en el \ref{lst:script_test2}, que mostramos a continuación a modo de ejemplo\footnote{El resto de \emph{scripts} para los diferentes test realizados en este capítulo pueden encontrarse el el archivo que contiene la versión electrónica de este TFG}, solo que en esta ocasión lo que se hace es ir modificando la temperatura de entrada. 
+
+\begin{lstlisting}[caption=Programa para el análisis del rendimiento en función de $T_{in}$, label={lst:script_test2}]
+with open("./saved_configurations/test_2.json") as simulation_file:
+    simulation_settings = json.load(simulation_file)
+with open("./hce_files/HCE_library.json") as hces_file:
+    hces_configurations = json.load(hces_file)
+dict_resultados = {}
+for hce_conf in hces_configurations:
+    simulation_settings['HCE'].update(hce_conf)
+    tin_index = []
+    simulation = cs.LoopSimulation(simulation_settings)
+    dict_resultados[hce_conf['Name']] = []
+    for row in simulation.datasource.dataframe.iterrows():
+        solarpos = simulation.site.get_solarposition(row)
+        aoi = simulation.base_loop.scas[0].get_aoi(solarpos)
+        for tin in range(473, 693, 10):
+            values = {'tin': tin,
+                      'pin': 1900000,
+                      'massflow': 6}
+            simulation.base_loop.initialize('values', values)
+            simulation.base_loop.calc_loop_pr_for_massflow(
+                row,
+                solarpos,
+                simulation.htf,
+                simulation.model)
+            tout = simulation.base_loop.scas[-1].hces[-1].tout
+            pout = simulation.base_loop.scas[-1].hces[-1].pout
+            simulation.base_loop.set_loop_values_from_HCEs()
+            pr = simulation.base_loop.pr
+            dict_resultados[hce_conf['Name']].append(pr)
+            tin_index.append(tin-273)
+            simulation.datasource.dataframe.at[row[0], 'pr'] = pr
+            simulation.datasource.dataframe.at[row[0], 'tout'] = tout
+            simulation.datasource.dataframe.at[row[0], 'pout'] = pout
+dfsalida = pd.DataFrame(dict_resultados, index=tin_index)
+print(dfsalida)
+dfsalida.to_csv('rendimiento_temperatura.csv', sep=';', decimal=',')
+\end{lstlisting}
 
 En la tabla \ref{tab:rendimiento_hce_tin} se muestran los resultado de simular el funcionamiento de varios modelos de HCE con un caudal constante de fluido caloportador a diferentes temperaturas de entrada.
 
@@ -124,7 +224,6 @@ La representación gráfica evidencia la caída de rendimiento según aumenta la
 \caption[Rendimiento térmico en función de la temperatura de entrada del HTF para diferentes modelos de HCE]{Rendimiento térmico en función de la temperatura de entrada del HTF para diferentes modelos de HCE. $DNI= 800 W/m^2$, $\dot m$ = 6 kg/s} 
 \label{fig:test2a}
 \end{figure}
-
 
 \subsection{Rendimiento del HCE en función del flujo de radiación absorbido, $\dot q''_{abs}$}
 

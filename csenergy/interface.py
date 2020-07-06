@@ -11,6 +11,7 @@ run simulation with csenergy.py
 import sys
 sys.path.append('./libs')
 import os.path
+import csenergy as cs
 import CoolProp.CoolProp as CP
 import pvlib as pvlib
 import tkinter as tk
@@ -1551,7 +1552,7 @@ class Interface(object):
 
         self.lbscaIAMF0 = ttk.Label(
             self.fr_sca,
-            text='SCA IAM facotr F0 []').grid(
+            text='SCA IAM factor F0 []').grid(
                 row=4, column=0,  sticky='W', padx=2, pady=5)
         self.enscaIAMF0 = ttk.Entry(
             self.fr_sca,
@@ -1560,7 +1561,7 @@ class Interface(object):
 
         self.lbscaIAMF1 = ttk.Label(
             self.fr_sca,
-            text='SCA IAM facotr F1 []').grid(
+            text='SCA IAM factor F1 []').grid(
                 row=5, column=0,  sticky='W', padx=2, pady=5)
         self.enscaIAMF1 = ttk.Entry(
             self.fr_sca,
@@ -1569,7 +1570,7 @@ class Interface(object):
 
         self.lbscaIAMF2 = ttk.Label(
             self.fr_sca,
-            text='SCA IAM facotr F2 []').grid(
+            text='SCA IAM factor F2 []').grid(
                 row=6, column=0,  sticky='W', padx=2, pady=5)
         self.enscaIAMF2 = ttk.Entry(
             self.fr_sca,

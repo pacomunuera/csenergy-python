@@ -309,6 +309,7 @@ class ModelBarbero1stOrder(Model):
         self.parameters = settings
         self.max_err_t = self.parameters['max_err_t']
         self.max_err_tro = self.parameters['max_err_tro']
+        self.max_err_pr = self.parameters['max_err_pr']
 
     def calc_pr(self, hce, htf, row, qabs = None):
 
@@ -338,23 +339,21 @@ class ModelBarbero1stOrder(Model):
         urec = hce.get_urec(tf, hce.pin, htf)
         #  We suppose performance, pr = 1, at first
         pr = 1.0
-        tro = tf + qabs * pr / urec
+        tro1 = tf + qabs * pr / urec
 
         #  HCE emittance
-        eext = hce.get_eext(tro, wspd)
+        eext = hce.get_eext(tro1, wspd)
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
         #  Thermal power lost througth  bracktets
-        qlost_brackets = hce.get_qlost_brackets(tro, text)
+        qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
         #  Thermal power lost. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
-            qlost_brackets
+        qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
 
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
-        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text) + \
-            qlost_brackets
+        qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
 
         #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
         ucrit = 4 * sigma * eext * tf**3 + hext
@@ -367,14 +366,71 @@ class ModelBarbero1stOrder(Model):
         NTUperd = ucrit * Aext / (massflow * cp)
 
         if qabs > qcrit:
-            hce.pr = ((1 - (qcrit / qabs)) *
+
+            errtro = 10.
+            errpr = 1.
+            step = 0
+
+            while ((errtro > self.max_err_tro or errpr > self.max_err_pr) and
+                   step < 1000):
+
+                step += 1
+                pr2 = ((1 - (qcrit / qabs)) *
                       (1 / (NTUperd * x)) *
                       (1 - np.exp(-NTUperd * fcrit * x)))
+
+                errpr = abs(pr2-pr)
+                pr = pr2
+                hce.pr = pr
+
+                hce.set_tout(htf)
+                hce.set_pout(htf)
+                tf = 0.5 * (hce.tin + hce.tout)
+
+               #  Specific Capacity
+                cp = htf.get_specific_heat(tf, hce.pin)
+
+                #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
+                urec = hce.get_urec(tf, hce.pin, htf)
+
+                #  HCE emittance
+                eext = hce.get_eext(tro1, wspd)
+
+                #  External Convective Heat Transfer equivalent coefficient
+                hext = hce.get_hext(wspd)
+
+                tro2 = tf + qabs * pr / urec
+                errtro = abs(tro2-tro1)
+                tro1 = tro2
+
+                #  Increase qlost with thermal power lost througth bracktets
+                qlost_brackets = hce.get_qlost_brackets(tro1, text)
+
+                #  Thermal power loss. Eq. 3.23 Barbero2016
+                qlost = sigma * eext * (tro1**4 - text**4)
+
+                #  Critical Thermal power loss. Eq. 3.50 Barbero2016
+                qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text) + \
+                    qlost_brackets
+
+                #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+                ucrit = 4 * sigma * eext * tf**3 + hext
+
+                #  Ec. 3.63
+                fcrit = 1 / (1 + (ucrit / urec))
+
+                #  Transmission Units Number, Ec. 3.30 Barbero2016
+                NTUperd = ucrit * Aext / (massflow * cp)
+
+
+            if step == 1000:
+                print('No se alcanzó convergencia. HCE', hce.get_index())
+                print(qabs, qcrit, urec, ucrit)
+
             hce.pr = hce.pr * (1 - qlost_brackets / qabs)
             hce.qlost = qlost
             hce.qlost_brackets = qlost_brackets
-            hce.set_tout(htf)
-            hce.set_pout(htf)
+
 
         else:
             hce.pr = 0.0
@@ -421,6 +477,8 @@ class ModelBarberoSimplified(Model):
 
         self.parameters = settings
         self.max_err_t = self.parameters['max_err_t']
+        self.max_err_tro = self.parameters['max_err_tro']
+        self.max_err_pr = self.parameters['max_err_pr']
 
     def calc_pr(self, hce, htf, row, qabs=None):
 
@@ -438,6 +496,8 @@ class ModelBarberoSimplified(Model):
         wspd = row[1]['Wspd']  # Wind speed
         text = row[1]['DryBulb']  # Dry bulb ambient temperature
         sigma = sc.constants.sigma  # Stefan-Bolztmann constant
+        dro = hce.parameters['Absorber tube outer diameter']
+        dri = hce.parameters['Absorber tube inner diameter']
         x = 1  # Calculation grid fits hce longitude
 
         #  Specific Capacity
@@ -448,19 +508,18 @@ class ModelBarberoSimplified(Model):
 
         #  We suppose performance, pr = 1, at first
         pr = 1.0
-        tro = tf + qabs * pr / urec
+        tro1 = tf + qabs * pr / urec
 
         #  HCE emittance
-        eext = hce.get_eext(tro, wspd)
+        eext = hce.get_eext(tro1, wspd)
         #  External Convective Heat Transfer equivalent coefficient
         hext = hce.get_hext(wspd)
 
         #  Thermal power lost througth  bracktets
-        qlost_brackets = hce.get_qlost_brackets(tf, text)
+        qlost_brackets = hce.get_qlost_brackets(tro1, text)
 
         #  Thermal power loss. Eq. 3.23 Barbero2016
-        qlost = sigma * eext * (tro**4 - text**4) + hext * (tro - text) + \
-            qlost_brackets
+        qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
 
         #  Critical Thermal power loss. Eq. 3.50 Barbero2016
         qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
@@ -474,16 +533,112 @@ class ModelBarberoSimplified(Model):
 
         if qabs > qcrit:
 
-            hce.pr = fcrit * (1 - (qcrit / qabs))
+            errtro = 10.
+            errpr = 1.
+            step = 0
+
+            while ((errtro > self.max_err_tro or errpr > self.max_err_pr) and
+                   step < 1000):
+
+                step += 1
+                pr2 = fcrit * (1 - (qcrit / qabs))
+
+
+                errpr = abs(pr2-pr)
+                pr = pr2
+                hce.pr = pr
+
+                hce.set_tout(htf)
+                hce.set_pout(htf)
+                tf = 0.5 * (hce.tin + hce.tout)
+
+                #  Specific Capacity
+                cp = htf.get_specific_heat(tf, hce.pin)
+
+                #  Internal heat transfer coefficient. Eq. 3.22 Barbero2016
+                urec = hce.get_urec(tf, hce.pin, htf)
+
+                #  We suppose performance, pr = 1, at first
+                tro1 = tf + qabs * pr / urec
+
+                #  HCE emittance
+                eext = hce.get_eext(tro1, wspd)
+
+                #  External Convective Heat Transfer equivalent coefficient
+                hext = hce.get_hext(wspd)
+
+                tro2 = tf + qabs * pr / urec
+                errtro = abs(tro2-tro1)
+                tro1 = tro2
+
+                #  Thermal power lost througth  bracktets
+                qlost_brackets = hce.get_qlost_brackets(tro1, text)
+
+                #  Thermal power loss. Eq. 3.23 Barbero2016
+                qlost = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text) + \
+                    qlost_brackets
+
+                #  Critical Thermal power loss. Eq. 3.50 Barbero2016
+                qcrit = sigma * eext * (tf**4 - text**4) + hext * (tf - text)
+
+                #  Critical Internal heat transfer coefficient, Eq. 3.51 Barbero2016
+                ucrit = 4 * sigma * eext * tf**3 + hext
+
+                #  Ec. 3.63
+                ## fcrit = (1 / ((4 * eext * tfe**3 / urec) + (hext / urec) + 1))
+                fcrit = 1 / (1 + (ucrit / urec))
+
+            if step == 1000:
+                print('No se alcanzó convergencia. HCE', hce.get_index())
+                print(qabs, qcrit, urec, ucrit)
+
+            hce.pr = hce.pr * (1 - qlost_brackets / qabs)
+            hce.qlost = qlost
+            hce.qlost_brackets = qlost_brackets
 
         else:
-            hce.pr = 0
+
+            hce.pr = 0.0
+            errtro = 10.0
+            tf = 0.5 * (hce.tin + hce.tout)
+            tro1 = tf - 5
+            while (errtro > self.max_err_tro):
+
+                kt = htf.get_thermal_conductivity(tro1, hce.pin)
+
+                fx = lambda tro1: ((2 * np.pi * kt * (tf - tro1) /
+                                    np.log(dro/dri)) -
+                                  sigma * hce.get_eext(tro1, wspd) *
+                                  (tro1**4 - text**4) - hce.get_hext(wspd) -
+                                  hce.get_qlost_brackets(tro1, text))
+
+                root = sc.optimize.newton(fx,
+                                          tro1,
+                                          maxiter=100000)
+
+                tro2 = root
+                eext = hce.get_eext(tro2, wspd)
+                #  External Convective Heat Transfer equivalent coefficient
+                hext = hce.get_hext(wspd)
+
+                qlost = sigma * eext * (tro2**4 - text**4) + \
+                    hext * (tro2 - text)
+
+                #  Thermal power lost througth  bracktets
+                qlost_brackets = hce.get_qlost_brackets(tro2, text)
+
+                hce.qlost = qlost
+                hce.qlost_brackets = qlost_brackets
+                hce.set_tout(htf)
+                hce.set_pout(htf)
+                tf = 0.5 * (hce.tin + hce.tout)
+                errtro = abs(tro2 - tro1)
+                tro1 = tro2
 
         hce.qlost = qlost
         hce.qlost_brackets = qlost_brackets
         hce.set_tout(htf)
         hce.set_pout(htf)
-
 
 class HCE(object):
 

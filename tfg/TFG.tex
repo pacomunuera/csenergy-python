@@ -98,6 +98,7 @@ hmargin=3cm
 {\titlerule*[.7pc]{.}\contentspage}  
 
 
+
 % DISEÑO DE TABLAS. Puedes elegir entre el estilo para ingeniería o para ciencias sociales y humanidades. Por defecto, está activado el estilo de ingeniería. Si deseas utilizar el otro, comenta las líneas del diseño de ingeniería y descomenta las del diseño de ciencias sociales y humanidades
 \usepackage{multirow} % permite combinar celdas 
 \usepackage{caption} % para personalizar el título de tablas y figuras
@@ -327,10 +328,9 @@ También quisiera mostrar mi agradecimiento y admiración hacia todas aquellas p
 % \nocite{*} % Si quieres que aparezcan en la bibliografía todos los documentos que la componen (también los que no estén citados en el texto) descomenta está lína
 
 \clearpage
-\addcontentsline{toc}{chapter}{Bibliografía}
 \setquotestyle[english]{british} % Cambiamos el tipo de cita porque en el estilo IEEE se usan las comillas inglesas.
 \printbibliography
-
+\addcontentsline{toc}{chapter}{Bibliografía}
 
 
 %----------
@@ -338,20 +338,22 @@ También quisiera mostrar mi agradecimiento y admiración hacia todas aquellas p
 %----------	
 
 % Si tu trabajo incluye anexos, puedes descomentar las siguientes líneas
-\addcontentsline{toc}{chapter}{Glosario}
 \input{chapters/glosario}
+\addcontentsline{toc}{chapter}{Glosario}
 %\pagenumbering{gobble} % Las páginas de los anexos no se numeran
 
 
 \clearpage
-\addcontentsline{toc}{chapter}{Código Fuente: csenergy.py}
 \chapter* {Anexo B. Código Fuente: csenergy.py}
 %\includepdf[pages=-] {chapters/csenergy.pdf}
+\addcontentsline{toc}{chapter}{Código Fuente: csenergy.py}
+\pagenumbering{gobble}
 
 \clearpage
-\addcontentsline{toc}{chapter}{Código Fuente: interface.py}
 \chapter* {Anexo C. Código Fuente: interface.py}
 %\includepdf[pages=-] {chapters/interface.pdf}
+\addcontentsline{toc}{chapter}{Código Fuente: interface.py}
+\pagenumbering{gobble}
 
 
 

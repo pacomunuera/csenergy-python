@@ -8,16 +8,10 @@ Created on Sat Apr 25 11:29:44 2020
 # -*- coding: utf-8 -*-
 import csenergy as cs
 import pandas as pd
-from tkinter import *
 import json
-import copy
 from datetime import datetime
-import matplotlib.pyplot as plt
-# from matplotlib import rc
 
-
-
-
+FLAG_00 = datetime.now()
 with open("./saved_configurations/test_1.json") as simulation_file:
     simulation_settings = json.load(simulation_file)
 
@@ -63,22 +57,9 @@ for hce_conf in hces_configurations:
 
 dfsalida = pd.DataFrame(dict_resultados, index=dni_index)
 
-print(dfsalida)
-
 dfsalida.to_csv('rendimiento_dni.csv', sep=';', decimal=',')
+FLAG_01 = datetime.now()
+DELTA_01 = FLAG_01 - FLAG_00
+print("Total runtime: ", DELTA_01.total_seconds())
 
-# dfsalida.plot(figsize=(20,10), linewidth=5, fontsize=20)
-
-# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-# # for Palatino and other serif fonts use:
-# # rc('font',**{'family':'serif','serif':['Palatino']})
-
-# rc('text', usetex=True)
-
-# plt.ylabel('Performance, pr', fontsize=20)
-# plt.xlabel('HCE', fontsize=20)
-
-# pd.set_option('display.max_rows', None)
-# pd.set_option('display.max_columns', None)
-# pd.set_option('display.width', None)
 

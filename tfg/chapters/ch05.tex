@@ -7,14 +7,18 @@ Nuestro principal objetivo se ha cumplido, pues disponemos de un código que nos
 
 No obstante, a lo largo del desarrollo, según el número de líneas de código iba creciendo y creciendo, hemos podido comprobar que se requiere un desarrollo mucho más largo y profundo hasta poder alcanzar otras funcionalidades de las que disponen herramientas como SAM, cuya primera versión se remonta a 2007 y sigue siendo desarrollado por parte de un equipo multidisciplinar de científicos. No obstante, pese a las limitaciones funcionales de nuestro código, creemos que son acertadas ciertas bases sobre las que se asienta filosofía, como la Programación Orientación a Objetos que permite su desarrollo modular y también trabajar con los distintos elementos del sistema para realizar otro tipo de simulaciones, no solo de una planta completa de generación de energía térmica y eléctrica.
 
-De cara al futuro, son muchas las mejoras que se podrían realizar, comenzando por una optimización del código, que redujese los tiempos de cálculo. No era nuestro objetivo obtener una herramienta con fines de producción, sino más bien didácticos. Por este motivo, el código tampoco cuenta con una programación \emph{a la defensiva} que evite la introducción de datos inválidos, lo que hubiera multiplicado el número de líneas de código y horas de trabajo persiguiendo un objetivo que carece de interés científico.
+De cara al futuro, son muchas las mejoras que se podrían realizar, comenzando por una optimización del código, que redujese los tiempos de cálculo. No era nuestro objetivo obtener una herramienta con fines de producción, sino más bien didácticos. Por este motivo, el código tampoco cuenta con una programación \emph{a la defensiva} que evite la introducción de datos inválidos, lo que hubiera multiplicado el número de líneas de código y horas de trabajo persiguiendo un objetivo que carece de interés científico. Es de resaltar que  actualmente la suma de los archivos \emph{interface.py} y \emph{csenergy.py} casi supera la cifra de 5000 de líneas de código, a lo que habría que añadir unos cuantos centenares más en diferentes \emph{scripts} necesarios durante la elaboración de este trabajo.
 
-Para el futuro, consideramos que algunas de las líneas de trabajo más interesantes serían:
+Pero desde un punto de vista más relacionado con la ingeniería, pensamos que, para el futuro, algunas de las líneas de trabajo más interesantes serían:
 
 \begin{itemize}
 \item
 Desarrollar o acoplar nuestro campo solar con un módulo que simule el ciclo de potencia. Someramente, nuestro código facilitaría los datos de caudal y temperatura de HTF disponibles, mientras que el módulo de simulación del ciclo de potencia le devolvería el caudal aprovechado y la temperatura de retorno, más fría, una vez extraída la energía del HTF.
 \item
-Si se desarrollan módulos adicionales para la simulación del ciclo de potencia, los consumos auxiliares, bombeos, almacenamiento térmico\ldots sería posible utilizar este código para realizar un estudio del funcionamiento óptimo del campo solar, con el fin de maximizar el rendimiento del conjunto.
+Si se desarrollan módulos adicionales para la simulación del ciclo de potencia, los consumos auxiliares, bombeos, almacenamiento térmico, etc., sería posible utilizar este código para realizar un estudio del funcionamiento óptimo del campo solar, con el fin de maximizar el rendimiento del conjunto.
 \end{itemize}
+
+Con estas ampliaciones se podría disponer de una herramienta muy versátil, de gran utilidad para el análisis de las diferentes configuraciones del campo solar durante la fase de diseño, ayudando así en el proceso de búsqueda de una solución óptima.
+
+
 

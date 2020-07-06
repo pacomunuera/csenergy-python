@@ -6,12 +6,12 @@ __init__.py: simulation launcher
 2020
 """
 
-from tkinter import *
+#from tkinter import *
 import json
 from datetime import datetime
 import csenergy as cs
 
-with open("./saved_configurations/TEST_2016_DOWA.json") as simulation_file:
+with open("./saved_configurations/TEST_2007_IPH_VP1_diaE.json") as simulation_file:
     SIMULATION_SETTINGS = json.load(simulation_file)
 
 SIM = cs.SolarFieldSimulation(SIMULATION_SETTINGS)
