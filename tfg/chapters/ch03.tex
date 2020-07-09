@@ -73,7 +73,7 @@ Estimación de la temperatura de pared exterior del tubo absorbedor \(T_{ro}\) s
   Finalmente, se calcula el rendimiento \(\eta(x^*)\) según la   ec.\(\eqref{eq:modelocompleto}\), la temperatura de pared exterior   \(T_{ro}\) y se comparan con los valores iniciales. Si las diferencias   son superiores a cierto margen configurable se vuelve a realizar otra   iteración hasta conseguir la convergencia, pero previamente a cada iteración se re-calculan todos los pasos anteriores empleando la   temperatura de pared del tubo absorbedor calculada con el nuevo rendimiento. 
 \end{itemize}
 
-Al inicio del prcoeso iterativo se consdiera que, para el primer HCE del lazo, la temperatura del fluido \(T_f\) es igual a la temperatura de entrada al lazo (y al HCE, por tratarse del primero). Para los siguientes HCEs del lazo se parte de una temperatura del fluido igual a la temperatura de salida del HCE anterior pero incrementada con la mitad del salto de temperatura que experimentó dicho HCE.
+Al inicio del proceso iterativo se consdiera que, para el primer HCE del lazo, la temperatura del fluido \(T_f\) es igual a la temperatura de entrada al lazo (y al HCE, por tratarse del primero). Para los siguientes HCEs del lazo se parte de una temperatura del fluido igual a la temperatura de salida del HCE anterior pero incrementada con la mitad del salto de temperatura que experimentó dicho HCE.
 
 Una vez finalizado el proceso iterativo, la instancia del HCE actualiza sus valores de rendimiento, temperatura y presión de salida del HTF, quedando totalmente definido su punto de funcionamiento. Las condiciones de temperatura y presión a la salida del HCE serán las de entrada del HCE siguiente.
 
@@ -445,7 +445,7 @@ Esta clase cuenta también con el  método $\texttt{get\_solarposition}$, que me
 
 \section{Procedimiento para realizar una simulación}
 
-En este apartado se describe cómo puede desarrollarse un \emph{script} o programa, a partir de las Clases ya implementadas y comentadas anteriormente, con el fin de realizar diferentes tipos de simulaciones. El procedimiento es flexible y aquí tan solo se dan algunos apuntes sobre cómo se aprovechan las estructuras ya creadas. Se continua con la filosofía de POO y se hace uso de una clase denominada \texttt{SolarFieldSimulation}. Esta clase tiene un función meramente práctica, pues implementa una serie de métodos que permiten crear la estructura del campo solar y las instancias de las clases necesaria para poder lanzar la simulación. De esta forma, evitamos tener que escribir todo ese código en un programa cada vez que queramos ejecutar una simulación de un campo solar. La clase cuenta con métodos para leer secuencialmente el archivo con los datos, ejecutar cada tipo de simulación, recopilar los datos agregados y guardar y mostrar los resultados.
+En este apartado se describe cómo puede desarrollarse un \emph{script} o programa, a partir de las Clases ya implementadas y comentadas anteriormente, con el fin de realizar diferentes tipos de simulaciones. El procedimiento es flexible y aquí tan solo se dan algunos apuntes sobre cómo se aprovechan las estructuras ya creadas. Se continua con la filosofía de POO y se hace uso de una clase denominada \texttt{SolarFieldSimulation}. Esta clase tiene una función meramente práctica, pues implementa una serie de métodos que permiten crear la estructura del campo solar y las instancias de las clases necesaria para poder lanzar la simulación. De esta forma, evitamos tener que escribir todo ese código en un programa cada vez que queramos ejecutar una simulación de un campo solar. La clase cuenta con métodos para leer secuencialmente el archivo con los datos, ejecutar cada tipo de simulación, recopilar los datos agregados y guardar y mostrar los resultados.
 
 El objetivo que nos proponemos es simular el comportamiento de un campo solar bajo unas determinadas condiciones. Puesto que estas condiciones varían a lo largo del día, se emplearán ficheros de datos en formato tabular que cuentan con una columna índice para la fecha y hora indicadas. Con el fin de poder reaprovechar el trabajo realizado durante el trabajo de configuración de la simulación, se emplea un archivo en formato JSON que recoge todos los parámetros necesarios. En resumen, la instancia de \texttt{SolarFieldSimulation} realiza los siguientes pasos:
 
@@ -644,7 +644,7 @@ En la Fig.\ref{fig:carga1} se muestra el proceso que permite establecer una rela
 
 \begin{figure}[H]
 \includegraphics[width=0.9\textwidth, height=0.7\textwidth]{images/carga_tags.png}
-\caption{Proceso de asignación de \emph{tags} a variables den entrada/salida}
+\caption{Proceso de asignación de \emph{tags} a variables de entrada/salida}
 \label{fig:carga1}
 \end{figure}
 
