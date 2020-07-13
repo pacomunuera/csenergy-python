@@ -309,7 +309,7 @@ La Clase \texttt{Subfield} mantiene referencias a lo lazos que lo constituyen, e
 
 El campo solar alberga el conjunto de subcampos y, por tanto, todos los lazos de la instalación. Se trata del objeto que en última instancia queremos modelar con el fin de conocer cómo sera el comportamiento de la planta solar y su rendimiento anual. A la hora de definir el campo solar para el modelo es necesario conocer cuántos subcampos contiene, cuántos lazos hay en cada subcampo, qué configuración tiene cada lazo (número de SCAs en cada lazo y número de HCEs en cada SCA). También es importante conocer la distancia entre lazos con el fin de estimar el sombreado que se produce a primera y última hora del día. 
 
-El Clase \texttt{Solarfield} también recibe una serie de valores nominales para los que se ha realizado un diseño óptimo del sistema, como las temperaturas y presiones de entrada y salida del HTF, las temperaturas máximas y mínmas tolerables por razones de seguridad, el caudal nominal (normalmente se suele dar este caudal por lazo y el caudal del campo solar será la suma de todos ellos), el caudal mínimo (existe cierta limitación tanto por la velocidad mínima de las bombas como por otras
+El Clase \texttt{Solarfield} también recibe una serie de valores nominales para los que se ha realizado un diseño óptimo del sistema, como las temperaturas y presiones de entrada y salida del HTF, las temperaturas máximas y mínimas tolerables por razones de seguridad, el caudal nominal (normalmente se suele dar este caudal por lazo y el caudal del campo solar será la suma de todos ellos), el caudal mínimo (existe cierta limitación tanto por la velocidad mínima de las bombas como por otras
 cuestiones operativas que desaconsejan que el HTF circule por debajo de este límite).
 
 Cuando se crea una instancia de la Clase \texttt{Solarfield}, ésta recibe los datos de configuración que se han pasado para la simulación y lanza el proceso de construcción que genera, en base a esa configuración, los diferentes subcampos, lazos, SCAs y HCEs que forman el campo solar.
@@ -378,13 +378,29 @@ En las figuras \ref{f:parametros_dowa} puede verse el comportamiento estos pará
 
 Los coeficientes de los polinomios de ajuste para \emph{Dowtherm-A} se muestran en la tabla \ref{tab:coeficientes_dowa}:
 
-\begin{table}[H]
-\centering
+
+
+\begin{longtable}[c]{ccccccc}
 \caption[Coeficientes polinómicos para el fluido caloportador \emph{Dowtherm-A}]{Coeficientes polinómicos para el fluido caloportador \emph{Dowtherm-A}}
-\label{tab:coeficientes_dowa}
-\resizebox{0.9\textwidth}{!}{%
-\begin{tabular}{lcccccc}
-Parámetro	& $C_p(T) $	& $\mu(T)$	& $\rho(T)$  & $K_T$      	&  H(T)		& T(H)        \\ \hline
+\label{tab:coeficientes_dowa} \\ \hline
+\parbox{3em}{Parámetro} 	& 
+\parbox{3em}{$C_p(T)$}		& 
+\parbox{3em}{$\mu(T)$}		& 
+\parbox{3em}{$\rho(T)$}  	& 
+\parbox{3em}{$K_T$}     		&  
+\parbox{3em}{h(T)}			& 
+\parbox{3em}{T(h)}       \\ \hline
+\endfirsthead
+\multicolumn{7}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+\parbox{3em}{Parámetro} 	& 
+\parbox{3em}{$C_p(T)$}		& 
+\parbox{3em}{$\mu(T)$}		& 
+\parbox{3em}{$\rho(T)$}  	& 
+\parbox{3em}{$K_T$}     		&  
+\parbox{3em}{h(T)}			& 
+\parbox{3em}{T(h)}       \\ \hline
+\endhead
 $a_0$ 		& -2,36E+03	& 1,58E+00  & 1,49E+03  & 1,86E-01  	& -6,51E+05	& 2,85E+02 	\\
 $a_1$		& 3,95E+01  & -2,34E-02 	& -3,33E+00 & -1,60E-04 	& 4,12E+03  & 6,21E-04  	\\
 $a_2$ 		& -1,70E-01 	& 1,50E-04  	& 1,25E-02  	& 5,91E-12  	& -1,24E+01 & -1,82E-10 	\\
@@ -394,22 +410,35 @@ $a_5$ 		& 1,98E-10  	& -1,78E-12 	& -1,62E-11 	& 0,00E+00  & 1,11E-08  	& -1,75E
 $a_6$		& 0,00E+00  & 1,58E-15  	& 0,00E+00  & 0,00E+00  & 0,00E+00 	& 0,00E+00  \\
 $a_7$ 		& 0,00E+00  & -7,94E-19 	& 0,00E+00  & 0,00E+00  & 0,00E+00 	& 0,00E+00  \\
 $a_8$ 		& 0,00E+00  & 1,73E-22  	& 0,00E+00  & 0,00E+00  & 0,00E+00 	& 0,00E+00 
-\end{tabular}%
-}
-\end{table}
+
+\end{longtable}
 
 El mismo procedimiento se ha empleado para obtener los polinomios característicos del fluido \emph{Therminol VP-1}, aunque en este caso los polinomios se han ajustado a partir de una lista de valores sacada de la librería \emph{CoolProp}. Pese a que el programa de simulación permite que durante el tiempo de ejecución se obtengan los parámetros citados a través de esta librería, existe una limitación debido al rígido margen de temperaturas con el que esta librería trabaja para cada fluido y esto
 provoca que, para valores de temperatura ligeramente superiores al rango de operación ofrecido por fabricante, no se devuelva ningún valor. Esto resulta en problemas en tiempo de ejecución si algún lazo alcanza una temperatura superior a los 397°C (398°C en el caso de Syltherm 800). Aunque superar esta temperatura no es recomendable, es algo que puntualmente ocurre durante la operación de la planta. Además, una forma calcular la energía desaprovechada por desenfoque sería a partir de la temperatura que hubiera alcanzado el lazo de no haberse producido el desenfoque y calculando posteriormente su entalpía. Esta aproximación, que sería imposible en la vida real debido a la degradación del HTF e incluso al daño del propio sistema por las sobrepresiones que se producirían, facilita el cálculo de la energía desaprovechada en cada  momento. Se ha supuesto que las curvas de los parámetros se mantienen bien ajustadas siempre y cuando la sobretemperatura alcanzada no sea excesiva (en las simulaciones realizadas no se ha superado más del 10\% de la temperatura máxima de operación recomendada por el fabricante). Por estos motivos, para este trabajo se han empleado siempre los valores de los parámetros obtenidos a partir de los polinomios y no de \emph{CoolProp}.
 
 Para el caso del \emph{Therminol VP-1} los coeficientes calculados son los que se muestran en la tabla \ref{tab:coeficientes_vp1}:
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{ccccccc}
 \caption{Coeficientes polinómicos para el fluido caloportador \emph{Therminol VP-1}}
-\label{tab:coeficientes_vp1}
-\resizebox{0.9\textwidth}{!}{%
-\begin{tabular}{lcccccc}
-Parámetro	& $C_p(T) $		& $\mu(T)$		& $\rho(T)$  	& $K_T$      		&  H(T)			& T(H)        		\\ \hline
+\label{tab:coeficientes_vp1} \\ \hline
+\parbox{3em}{\centering Parámetro}	& 
+\parbox{2em}{\centering  $C_p(T)$} 	&
+\parbox{2em}{\centering  $\mu(T)$}		& 
+\parbox{2em}{\centering  $\rho(T)$} 	& 
+\parbox{2em}{\centering $K_T$}      	&  
+\parbox{2em}{\centering h(T)}			&
+\parbox{2em}{\centering T(h)}   		\\ \hline
+\endfirsthead
+\multicolumn{7}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+\parbox{3em}{\centering Parámetro}	& 
+\parbox{2em}{\centering  $C_p(T)$} 	&
+\parbox{2em}{\centering  $\mu(T)$}		& 
+\parbox{2em}{\centering  $\rho(T)$} 	& 
+\parbox{2em}{\centering  $K_T$}      	&  
+\parbox{2em}{\centering h(T)}			&
+\parbox{2em}{\centering T(h)}   		\\ \hline
+\endhead
 $a_0$ 		& 2,881E+02 	& 1,487E+00 	& 1,403E+03 	& 1,486E-01 		& -2,923E+05	& 2,924E+02	\\
 $a_1$		& 5,875E+00 	& -2,186E-02 	& -1,613E+00 	& 9,755E-06 		& 3,910E+02 	& 6,424E-04  	\\
 $a_2$ 		& -6,857E-03 	& 1,400E-04 		& 2,138E-03 		& -1,780E-07	& 2,076E+00 	& -3,396E-10 	\\
@@ -419,9 +448,7 @@ $a_5$ 		& -2,780E-23 	& -1,642E-12 	& 3,864E-24 		& 2,948E-28 		& 2,274E-08 		& 
 $a_6$		& 0,000E+00 	& 1,454E-15 		& 0,000E+00 	& 0,000E+00 	& -2,667E-11 	& 0,000E+00 	\\
 $a_7$ 		& 0,000E+00 	& -7,286E-19 	& 0,000E+00 	& 0,000E+00 	& 1,788E-14 		& 0,000E+00 	\\
 $a_8$ 		& 0,000E+00 	& 1,583E-22 		& 0,000E+00 	& 0,000E+00 	& -5,284E-18 	& 0,000E+00 
-\end{tabular}%
-}
-\end{table}
+\end{longtable}
 
 \subsection{Clases \texttt{Weather}, \texttt{FieldData} y \texttt{TableData}}
 \label{clases-weather}
@@ -533,12 +560,15 @@ La versión de SAM utilizada ha sido la \emph{''2020.2.29, 64 bit, updated to re
 
 Los SCA, modelo SenerTrough I diseñado por Sener, se han parametrizado de la siguiente manera a partir del modelo EuroTrough ET150:
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{lc}
 \caption{Configuración del SCA modelo SenerTrough I de Sener}
-\label{tab:configuracionSCA}
-\begin{tabular}{lc}
+\label{tab:configuracionSCA} \\ \hline
 Parámetro & Valor \\ \hline
+\endfirsthead
+\multicolumn{2}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Parámetro & Valor \\ \hline
+\endhead
 Longitud &  148,5  (m) \\
 Apertura &  5,77  (m) \\
 Distancia Focal & 2,1 (m) \\
@@ -550,8 +580,7 @@ Precisión geométrica &  0,98 \\
 Disponibilidad &  0,99 \\
 Reflectividad &  0,935 \\
 Limpieza &  0,98
-\end{tabular}
-\end{table}
+\end{longtable}
 
 
 En la Fig.\ref{fig:captura03} puede verse una captura de pantalla de la pestaña de configuración del tipo de SCA en SAM. En la Fig.\ref{fig:captura04}, puede verse la pestaña correspondiente a la configuración de HCE. En este caso el modelo empleado es el UVAC 3, de Solel, con los parámetros que se indican en la tabla \ref{tab:configuracionHCE}.
@@ -570,13 +599,16 @@ En la Fig.\ref{fig:captura03} puede verse una captura de pantalla de la pestaña
 \end{figure}
 
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{lc}
 \caption{Configuración del HCE modelo UVAC 3 de Solel}
-\label{tab:configuracionHCE}
-\begin{tabular}{lc}
+\label{tab:configuracionHCE} \\ \hline
 Parámetro & Valor \\ \hline
-Logintud & 4,05 (m) \\
+\endfirsthead
+\multicolumn{2}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Parámetro & Valor \\ \hline
+\endhead
+Longitud & 4,05 (m) \\
 Factor de longitud efectiva, \(\gamma_L\) &  0,96 \\
 Factor de interceptación geométrica, \(\gamma_g\) & 0,96 \\
 Diámetro interior del tubo absorbedor, \(D_{ri}\) & 0,066 (m) \\
@@ -590,8 +622,7 @@ Absortibidad solar del receptor &  0,96 \\
 Transmisividad del vídrio &  0,96 \\
 Valor mínimo del número de Reynolds recomendado &  2300 \\
 Distancia de separación entre brazos de soportación &  4,05 (m) 
-\end{tabular}
-\end{table}
+\end{longtable}
 
 Se ha considerado que todos los HCE  del campo se encuentran en buen estado de vacío.
 
@@ -640,7 +671,7 @@ En la Fig.\ref{fig:interface02} vemos cómo se configura el campo solar en un pr
 
 Además de los valores nominales, que son empleados como punto de partida en las simulaciones, vemos que podemos configurar la orientación del eje del seguidor y el espaciado entre lazos para el cálculo de sombras. En la configuración de esta simulación hemos supuesto que existe un único subcampo con 120 lazos. La aplicación permitiría añadir varios subcampos mediante una lista de pares \emph{nombre de subcampo - número de lazos}. El nombre que se dé a los subcampos es relevante en el sentido de que, posteriormente, los archivos \emph{CSV} que se generarán  utilizarán una nomenclatura basada en esos nombres para mostrar las variables de temperatura, caudal, potencia, rendimiento, etc., de cada subcampo. 
 
-En la Fig.\ref{fig:carga1} se muestra el proceso que permite establecer una relación entre los \emph{tags} o nombres que reciben los valores en el archivo de datos de campo y los valores que empleará el programa para el informe. El asistente muestra una lista (Fig.\ref{fig:listatags}) con los \emph{tags} disponibles junto a un número. El usuario debe indicar qué número corresponde a cada variable. Por ejemplo, el caudal másico del subcampo NO viene dado por el identificador número 10, \emph{1310-FX-1809}. Cuando ha terminado de asignar los números, debe pulsar \emph{Load TAGs} para que se cargue la lista, tal y como se ve en la Fig.\ref{fig:carga2}. Al quedar asociados de este modo, cuando el simulador cargue los datos del campo, sabe que debe emplear los datos de la columna con encabezado \emph{1310-FX-1809} como datos de caudal de ese subcampo.
+En la Fig.\ref{fig:carga1} se muestra el proceso que permite establecer una relación entre los \emph{tags} o nombres que reciben los valores en el archivo de datos de campo y los valores que empleará el programa para el informe. Este paso solo es necesario cuando vamos a utilizar, como origen de datos, un archivo con columnas cuyos encabezados tienen un descriptor diferente al que el programa va a emplear. Una vez establecida esta relación entre identificadores y guardada en el archivo de configuración, ya no es necesario realizar este paso en las siguientes configuraciones que empleen el mismo archivo de origen de datos. El asistente muestra una lista (Fig.\ref{fig:listatags}) con los \emph{tags} disponibles junto a un número. El usuario debe indicar qué número corresponde a cada variable. Por ejemplo, el caudal másico del subcampo NO viene dado por el identificador número 10, \emph{1310-FX-1809}. Cuando ha terminado de asignar los números, debe pulsar \emph{Load TAGs} para que se cargue la lista, tal y como se ve en la Fig.\ref{fig:carga2}. Al quedar asociados de este modo, cuando el simulador cargue los datos del campo sabrá que debe emplear los datos de la columna con encabezado \emph{1310-FX-1809} como datos de caudal de ese subcampo.
 
 \begin{figure}[H]
 \includegraphics[width=0.9\textwidth, height=0.7\textwidth]{images/carga_tags.png}
@@ -831,20 +862,22 @@ En el campo solar de 120 lazos, con una superfice total de captación de 392400 
 
 En la Tabla \ref{tab:generacion_anual} se muestran los valores  calculados por SAM y los que obtenemos con nuestro código. SAM denonima ''Receiver thermal power incident'' a la radiación solar que finalmente alcanza al absorbedor, es decir, la radaciación solar incidente menos las pérdidas ópticas. Este valor es equivalente a lo que nosotros hemos venido denominando potencia absorbida, $\dot q''_{abs}$. 
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{lcc}
 \caption{Resultados globales anuales para las simulaciones con SAM y Python}
-\label{tab:generacion_anual}
-\begin{tabular}{lcc}
+\label{tab:generacion_anual} \\ \hline
 Valores anuales  & SAM & Código Python \\ \hline
+\endfirsthead
+\multicolumn{3}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Valores anuales  & SAM & Código Python \\ \hline
+\endhead
 Potencia incidente (GWh/año)	& 686		& 686			\\ 
 Potencia absorbida (GWh/año)	& 477		& 491			\\ 
 Rendimiento óptico 			& 0,695	 	& 0,716			\\ 
 Pérdidas térmicas (GWh/año)	& 64		& 73			\\ 
 Rendimiento térmico			& 0,866		& 0,851			\\ 
 Potencia térmica (GWh/año) 	& 413		& 418	        	\\ 
-\end{tabular}
-\end{table}
+\end{longtable}
 
 Comprobamos que existe una ligera desviación en el rendimiento óptico anual (2,9\%) y en el rendimento térmico anual (1,9\%). El origen de esta desviación se encuentra en la dificultad de adaptar exactametne la configuracón de nuestra simulación a la de SAM pues no todos los parámetros son equivalentes en ambos casos. Por otro lado, por tratarse de valores anuales, existe una acumulación de pequeñas desviaciones que se producen entre ambas simulaciones, principalmente a primera y última hora del día  y durante jornadas de gran inestabilidad en la radiación. 
 
@@ -870,21 +903,31 @@ Nos fijaremos ahora en el comportamiento a lo largo de un día completo. Hemos s
 
 La tabla \ref{tab:datos_17_julio} muestra los datos de caudal, temperatura y potencia para los 24 registros horarios del día 17 de julio.
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{ccccccccc}
 \caption[Resultados de las simulaciones en un día de condiciones estables]{Resultados de las simulaciones (S: SAM, P: Python)  del día 17 de julio de 2007. Condiciones estables}
-\label{tab:datos_17_julio}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{ccccccccc}
+\label{tab:datos_17_julio} \\ \hline
 Hora &
-\parbox{5em}{\centering DNI (S, P) \\ ($W/m^2$)} &
-\parbox{5em}{\centering Caudal (S)  \\  ($kg/s$)}    &
-\parbox{5em}{\centering Caudal (P)  \\  ($kg/s$)}  &
-\parbox{5em}{\centering $T_{in}$ (S, P)  \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$ (S)  \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$ (P)  \\ $(^\circ C)$} &
-\parbox{5em}{\centering Pot. Térmica (S)  \\  (MWt)}  &
-\parbox{5em}{\centering Pot. Térmica (P) \\  (MWt)} \\ \hline
+\parbox{3em}{\centering \rule{0pt}{2ex}  DNI \\ (S, P) ($W/m^2$)} &
+\parbox{3em}{\centering \rule{0pt}{2ex}  Caudal (S)  \\  ($kg/s$)}    &
+\parbox{3em}{\centering \rule{0pt}{2ex}  Caudal (P)  \\  ($kg/s$)}  &
+\parbox{3em}{\centering \rule{0pt}{2ex}  $T_{in}$ \\ (S, P)  \\ $(^\circ C)$} &
+\parbox{3em}{\centering \rule{0pt}{2ex}  $T_{out}$ \\ (S)  \\ $(^\circ C)$} &
+\parbox{3em}{\centering \rule{0pt}{2ex}  $T_{out}$ \\ (P)  \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}  Pot. Térmica (S)  \\  (MWt)}  &
+\parbox{4em}{\centering \rule{0pt}{2ex}  Pot. Térmica (P) \\  (MWt)} \\ \hline
+\endfirsthead
+\multicolumn{9}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Hora &
+\parbox{3em}{\centering \rule{0pt}{2ex}  DNI \\ (S, P) \\ ($W/m^2$)} &
+\parbox{3em}{\centering \rule{0pt}{2ex}  Caudal (S)  \\  ($kg/s$)}    &
+\parbox{3em}{\centering \rule{0pt}{2ex}  Caudal (P)  \\  ($kg/s$)}  &
+\parbox{3em}{\centering \rule{0pt}{2ex}  $T_{in}$ \\ (S, P)  \\ $(^\circ C)$} &
+\parbox{3em}{\centering \rule{0pt}{2ex}  $T_{out}$ \\ (S)  \\ $(^\circ C)$} &
+\parbox{3em}{\centering \rule{0pt}{2ex}  $T_{out}$ \\ (P)  \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}  Pot. Térmica (S)  \\  (MWt)}  &
+\parbox{4em}{\centering \rule{0pt}{2ex}  Pot. Térmica (P) \\  (MWt)} \\ \hline
+\endhead
 0:00  & 0   & 204,0 & 204,0 & 281,3 & 270,4 & 270,0 & -5,5  & -5,2  \\
 1:00  & 0   & 204,0 & 204,0 & 277,2 & 266,6 & 266,2 & -5,3  & -5,0  \\
 2:00  & 0   & 204,0 & 204,0 & 273,3 & 263,1 & 262,5 & -5,1  & -4,8  \\
@@ -909,9 +952,8 @@ Hora &
 21:00 & 0   & 204,0 & 204,0 & 295,7 & 281,4 & 283,5 & -6,3  & -5,7  \\
 22:00 & 0   & 204,0 & 204,0 & 294,6 & 281,9 & 282,5 & -6,3  & -5,6  \\
 23:00 & 0   & 204,0 & 204,0 & 290,5 & 278,6 & 278,6 & -6,0  & -5,5 
-\end{tabular}%
-}
-\end{table}
+\end{longtable}
+
 
 \begin{figure}[H]
 \includegraphics[width=0.9\linewidth]{images/176caudal.png}
@@ -933,21 +975,32 @@ Hora &
 
 En la tabla \ref{tab:datos_17_junio} se muestran los datos correspondientes al día 17 de junio de 2007.
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{ccccccccc}
 \caption[Resultados de las simulaciones en un día de condiciones inestables]{Resultados de las simulaciones (S: SAM, P: Python) para el día 17 de junio de 2007. Condiciones inestables}
-\label{tab:datos_17_junio}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{ccccccccc}
+\label{tab:datos_17_junio} \\ \hline
 Hora &
-\parbox{5em}{\centering DNI (S, P) \\ ($W/m^2$)} &
-\parbox{5em}{\centering Caudal (S)  \\  ($kg/s$)}    &
-\parbox{5em}{\centering Caudal (P)  \\  ($kg/s$)}  &
-\parbox{5em}{\centering $T_{in}$ (S, P)  \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$ (S)  \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$ (P)  \\ $(^\circ C)$} &
-\parbox{5em}{\centering Pot. Térmica (S)  \\  (MWt)}  &
-\parbox{5em}{\centering Pot. Térmica (P) \\  (MWt)} \\ \hline
+\parbox{3em}{\centering \rule{0pt}{2ex} DNI (S, P) \\ ($W/m^2$)} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Caudal (S)  \\  ($kg/s$)}    &
+\parbox{3em}{\centering \rule{0pt}{2ex} Caudal (P)  \\  ($kg/s$)}  &
+\parbox{3em}{\centering \rule{0pt}{2ex} $T_{in}$  \\ (S, P)  \\ $(^\circ C)$} &
+\parbox{2em}{\centering \rule{0pt}{2ex} $T_{out}$ (S)  \\ $(^\circ C)$} &
+\parbox{2em}{\centering \rule{0pt}{2ex} $T_{out}$ (P)  \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} Pot. Térmica (S)  \\  (MWt)}  &
+\parbox{4em}{\centering \rule{0pt}{2ex} Pot. Térmica (P) \\  (MWt)} \\ \hline
+\endfirsthead
+\multicolumn{9}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Hora &
+\parbox{3em}{\centering \rule{0pt}{2ex} DNI (S, P) \\ ($W/m^2$)} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Caudal (S)  \\  ($kg/s$)}    &
+\parbox{3em}{\centering \rule{0pt}{2ex} Caudal (P)  \\  ($kg/s$)}  &
+\parbox{3em}{\centering \rule{0pt}{2ex} $T_{in}$  \\ (S, P)  \\ $(^\circ C)$} &
+\parbox{2em}{\centering \rule{0pt}{2ex} $T_{out}$ (S)  \\ $(^\circ C)$} &
+\parbox{2em}{\centering \rule{0pt}{2ex} $T_{out}$ (P)  \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} Pot. Térmica (S)  \\  (MWt)}  &
+\parbox{4em}{\centering \rule{0pt}{2ex} Pot. Térmica (P) \\  (MWt)} \\ \hline
+\endhead
+
 0:00  & 0   & 204,0  & 204,0  & 289,3 & 277,5 & 277,4 & -6,0  & -5,5  \\
 1:00  & 0   & 204,0  & 204,0  & 284,8 & 273,5 & 273,3 & -5,8  & -5,3  \\
 2:00  & 0   & 204,0  & 204,0  & 280,6 & 269,6 & 269,3 & -5,5  & -5,1  \\
@@ -972,9 +1025,7 @@ Hora &
 21:00 & 0   & 204,0  & 204,0  & 296,2 & 281,6 & 283,8 & -6,4  & -5,7  \\
 22:00 & 0   & 204,0  & 204,0  & 295,3 & 282,4 & 282,9 & -6,4  & -5,7  \\
 23:00 & 0   & 204,0  & 204,0  & 291,1 & 279,1 & 279,1 & -6,1  & -5,6 
-\end{tabular}%
-}
-\end{table}
+\end{longtable}
 
 En vista a los resultados de la comparación con SAM, consideramos que nuestro código obtiene valores adecuados y cuenta con la flexibilidad suficiente que permita emplearlo en la simulación del comportamiento de concentradores cilindroparabólicos. En el siguiente capítulo realizaremos algunos análisis a modo de ejemplo.
 

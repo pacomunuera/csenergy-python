@@ -10,12 +10,9 @@ Una vez que hemos confirmado que nuestro código es una herramienta válida para
 
 En la tabla \ref{tab:datos_hces} se muestran los coeficientes para el cálculo de la emisividad $\varepsilon_{ext}$ conforme a la ec.\eqref{eq:eext} y el valor de la absortividad de algunos modelos de HCE según se recogen en \cite{barberofresnoDesarrolloModeloTeorico2018}, incluido el modelo NREL\#6, que en realidad es un modelo de HCE con un recubrimiento selectivo teórico propuesto para desarrollos futuros.
 
-\begin{table}[H]
-\centering
-\caption[Constantes del modelo de emisividad equivalente para cada uno de los receptores seleccionados]{Constantes del modelo de emisividad equivalente para cada uno de los receptores seleccionados. *Al no disponerse de este dato, se ha empleado este valor con el fin de poder incluir el modelo en el test. Fuente \cite{barberofresnoDesarrolloModeloTeorico2018}}
-\label{tab:datos_hces}
-\resizebox{0.8\textwidth}{!}{
-\begin{tabular}{lccc}
+\begin{longtable}[c]{lccc}
+\caption[Constantes del modelo de emisividad equivalente para cada uno de los receptores seleccionados]{Constantes del modelo de emisividad equivalente para cada uno de los receptores seleccionados.}
+\label{tab:datos_hces}  \\ \hline
 Receptor &
 $A_0$ &
 $A_1$ &
@@ -24,12 +21,10 @@ Solel UVAC 2/2008 & 1,31E-04 & 1,01E-01 & 97\\
 Solel UVAC 3/2010 & 2,06E-04 & 4,30E-02 & 96 \\
 Schott PTR70 & 1,82E-04 & 8,61E-02 & 95 \\
 Schott PTR70/2008 & 1,43E-04 & 3,45E-02 & 95,5 \\
-SkyFuel SkyTrough DSP & 1,48E-04 & 4,00E-02 & 95* \\
+SkyFuel SkyTrough DSP & 1,48E-04 & 4,00E-02 & 95 \footnote{Al no disponerse de este dato, se ha empleado este valor con el fin de poder incluir el modelo en el test. Fuente \cite{barberofresnoDesarrolloModeloTeorico2018}}\\
 ASE HEMS08 & 2,03E-04 & -1,03E-02 & 95 \\
 NREL \#6 & 1,52E-04 & 1,96E-03 & 96 
-\end{tabular}
-}
-\end{table}
+\end{longtable}
 
 
 
@@ -44,7 +39,6 @@ El archivo de origen de datos contiene varios registros con los mismos datos de 
 \end{itemize}
 
 El programa se dispone a hacer una simulación con la configuración indicada para cada registro del archivo de origen de datos, pero también realiza un bucle recorriendo todos los modelos de HCE que existen en el archivo \emph{HCE\_library.json}. De esta forma, al finalizar, tenemos una tabla con el rendimiento de cada modelo para cada uno de los valores de DNI. Se hace uso de la Clase \texttt{LoopSimulation} creada expresamente con el fin de facilitar simulaciones con un solo lazo de configuración variable.
-
 
 \begin{lstlisting}[caption=Programa para el análisis del rendimiento en función de DNI, label={lst:script_test1}]
 import csenergy as cs
@@ -94,20 +88,18 @@ print("Total runtime: ", DELTA_01.total_seconds())
 El tiempo total de ejecución es de 1,375 segundos. El archivo \emph{rendimiento\_dni.csv} contiene los datos volcados a la finalización del programa.
 
 En la tabla \ref{tab:rendimiento_hce_dni} se muestran los resultados de los rendimientos calculados para cada modelo de HCE con una temperatura de entrada de 300 ºC y un caudal de 6 kg/s.
-\begin{table}[H]
-\centering
+
+\begin{longtable}[c]{cccccccc}
 \caption{Rendimiento en función de la radiación normal incidente para  distintos modelos de HCE}
-\label{tab:rendimiento_hce_dni}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{cccccccc}
-\parbox{5em}{\centering $DNI (W/m^2)$} &
-\parbox{5em}{\centering Schott  \\ PTR70} &
-\parbox{5em}{\centering Schott  \\ PTR70 2008} &
-\parbox{5em}{\centering Solel \\ UVAC 2} &
-\parbox{5em}{\centering  Solel \\ UVAC 3} &
-\parbox{5em}{\centering  SkyFuel \\ SkyTrough DSP} &
-\parbox{5em}{\centering ASE\\ HEMS08} &
-\parbox{5em}{\centering NREL\\ \#6} \\ \hline
+\label{tab:rendimiento_hce_dni} \\ \hline
+\parbox{3em}{\centering \rule{0pt}{2ex} DNI \\ $(W/m^2)$} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Schott  \\ PTR70} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Schott  \\ PTR70 2008} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Solel \\ UVAC 2} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Solel \\ UVAC 3} &
+\parbox{4em}{\centering \rule{0pt}{2ex} SkyFuel \\ SkyTrough DSP} &
+\parbox{3em}{\centering \rule{0pt}{2ex} ASE\\ HEMS08} &
+\parbox{3em}{\centering \rule{0pt}{2ex} NREL\\ \#6} \\ \hline
 100 & 0,521 & 0,728 & 0,521 & 0,638 & 0,837 & 0,818 & 0,834 \\
 200 & 0,757 & 0,862 & 0,757 & 0,816 & 0,917 & 0,907 & 0,916 \\
 300 & 0,837 & 0,907 & 0,837 & 0,876 & 0,944 & 0,938 & 0,943 \\
@@ -118,14 +110,12 @@ En la tabla \ref{tab:rendimiento_hce_dni} se muestran los resultados de los rend
 800 & 0,937 & 0,964 & 0,937 & 0,952 & 0,978 & 0,976 & 0,978 \\
 900 & 0,943 & 0,968 & 0,943 & 0,957 & 0,980 & 0,978 & 0,980 \\
 1000 & 0,948 & 0,971 & 0,949 & 0,961 & 0,982 & 0,980 & 0,982
-\end{tabular}%
-}
-\end{table}
+\end{longtable}
 
 En la Fig.\ref{fig:test1a} se muestra gráficamente cómo evoluciona el rendimiento con el aumento de $DNI$.  Se aprecia cómo los  modelos de última generación presentan un buen comportamiento incluso con bajas radiaciones.
 
 \begin{figure}[H]
-\includegraphics[width=0.9\linewidth]{images/rendimiento_dni.png}
+\includegraphics[width=0.8\linewidth, height=0.55\linewidth]{images/rendimiento_dni.png}
 \caption[Rendimiento térmico en función de DNI para diferentes modelos de HCE]{Rendimiento térmico en función de DNI para diferentes modelos de HCE. $T_{in}$=300 ºC, $\dot m$ = 6 kg/s} 
 \label{fig:test1a}
 \end{figure}
@@ -177,20 +167,29 @@ dfsalida.to_csv('rendimiento_temperatura.csv', sep=';', decimal=',')
 
 En la tabla \ref{tab:rendimiento_hce_tin} se muestran los resultado de simular el funcionamiento de varios modelos de HCE con un caudal constante de fluido caloportador a diferentes temperaturas de entrada.
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{cccccccc}
 \caption{Rendimiento en función de la temperatura de entrada del HTF para diferentes modelos de HCE}
-\label{tab:rendimiento_hce_tin}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{cccccccc}
-\parbox{5em}{\centering $T_{in} (\circ C)$ } &
-\parbox{5em}{\centering Schott  \\ PTR70} &
-\parbox{5em}{\centering Schott  \\ PTR70 2008} &
-\parbox{5em}{\centering Solel \\ UVAC 2} &
-\parbox{5em}{\centering  Solel \\ UVAC 3} &
-\parbox{5em}{\centering  SkyFuel \\ SkyTrough DSP} &
-\parbox{5em}{\centering ASE\\ HEMS08} &
-\parbox{5em}{\centering NREL\\ \#6} \\ \hline
+\label{tab:rendimiento_hce_tin} \\ \hline
+\parbox{3em}{\centering \rule{0pt}{2ex} $T_{in} (\circ C)$ } &
+\parbox{3em}{\centering \rule{0pt}{2ex} Schott  \\ PTR70} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Schott  \\ PTR70 2008} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Solel \\ UVAC 2} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Solel \\ UVAC 3} &
+\parbox{4em}{\centering \rule{0pt}{2ex} SkyFuel \\ SkyTrough DSP} &
+\parbox{3em}{\centering \rule{0pt}{2ex} ASE\\ HEMS08} &
+\parbox{3em}{\centering \rule{0pt}{2ex} NREL\\ \#6} \\ \hline
+\endfirsthead
+\multicolumn{4}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+\parbox{3em}{\centering \rule{0pt}{2ex} $T_{in} (\circ C)$ } &
+\parbox{3em}{\centering \rule{0pt}{2ex} Schott  \\ PTR70} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Schott  \\ PTR70 2008} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Solel \\ UVAC 2} &
+\parbox{3em}{\centering \rule{0pt}{2ex} Solel \\ UVAC 3} &
+\parbox{4em}{\centering \rule{0pt}{2ex} SkyFuel \\ SkyTrough DSP} &
+\parbox{3em}{\centering \rule{0pt}{2ex} ASE\\ HEMS08} &
+\parbox{3em}{\centering \rule{0pt}{2ex} NREL\\ \#6} \\ \hline
+\endhead
 200 & 0,975 & 0,986 & 0,974 & 0,982 & 0,993 & 0,993 & 0,993 \\
 210 & 0,972 & 0,985 & 0,971 & 0,980 & 0,992 & 0,992 & 0,992 \\
 220 & 0,969 & 0,983 & 0,969 & 0,978 & 0,991 & 0,990 & 0,991 \\
@@ -213,9 +212,7 @@ En la tabla \ref{tab:rendimiento_hce_tin} se muestran los resultado de simular e
 390 & 0,872 & 0,925 & 0,876 & 0,898 & 0,951 & 0,942 & 0,949 \\
 400 & 0,863 & 0,919 & 0,867 & 0,890 & 0,946 & 0,937 & 0,945 \\
 410 & 0,853 & 0,913 & 0,858 & 0,882 & 0,942 & 0,931 & 0,941
-\end{tabular}%
-}
-\end{table}
+\end{longtable}
 
 La representación gráfica evidencia la caída de rendimiento según aumenta la temperatura de entrada aunque, nuevamente, vemos que los modelos más modernos mantienen un mejor rendimiento a temperaturas más elevadas.
 
@@ -237,56 +234,66 @@ El flujo de radiación absorbido, $\dot q''_{abs}$,  también es un factor deter
 
 Los valores correspondientes se muestran en la tabla \ref{tab:rendimiento_qabs}.
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{cccc}
 \caption{Rendimiento en función del flujo de radiación absorbido y para cada modelo teórico}
-\label{tab:rendimiento_qabs}
-\begin{tabular}{cccc}
-$\dot q''_{abs}$    & 4° Orden & $1^{er}$ Orden & Simplificado \\ \hline
-50000  & 0,9768   & 0,9766    & 0,9779       \\
-70000  & 0,9822   & 0,9823    & 0,9832       \\
-90000  & 0,9852   & 0,9854    & 0,9862       \\
-110000 & 0,9870   & 0,9874    & 0,9881       \\
-130000 & 0,9882   & 0,9888    & 0,9893       \\
-150000 & 0,9891   & 0,9898    & 0,9903       \\
-170000 & 0,9898   & 0,9905    & 0,9910       \\
-190000 & 0,9902   & 0,9911    & 0,9915       \\
-210000 & 0,9906   & 0,9916    & 0,9920       \\
-230000 & 0,9908   & 0,9919    & 0,9923       \\
-250000 & 0,9910   & 0,9923    & 0,9926       \\
-270000 & 0,9912   & 0,9925    & 0,9929       \\
-290000 & 0,9913   & 0,9927    & 0,9931       \\
-310000 & 0,9914   & 0,9929    & 0,9932       \\
-330000 & 0,9914   & 0,9931    & 0,9934       \\
-350000 & 0,9914   & 0,9932    & 0,9935       \\
-370000 & 0,9914   & 0,9933    & 0,9936       \\
-390000 & 0,9914   & 0,9934    & 0,9937       \\
-410000 & 0,9913   & 0,9935    & 0,9938       \\
-430000 & 0,9913   & 0,9936    & 0,9939       \\
-450000 & 0,9912   & 0,9937    & 0,9939       \\
-470000 & 0,9911   & 0,9937    & 0,9940       \\
-490000 & 0,9910   & 0,9938    & 0,9940
-\end{tabular}
-\end{table}
+\label{tab:rendimiento_qabs} \\ \hline
+$\rule{0pt}{2ex} \dot q''_{abs}$    & 4° Orden & $1^{er}$ Orden & Simplificado \\ \hline
+\endfirsthead
+\multicolumn{4}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+$\rule{0pt}{2ex} \dot q''_{abs}$    & 4° Orden & $1^{er}$ Orden & Simplificado \\ \hline
+\endhead
+50000  & 0,9768 & 0,9766 & 0,9779 \\
+70000  & 0,9822 & 0,9823 & 0,9832 \\
+90000  & 0,9852 & 0,9854 & 0,9862 \\
+110000 & 0,9870 & 0,9874 & 0,9881 \\
+130000 & 0,9882 & 0,9888 & 0,9893 \\
+150000 & 0,9891 & 0,9898 & 0,9903 \\
+170000 & 0,9898 & 0,9905 & 0,9910 \\
+190000 & 0,9902 & 0,9911 & 0,9915 \\
+210000 & 0,9906 & 0,9916 & 0,9920 \\
+230000 & 0,9908 & 0,9919 & 0,9923 \\
+250000 & 0,9910 & 0,9923 & 0,9926 \\
+270000 & 0,9912 & 0,9925 & 0,9929 \\
+290000 & 0,9913 & 0,9927 & 0,9931 \\
+310000 & 0,9914 & 0,9929 & 0,9932 \\
+330000 & 0,9914 & 0,9931 & 0,9934 \\
+350000 & 0,9914 & 0,9932 & 0,9935 \\
+370000 & 0,9914 & 0,9933 & 0,9936 \\
+390000 & 0,9914 & 0,9934 & 0,9937 \\
+410000 & 0,9913 & 0,9935 & 0,9938 \\
+430000 & 0,9913 & 0,9936 & 0,9939 \\
+450000 & 0,9912 & 0,9937 & 0,9939 \\
+470000 & 0,9911 & 0,9937 & 0,9940 \\
+490000 & 0,9910 & 0,9938 & 0,9940 \\
+\end{longtable}
 
 
 \subsection{Simulación con los diferentes modelos teóricos}
 
 Comparamos ahora el resultado de simular con los tres modelos: modelo de 4º Orden, modelo de $1^{er}$ Orden y modelo Simplificado. En las siguientes figuras podemos comparar los resultados de temperatura, caudal, rendimiento y potencia térmica de la configuración de campo solar empleada en el apartado \ref{configuracion-simulaciones} para un día del año (se ha tomado el día 2 de marzo por tener buenas condiciones de radiación y estabilidad). 
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{ccccccc}
 \caption[Temperaturas obtenidas en la simulación con cada modelo teórico en un día de condiciones estables]{Temperaturas obtenidas en la simulación con cada modelo teórico. Datos del día 2/3/2007. Condiciones estables y buena radiación}
-\label{tab:temperaturas_modelos}
-\resizebox{0.8\textwidth}{!}{%
-\begin{tabular}{ccccccc}
+\label{tab:temperaturas_modelos} \\ \hline
 Hora &
-\parbox{5em}{\centering DNI \\ $(W/m^2)$} &
-\parbox{5em}{\centering $T_{in}$ \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$  (SAM) \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$ ($4^o Ord.$) \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$  ($1^{er} Ord.$) \\ $(^\circ C)$} &
-\parbox{5em}{\centering $T_{out}$ (Simplif.) \\  $(^\circ C)$}  \\ \hline
+\parbox{4em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{in}$ \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$  (SAM) \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$ ($4^o Ord.$) \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$  ($1^{er} Ord.$) \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$ (Simplif.) \\  $(^\circ C)$}  \\ \hline
+\endfirsthead
+\multicolumn{7}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Hora &
+\parbox{4em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{in}$ \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$  (SAM) \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$ ($4^o Ord.$) \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$  ($1^{er} Ord.$) \\ $(^\circ C)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $T_{out}$ (Simplif.) \\  $(^\circ C)$}  \\ \hline
+\endhead
 0:00  & 0   & 277 & 266 & 266 & 266 & 261 \\ 
 1:00  & 0   & 273 & 262 & 262 & 262 & 258 \\
 2:00  & 0   & 269 & 259 & 258 & 258 & 254 \\
@@ -310,10 +317,8 @@ Hora &
 20:00 & 0   & 298 & 284 & 285 & 285 & 279 \\
 21:00 & 0   & 293 & 281 & 281 & 281 & 276 \\
 22:00 & 0   & 289 & 277 & 277 & 277 & 272 \\
-23:00 & 0   & 284 & 273 & 273 & 273 & 268
-\end{tabular}%
-}
-\end{table}
+23:00 & 0   & 284 & 273 & 273 & 273 & 268 \\
+\end{longtable}
 
 El resultado gráfico de este test puede verse en la figura Fig.\ref{fig:temperaturas_modelos}, donde se aprecia que todos los modelos encuentran soluciones similares en la simulación. El resultado era de esperar pues las temperaturas de trabajo, inferiores a 400 ºC, están dentro del rango de validez de aplicación de todos los modelos. Otra vez los resultados son muy parecidos a los obtenidos con SAM.
 
@@ -337,18 +342,25 @@ En el caso de los caudales y la potencia térmica  los resultados son similares,
 \label{fig:potencias_modelos}
 \end{figure}
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{cccccc}
 \caption[Caudales obtenidos en la simulación para cada modelo en un día de condiciones estables]{Caudales obtenidos en la simulación para cada modelo.  Datos del día 2/3/2007. Condiciones estables y buena radiación}
-\label{tab:caudales_modelos}
-\resizebox{0.8\textwidth}{!}{%
-\begin{tabular}{cccccc}
+\label{tab:caudales_modelos} \\ \hline
 Hora &
-\parbox{5em}{\centering DNI \\ $(W/m^2)$} &
-\parbox{5em}{\centering Caudal  (SAM) \\ $(kg/s)$} &
-\parbox{5em}{\centering Caudal ($4^o Ord.$) \\ $(kg/s)$} &
-\parbox{5em}{\centering Caudal  ($1^{er} Ord.$) \\ $(kg/s)$} &
-\parbox{5em}{\centering Caudal (Simplif.) \\  $(kg/s)$}  \\ \hline
+\parbox{4em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal  (SAM) \\ $(kg/s)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal ($4^o Ord.$) \\ $(kg/s)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal  ($1^{er} Ord.$) \\ $(kg/s)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal (Simplif.) \\  $(kg/s)$}  \\ \hline
+\endfirsthead
+\multicolumn{6}{c}%
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Hora &
+\parbox{4em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal  (SAM) \\ $(kg/s)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal ($4^o Ord.$) \\ $(kg/s)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal  ($1^{er} Ord.$) \\ $(kg/s)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex}Caudal (Simplif.) \\  $(kg/s)$}  \\ \hline \\
+\endhead
 0:00  & 0   & 204          & 204               & 204                & 204                   \\ 
 1:00  & 0   & 204          & 204               & 204                & 204                   \\ 
 2:00  & 0   & 204          & 204               & 204                & 204                   \\ 
@@ -372,23 +384,28 @@ Hora &
 20:00 & 0   & 204          & 204               & 204                & 204                   \\ 
 21:00 & 0   & 204          & 204               & 204                & 204                   \\ 
 22:00 & 0   & 204          & 204               & 204                & 204                   \\ 
-23:00 & 0   & 204          & 204               & 204                & 204                   
-\end{tabular}%
-}
-\end{table}
+23:00 & 0   & 204          & 204               & 204                & 204                   \\
+\end{longtable}
 
-\begin{table}[H]
-\centering
+\begin{longtable}[c]{cccccc}
 \caption[Potencia térmica calculada en la simulación de cada modelo en un día de condiciones estables]{Potencia térmica calculada en la simulación de cada modelo.  Datos del día 2/3/2007. Condiciones estables y buena radiación}
-\label{tab:potencias_modelos}
-\resizebox{0.8\textwidth}{!}{%
-\begin{tabular}{cccccc}
+\label{tab:potencias_modelos} \\ \hline
 Hora &
-\parbox{5em}{\centering DNI \\ $(W/m^2)$} &
-\parbox{5em}{\centering $P_{th}$  (SAM) \\  $(MWt)$} &
-\parbox{5em}{\centering $P_{th}$ ($4^o Ord.$) \\  $(MWt)$} &
-\parbox{5em}{\centering $P_{th}$  ($1^{er} Ord.$) \\  $(MWt)$} &
-\parbox{5em}{\centering $P_{th}$ (Simplif.) \\   $(MWt)$}  \\ \hline
+\parbox{4em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$  (SAM) \\  $(MWt)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$ ($4^o Ord.$) \\  $(MWt)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$  ($1^{er} Ord.$) \\  $(MWt)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$ (Simplif.) \\   $(MWt)$}  \\ \hline
+\endfirsthead
+\multicolumn{6}{c}
+{{Tabla \thetable\ continúa desde la página anterior}} \\ \hline
+Hora &
+\parbox{4em}{\centering DNI \\ $(W/m^2)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$  (SAM) \\  $(MWt)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$ ($4^o Ord.$) \\  $(MWt)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$  ($1^{er} Ord.$) \\  $(MWt)$} &
+\parbox{4em}{\centering \rule{0pt}{2ex} $P_{th}$ (Simplif.) \\   $(MWt)$}  \\ \hline
+\endhead
 0:00  & 0   & -4,9  & -5,0  & -5,0  & -6,9  \\
 1:00  & 0   & -4,7  & -4,9  & -4,9  & -6,7  \\
 2:00  & 0   & -4,5  & -4,8  & -4,8  & -6,5  \\
@@ -413,9 +430,7 @@ Hora &
 21:00 & 0   & -5,8  & -5,7  & -5,7  & -8,1  \\
 22:00 & 0   & -5,5  & -5,5  & -5,5  & -7,8  \\
 23:00 & 0   & -5,3  & -5,4  & -5,4  & -7,5 
-\end{tabular}%
-}
-\end{table}
+\end{longtable}
 
 
 \subsection{Simulación cambiando el tamaño de la malla de integración}
@@ -426,25 +441,25 @@ En el caso de tener que realizar un gran número de simulaciones, el tiempo de c
 En las figuras  \ref{fig:malla0405} a \ref{fig:malla14580} se aprecia una mayor divergencia en el rendimiento calculado por cada modelo a medida que aumenta el tamaño de malla. Las diferencias son mayores para valores más altos de DNI. Como conclusión, podemos aceptar tamaños de malla de no más de 100 m para el Modelo de 4º Orden. Para el Modelo de $1^{er}$ Orden y el Modelo Simplificado vemos que una malla de unos 50 m ya empieza a mostrar diferencias apreciables respecto al modelo de 4º Orden.
 
 \begin{figure}[H]
-\includegraphics[width=0.9\linewidth]{images/malla0405.png}
+\includegraphics[width=0.87\linewidth]{images/malla0405.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 4,05 m} 
 \label{fig:malla0405}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=0.9\linewidth]{images/malla4860.png}
+\includegraphics[width=0.87\linewidth]{images/malla4860.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 48,60 m} 
 \label{fig:malla4860}
 \end{figure}
 
-\begin{figure}H]
-\includegraphics[width=0.9\linewidth]{images/malla7290.png}
+\begin{figure}[H]
+\includegraphics[width=0.87\linewidth]{images/malla7290.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 72,90 m} 
 \label{fig:malla7290}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=0.9\linewidth]{images/malla14580.png}
+\includegraphics[width=0.87\linewidth]{images/malla14580.png}
 \caption{Rendimiento calculado con cada modelo para un tamaño de malla de integración de 145,80 m} 
 \label{fig:malla14580}
 \end{figure}
