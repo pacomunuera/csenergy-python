@@ -1,0 +1,267 @@
+- cálculo de pérdidas ópticas y resto de pérdidas. De momento las pérdidas son bajas y se sobrecalienta el HTF. 
+- rECEPTORES: uvac 2, uvac 3, ptr70 ptr70 2008, skytrough DSP.
+hems08
+- DatetimeIndex.tz_convert(self, *args, **kwargs)[source]
+- pg 248 ecuación 5.3 para el cálculo de la emisividad
+- pérdidas de calor en puentes térmicos de estructura soporte del colector (ec. 4.12), de Forristall
+- pr_shadows está mal y parece estar repetido get_sca_shadows ( las sombras se computan sobre el SCA o sobre el HCE)
+- comprobar IAM if kiam > 1:
+                kiam = 2 -kiam
+- mecanimos de control para limitaciones de temperaturay presión fuera de rango para FLUID
+- discriminar parámetros de modelo y de hce.
+- dispersión de parámetros.
+- implementar nuevos modelos
+- recopilación de datos en dataframe
+- interfaz 
+- interfaz web
+- visualización de datos.
+
+Para ver clases en un módulo:
+import mimodulo
+clsmembers = inspect.getmembers(sys.modules[mimodulo, inspect.isclass)
+print(clsmembers)
+
+# Uso de __slots__ permite ahorrar memoria RAM
+#    __slots__= ['SCA_configuration']
+
+DUDAS:
+Modelo local para longitud típica de HCE y modelo integral para todo el SCA o LOOP?
+        #  Friction factor for smooth pipe
+        cf = (1.58 * np.log(redri) - 3.28)**-2
+
+                #  Nusselt number by Gnielinski correlation. Eq. 4.15 Barbero2016
+                nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
+                       (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
+
+Código quitado de calc_pr
+        # IAM = hce.sca.get_IAM(aoi)
+        # pr_opt_peak = hce.get_pr_opt_peak(aoi, solarpos, row)
+        # pr_geo = hce.get_pr_geo(aoi, solarpos, row)
+        # pr_shadows = hce.get_pr_shadows(aoi, solarpos, row)
+        # # pr_shadows = 0.5
+
+        # cg = A /(np.pi*dro)
+
+        # #  Ec. 3.20 Barbero
+        # qabs = (pr_opt_peak * IAM * cg * dni * pr_geo * pr_shadows)
+
+        #  nu_air se necesita si se va a emplear get_hext_eext
+        #  nu_air = cinematic viscosity PROVISIONAL A FALTA DE VALIDAR TABLA
+        # tabla en K
+        # nu_air = Air.get_cinematic_viscosity(text)
+        # wspd = row[1]['Wspd']
+
+        # #  Reynols number for wind at
+        # reext = dgo * wspd / nu_air
+
+        #hext, eext = cls.get_hext_eext(hce, reext, tro, wspd)
+
+
+
+    def calc_pr(cls, hce, htf, qabs, row):
+
+        flag_0 = datetime.now()
+
+        # pressure = hce.sca.loop.pin
+        hce.set_tin()
+        hce.set_pin()
+        hce.tout = hce.tin
+        tin = hce.tin
+        tf = hce.tin  # HTF bulk temperature
+        tro = hce.tin  #  Absorber tube outer surface temperature
+        tri = hce.tin  #  Absorber tube inner surface temperature
+        massflow = hce.sca.loop.massflow
+        wspd = row[1]['Wspd']  #  Wind speed
+        text = row[1]['DryBulb']  #  Dry bulb ambient temperature
+        sigma = sc.constants.sigma  #  Stefan-Bolztmann constant
+        dro = hce.parameters['Absorber tube outer diameter']
+        dri = hce.parameters['Absorber tube inner diameter']
+        dgo = hce.parameters['Glass envelope outer diameter']
+        dgi = hce.parameters['Glass envelope inner diameter']
+        L = hce.parameters['Length']
+        A = hce.sca.parameters['Aperture']
+        x = 1 #  Calculation grid fits hce longitude
+
+        #  HCE wall thermal conductivity
+        krec = hce.get_krec(tf)
+
+        #  HCE emittance
+        eext = hce.get_emittance(tro, wspd)
+        #  External Convective Heat Transfer equivalent coefficient
+        hext = hce.get_hext(wspd)
+
+        #  Specific heat capacity
+        cp = htf.get_cp(tf, hce.pin)
+        #cpri = cp
+
+        #  Fluid dynamic viscosity
+        mu = htf.get_dynamic_viscosity(tf, hce.pin)
+        #muri = mu
+
+        #  Fluid density
+        rho = htf.get_density(tf, hce.pin)
+        # rhori = rho
+
+        #  Fluid thermal conductivity
+        kf = htf.get_thermal_conductivity(tf, hce.pin)
+        # kfpri = kf
+
+        #  Fluid thermal diffusivity
+        alpha = kf / (rho * cp)
+        #  alphari = alpha
+
+        #  Prandtl number
+        prf = mu / alpha
+        #  prfri = prf
+
+        #  Reynolds number for absorber tube inner diameter, dri
+        redri = 4 * massflow / (mu * np.pi * dri)
+
+        #  Friction factor for smooth pipe
+        cf = (1.58 * np.log(redri) - 3.28)**-2
+
+        #  Nusselt number by Gnielinski correlation. Eq. 4.15 Barbero2016
+        nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
+               (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
+
+        #  Internal transmission coefficient.
+        hint = kf * nug / dri
+
+        #  Eq. 3.23 Barbero2016
+        qperd = sigma * eext * (tro**4 - text**4) + hext * (tro - text)
+
+        #  Ecq. 3.50 Barbero2016
+        qcrit = qperd
+
+        #  Ec. 3.51 Barbero
+        ucrit = 4 * sigma * eext * tin**3 + hext
+        # Ec. 3.22
+        urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+        #  Ec. 3.30
+        NTU = urec * x * L * sc.pi * dro / (massflow * cp)
+
+
+
+        if qabs > 0:
+            pr0 = (1 - qcrit / qabs)/(1 + ucrit / urec)
+
+            if pr0 <0:
+                pr0 = 0.0
+        else:
+            pr0 = 0.0
+
+        pr1 = pr0
+        tro1 = tf + qabs * pr1 / urec
+
+        if qabs > qcrit:
+            errtro = 1.
+            errpr = 1.
+            step = 0
+
+            while (errtro > 0.1 or errpr > 0.01):
+
+                step += 1
+                flag_1 = datetime.now()
+
+                f0 = qabs/(urec*(tin-text))
+                f1 = ((4*sigma*eext*text**3)+hext)/urec
+                f2 = 6*(text**2)*(sigma*eext/urec)*(qabs/urec)
+                f3 = 4*text*(sigma*eext/urec)*((qabs/urec)**2)
+                f4 = (sigma*eext/urec)*((qabs/urec)**3)
+
+                fx = lambda pr0: (1 - pr0 -
+                                  f1 * (pr0 + (1 / f0)) -
+                                  f2 * ((pr0 + (1 / f0))**2) -
+                                  f3 * ((pr0 + (1 / f0))**3) -
+                                  f4 * ((pr0 + (1 / f0))**4))
+
+                dfx = lambda pr0: (-1 - f1 -
+                                   2 * f2 * (pr0 + (1 / f0)) -
+                                   3 * f3 * (pr0 + (1 / f0))**2 -
+                                   4 * f4 * (pr0 + (1 / f0))**3)
+
+                root = sc.optimize.newton(fx,
+                                          pr0,
+                                          fprime=dfx,
+                                          maxiter=100000)
+
+                pr0 = root
+                z = pr0 + (1/f0)
+                g1 = 1+f1+2*f2*z+3*f3*z**2+4*f4*z**3
+                g2 = 2*f2+6*f3*z+12*f4*z**2
+                g3 = 6*f3+24*f4*z
+
+                pr2 = ((pr0*g1/(1-g1))*(1/(NTU*x)) *
+                       (sc.exp((1-g1)*NTU*x/g1)-1) -
+                       (g2/(6*g1))*(pr0*NTU*x)**2 -
+                       (g3/(24*g1)*(pr0*NTU*x)**3))
+
+                errpr = abs(pr2-pr1)
+                pr1 = pr2
+                hce.pr = pr1
+                hce.qabs = qabs
+                hce.set_tout(htf)
+                hce.set_pout(htf)
+                tf = 0.5 * (hce.tin + hce.tout)
+
+                tri = tro1
+
+                cp = htf.get_cp(tf, hce.pin)
+                cpri = htf.get_cp(tri, hce.pin)
+
+                mu = htf.get_dynamic_viscosity(tf, hce.pin)
+                muri = htf.get_dynamic_viscosity(tri, hce.pin)
+
+                rho = htf.get_density(tf, hce.pin)
+                rhori =  htf.get_density(tri, hce.pin)
+
+
+                kf = htf.get_thermal_conductivity(tf, hce.pin)
+                kfpri = htf.get_thermal_conductivity(tri, hce.pin)
+
+                #  alpha : difusividad térmica
+                alpha = kf / (rho * cp)
+                alphari = kfpri / (rhori * cpri)
+
+                prf = mu / alpha  #  Prandtl = viscosidad dinámica / difusividad_termica
+                prfri =  muri / alphari
+
+                redri = 4 * massflow / (mu * np.pi * dri)  # Reynolds
+
+                # Número de Nusselt alto, casi independiente inicialmente de tri
+                # ya que estamos considerando tri = tf o casi igual
+                nug = ((cf / 2) * (redri - 1000) * prf * (prf / prfri)**0.11 /
+                       (1 + 12.7 * (cf / 2)**0.5 * (prf**(2 / 3) - 1)))
+
+                #nudb = 0.023 * redri**0.8 * prf**0.4
+                hint = kf * nug / dri
+                # hext, eext = cls.get_hext_eext(hce, reext, tro1, wspd)
+                eext = hce.get_emittance(tro1, wspd)
+                hext = hce.get_hext(wspd)
+
+                trec = (tro1+tri)/2
+                krec = hce.get_krec(trec)
+                # Ec. 3.22
+                urec = 1 / ((1 / hint) + (dro * np.log(dro / dri)) / (2 * krec))
+                NTU = urec * x * L * sc.pi * dro / (massflow * cp)  # Ec. 3.30
+
+                tro2 = tf+qabs*pr2/urec
+                errtro = abs(tro2-tro1)
+                tro1 = tro2
+                qperd = sigma * eext * (tro1**4 - text**4) + hext * (tro1 - text)
+
+                flag_2 = datetime.now()
+
+        else:
+            hce.pr = pr1
+            hce.qperd = qperd
+            hce.qabs = qabs
+            hce.set_tout(htf)
+
+            #FLUJO LAMINAR
+            hce.set_pout(htf)
+            flag_3 = datetime.now()
+
+
+
+

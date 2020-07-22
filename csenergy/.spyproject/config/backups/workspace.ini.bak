@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['csenergy.py', '__init__.py', 'interface.py', 'test_1_HCES.py', 'test_2_HCES.py']
+recent_files = ['csenergy.py', 'interface.py', 'pr_vs_tin.py', 'pr_vs_dni.py']
 
